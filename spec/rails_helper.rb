@@ -68,6 +68,9 @@ RSpec.configure do |config|
   # FactoryBotのメソッド（create, build等）をspec内でそのまま呼び出せるようにする
   config.include FactoryBot::Syntax::Methods
 
+  # リクエストスペック用ヘルパー（sign_inメソッド）
+  config.include RequestHelpers, type: :request
+
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:

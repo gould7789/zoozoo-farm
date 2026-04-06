@@ -49,23 +49,8 @@
 ---
 
 ## ER図
+<img width="2790" height="762" alt="데이터베이스 erd" src="https://github.com/user-attachments/assets/17e31f2e-30af-4380-84f6-83f2ce6ee1c6" />
 
-<!-- ER図画像を挿入予定 -->
-> `docs/erd.png` 追加予定
-
-```
-zones（シードデータで固定）
-  └── animals
-        ├── health_records  (created_by → users)
-        └── feeding_records (created_by → users)
-
-users
-  ├── health_records
-  ├── feeding_records
-  ├── notices
-  ├── sales_records
-  └── expense_records
-```
 
 ---
 

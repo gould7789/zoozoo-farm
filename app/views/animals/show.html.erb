@@ -1,0 +1,23 @@
+<%# 動物詳細ページ — 個体プロフィールを表示 %>
+<%# 編集・削除ボタンはAdmin専用 %>
+<h1><%= @animal.species %><% if @animal.name.present? %>（<%= @animal.name %>）<% end %></h1>
+
+<p>館: <%= link_to @zone.name, zone_path(@zone) %></p>
+<p>性別: <%= @animal.gender %></p>
+<% if @animal.birth_date.present? %>
+  <p>生年月日: <%= @animal.birth_date %></p>
+<% end %>
+<% if @animal.acquired_at.present? %>
+  <p>入手日: <%= @animal.acquired_at %></p>
+<% end %>
+<p>CITES: <%= @animal.cites_grade %></p>
+<% if @animal.note.present? %>
+  <p>特記事項: <%= @animal.note %></p>
+<% end %>
+
+<%# 編集・削除はAdmin専用 — Staffには非表示 %>
+<% if current_user.admin? %>
+  <%= link_to "編集", edit_zone_animal_path(@zone, @animal) %>
+  <%= button_to "削除", zone_animal_path(@zone, @animal), method: :delete,
+        data: { turbo_confirm: "本当に削除しますか？" } %>
+<% end %>

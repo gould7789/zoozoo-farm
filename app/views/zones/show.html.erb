@@ -1,0 +1,27 @@
+<%# 館詳細ページ — 所属動物一覧を表示 %>
+<%# @animals: active=trueの動物を種名・個体名順で表示 %>
+<h1><%= @zone.name %></h1>
+
+<% if @zone.description.present? %>
+  <p><%= @zone.description %></p>
+<% end %>
+
+<%# 動物追加ボタンはAdmin専用 %>
+<% if current_user.admin? %>
+  <%= link_to "動物を追加", new_zone_animal_path(@zone) %>
+<% end %>
+
+<h2>動物一覧</h2>
+
+<% if @animals.empty? %>
+  <p>動物が登録されていません</p>
+<% else %>
+  <% @animals.each do |animal| %>
+    <div>
+      <%= link_to animal.species, zone_animal_path(@zone, animal) %>
+      <% if animal.name.present? %>
+        （<%= animal.name %>）
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

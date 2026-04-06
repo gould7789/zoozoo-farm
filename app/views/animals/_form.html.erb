@@ -1,0 +1,58 @@
+<%# 動物登録・編集の共通フォーム %>
+<%# new.html.erb と edit.html.erb から render "form" で呼び出す %>
+<%= form_with model: [@zone, @animal] do |f| %>
+  <%# バリデーションエラーがある場合は一覧表示 %>
+  <% if @animal.errors.any? %>
+    <div>
+      <% @animal.errors.full_messages.each do |msg| %>
+        <p><%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :species, "種名" %>
+    <%= f.text_field :species %>
+  </div>
+
+  <div>
+    <%# 個体名は任意（多頭飼育種は空白のまま） %>
+    <%= f.label :name, "個体名" %>
+    <%= f.text_field :name %>
+  </div>
+
+  <div>
+    <%= f.label :gender, "性別" %>
+    <%= f.select :gender, Animal.genders.keys.map { |g| [g, g] } %>
+  </div>
+
+  <div>
+    <%# 生年月日は不明の場合は空白 %>
+    <%= f.label :birth_date, "生年月日" %>
+    <%= f.date_field :birth_date %>
+  </div>
+
+  <div>
+    <%= f.label :acquired_at, "入手日" %>
+    <%= f.date_field :acquired_at %>
+  </div>
+
+  <div>
+    <%= f.label :acquisition_note, "入手経緯" %>
+    <%= f.text_area :acquisition_note %>
+  </div>
+
+  <div>
+    <%# CITES区分 — 許可証の実物は書類で保管、システムには区分のみ記録 %>
+    <%= f.label :cites_grade, "CITES区分" %>
+    <%= f.select :cites_grade, Animal.cites_grades.keys.map { |g| [g, g] } %>
+  </div>
+
+  <div>
+    <%# 先天性疾患・性格など固定の特記事項 %>
+    <%= f.label :note, "特記事項" %>
+    <%= f.text_area :note %>
+  </div>
+
+  <%= f.submit %>
+<% end %>

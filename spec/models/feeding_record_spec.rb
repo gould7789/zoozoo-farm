@@ -7,6 +7,8 @@ RSpec.describe FeedingRecord, type: :model do
     it { should validate_presence_of(:fed_at) }
     # 餌の種類は必須
     it { should validate_presence_of(:food_type) }
+    # 給餌量は0以上の整数（任意）
+    it { should validate_numericality_of(:amount_g).only_integer.is_greater_than_or_equal_to(0).allow_nil }
   end
 
   describe "アソシエーション" do

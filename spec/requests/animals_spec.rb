@@ -73,6 +73,32 @@ RSpec.describe "Animals", type: :request do
     end
   end
 
+  describe "PATCH /zones/:zone_id/animals/:id" do
+    let(:animal) { create(:animal, zone: zone) }
+    let(:valid_params) { { animal: { species: "オウム" } } }
+
+    # 更新はAdmin専用 — Staffはルートへリダイレクト
+    context "Staffが更新しようとする" do
+      before { sign_in(staff) }
+
+      it "ルートにリダイレクトする" do
+        patch zone_animal_path(zone, animal), params: valid_params
+        expect(response).to redirect_to(root_path)
+      end
+    end
+
+    # Adminは更新後に詳細ページへリダイレクト
+    context "Adminが更新" do
+      before { sign_in(admin) }
+
+      it "動物情報を更新して詳細ページにリダイレクトする" do
+        patch zone_animal_path(zone, animal), params: valid_params
+        expect(response).to redirect_to(zone_animal_path(zone, animal))
+        expect(animal.reload.species).to eq("オウム")
+      end
+    end
+  end
+
   describe "DELETE /zones/:zone_id/animals/:id" do
     let(:animal) { create(:animal, zone: zone) }
 

@@ -1,6 +1,9 @@
-# ユーザーモデル — 認証・権限管理を担当
+# ユーザーモデル — 認証・権限管理
 class User < ApplicationRecord
   has_secure_password
+
+  # 作成した健康記録一覧
+  has_many :health_records, foreign_key: :created_by_id, dependent: :nullify
 
   enum :role, { admin: 0, staff: 1 }
 

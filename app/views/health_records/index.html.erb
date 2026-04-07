@@ -1,14 +1,14 @@
 <%# 健康記録一覧ページ %>
-<h1><%= @animal.species %> の健康記録</h1>
+<h1><%= @animal.species %> 건강 기록</h1>
 
-<%= link_to "新規記録", new_zone_animal_health_record_path(@zone, @animal) %>
+<%= link_to "새 기록 추가", new_zone_animal_health_record_path(@zone, @animal) %>
 
 <% @health_records.each do |hr| %>
   <div>
     <p><%= hr.recorded_on %> — <%= hr.condition %></p>
     <% if current_user.admin? || hr.created_by_id == current_user.id %>
-      <%= link_to "編集", edit_zone_animal_health_record_path(@zone, @animal, hr) %>
-      <%= button_to "削除", zone_animal_health_record_path(@zone, @animal, hr), method: :delete, data: { turbo_confirm: "削除しますか？" } %>
+      <%= link_to "수정", edit_zone_animal_health_record_path(@zone, @animal, hr) %>
+      <%= button_to "삭제", zone_animal_health_record_path(@zone, @animal, hr), method: :delete, data: { turbo_confirm: "정말 삭제하시겠습니까?" } %>
     <% end %>
   </div>
 <% end %>

@@ -21,7 +21,7 @@ class HealthRecordsController < ApplicationController
     # created_byは必ずログイン中のユーザーを設定
     @health_record.created_by = current_user
     if @health_record.save
-      redirect_to zone_animal_health_records_path(@zone, @animal), notice: "健康記録を保存しました"
+      redirect_to zone_animal_health_records_path(@zone, @animal), notice: "건강 기록을 저장했습니다."
     else
       render :new, status: :unprocessable_entity
     end
@@ -32,7 +32,7 @@ class HealthRecordsController < ApplicationController
 
   def update
     if @health_record.update(health_record_params)
-      redirect_to zone_animal_health_records_path(@zone, @animal), notice: "健康記録を更新しました"
+      redirect_to zone_animal_health_records_path(@zone, @animal), notice: "건강 기록을 수정했습니다."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -40,7 +40,7 @@ class HealthRecordsController < ApplicationController
 
   def destroy
     @health_record.destroy
-    redirect_to zone_animal_health_records_path(@zone, @animal), notice: "健康記録を削除しました"
+    redirect_to zone_animal_health_records_path(@zone, @animal), notice: "건강 기록을 삭제했습니다."
   end
 
   private
@@ -60,7 +60,7 @@ class HealthRecordsController < ApplicationController
     # 本人記録かAdminのみ編集・削除可能
     def require_owner
       unless current_user.admin? || @health_record.created_by_id == current_user.id
-        redirect_to root_path, alert: "権限がありません"
+        redirect_to root_path, alert: "권한이 없습니다."
       end
     end
 

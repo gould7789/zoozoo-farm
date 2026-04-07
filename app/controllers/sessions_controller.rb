@@ -13,15 +13,15 @@ class SessionsController < ApplicationController
 
     if user&.authenticate(params[:password])
       session[:user_id] = user.id
-      redirect_to root_path, notice: "ログインしました"
+      redirect_to root_path, notice: "로그인했습니다."
     else
-      flash.now[:alert] = "メールアドレスまたはパスワードが間違っています"
+      flash.now[:alert] = "이메일 또는 비밀번호가 올바르지 않습니다."
       render :new, status: :unprocessable_content
     end
   end
 
   def destroy
     session.delete(:user_id)
-    redirect_to login_path, notice: "ログアウトしました"
+    redirect_to login_path, notice: "로그아웃했습니다."
   end
 end

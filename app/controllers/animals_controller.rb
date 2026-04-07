@@ -18,7 +18,7 @@ class AnimalsController < ApplicationController
   def create
     @animal = @zone.animals.build(animal_params)
     if @animal.save
-      redirect_to zone_animal_path(@zone, @animal), notice: "動物を登録しました"
+      redirect_to zone_animal_path(@zone, @animal), notice: "동물을 등록했습니다."
     else
       render :new, status: :unprocessable_entity
     end
@@ -29,7 +29,7 @@ class AnimalsController < ApplicationController
 
   def update
     if @animal.update(animal_params)
-      redirect_to zone_animal_path(@zone, @animal), notice: "動物情報を更新しました"
+      redirect_to zone_animal_path(@zone, @animal), notice: "동물 정보를 수정했습니다."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -38,7 +38,7 @@ class AnimalsController < ApplicationController
   def destroy
     # 物理削除ではなくactive=falseにして履歴を保持する
     @animal.update!(active: false)
-    redirect_to zone_path(@zone), notice: "動物を削除しました"
+    redirect_to zone_path(@zone), notice: "동물을 삭제했습니다."
   end
 
   private

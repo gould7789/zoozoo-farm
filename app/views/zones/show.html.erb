@@ -8,13 +8,13 @@
 
 <%# 動物追加ボタンはAdmin専用 %>
 <% if current_user.admin? %>
-  <%= link_to "動物を追加", new_zone_animal_path(@zone) %>
+  <%= link_to "동물 추가", new_zone_animal_path(@zone) %>
 <% end %>
 
-<h2>動物一覧</h2>
+<h2>동물 목록</h2>
 
 <% if @animals.empty? %>
-  <p>動物が登録されていません</p>
+  <p>등록된 동물이 없습니다.</p>
 <% else %>
   <% @animals.each do |animal| %>
     <div>

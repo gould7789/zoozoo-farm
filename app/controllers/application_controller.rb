@@ -21,10 +21,10 @@ class ApplicationController < ActionController::Base
     end
 
     def require_login
-      redirect_to login_path, alert: "ログインしてください" unless logged_in?
+      redirect_to login_path, alert: "로그인이 필요합니다." unless logged_in?
     end
 
     def require_admin
-      redirect_to root_path, alert: "権限がありません" unless current_user&.admin?
+      redirect_to root_path, alert: "권한이 없습니다." unless current_user&.admin?
     end
 end

@@ -9,22 +9,22 @@
   <% end %>
 
   <div>
-    <%= f.label :recorded_on, "観察日" %>
+    <%= f.label :recorded_on, "관찰일" %>
     <%= f.date_field :recorded_on %>
   </div>
 
   <div>
-    <%= f.label :condition, "コンディション" %>
+    <%= f.label :condition, "컨디션" %>
     <%= f.select :condition, HealthRecord.conditions.keys.map { |c| [c, c] } %>
   </div>
 
   <div>
-    <%= f.label :weight_kg, "体重 (kg)" %>
+    <%= f.label :weight_kg, "체중 (kg)" %>
     <%= f.number_field :weight_kg, step: 0.01 %>
   </div>
 
   <div>
-    <%= f.label :note, "特記事項" %>
+    <%= f.label :note, "특이사항" %>
     <%= f.text_area :note %>
   </div>
 

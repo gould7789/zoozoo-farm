@@ -1,0 +1,14 @@
+<%# 給餌記録一覧ページ %>
+<h1><%= @animal.species %> 먹이 기록</h1>
+
+<%= link_to "새 기록 추가", new_zone_animal_feeding_record_path(@zone, @animal) %>
+
+<% @feeding_records.each do |fr| %>
+  <div>
+    <p><%= fr.fed_at.strftime("%Y-%m-%d %H:%M") %> — <%= fr.food_type %></p>
+    <% if current_user.admin? || fr.created_by_id == current_user.id %>
+      <%= link_to "수정", edit_zone_animal_feeding_record_path(@zone, @animal, fr) %>
+      <%= button_to "삭제", zone_animal_feeding_record_path(@zone, @animal, fr), method: :delete, data: { turbo_confirm: "정말 삭제하시겠습니까?" } %>
+    <% end %>
+  </div>
+<% end %>

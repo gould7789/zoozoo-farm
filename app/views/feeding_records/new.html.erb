@@ -1,0 +1,6 @@
+<%# 給餌記録新規作成ページ %>
+<h1>먹이 기록 추가</h1>
+
+<%= render "form", feeding_record: @feeding_record %>
+
+<%= link_to "목록으로", zone_animal_feeding_records_path(@zone, @animal) %>

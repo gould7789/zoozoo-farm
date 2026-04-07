@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_06_000003) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_06_000006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -59,6 +59,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_000003) do
     t.index ["zone_id"], name: "index_animals_on_zone_id"
   end
 
+  create_table "health_records", force: :cascade do |t|
+    t.bigint "animal_id", null: false
+    t.integer "condition", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.text "note"
+    t.date "recorded_on", null: false
+    t.datetime "updated_at", null: false
+    t.decimal "weight_kg", precision: 6, scale: 2
+    t.index ["animal_id", "recorded_on"], name: "idx_health_records_animal_date"
+    t.index ["animal_id"], name: "index_health_records_on_animal_id"
+    t.index ["created_by_id"], name: "index_health_records_on_created_by_id"
+    t.check_constraint "condition = ANY (ARRAY[0, 1, 2])", name: "chk_health_condition"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -81,4 +96,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_000003) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "animals", "zones"
+  add_foreign_key "health_records", "animals"
+  add_foreign_key "health_records", "users", column: "created_by_id"
 end

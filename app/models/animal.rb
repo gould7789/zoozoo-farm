@@ -4,7 +4,9 @@ class Animal < ApplicationRecord
   # 動物は必ずいずれかの館に所属する
   belongs_to :zone
   # 健康記録
-  has_many :health_records, dependent: :destroy
+  has_many :health_records,  dependent: :destroy
+  # 給餌記録
+  has_many :feeding_records, dependent: :destroy
 
   # 性別 — 入手時に不明なケースが多いためデフォルトはunknown
   enum :gender,      { male: 0, female: 1, unknown: 2 }

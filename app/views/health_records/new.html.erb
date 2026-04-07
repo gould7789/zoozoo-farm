@@ -1,0 +1,6 @@
+<%# 健康記録新規作成ページ %>
+<h1>健康記録を追加</h1>
+
+<%= render "form", health_record: @health_record %>
+
+<%= link_to "戻る", zone_animal_health_records_path(@zone, @animal) %>

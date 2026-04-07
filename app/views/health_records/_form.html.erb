@@ -1,0 +1,32 @@
+<%# 健康記録フォーム（new/edit共用） %>
+<%= form_with model: [@zone, @animal, health_record] do |f| %>
+  <% if health_record.errors.any? %>
+    <ul>
+      <% health_record.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= f.label :recorded_on, "観察日" %>
+    <%= f.date_field :recorded_on %>
+  </div>
+
+  <div>
+    <%= f.label :condition, "コンディション" %>
+    <%= f.select :condition, HealthRecord.conditions.keys.map { |c| [c, c] } %>
+  </div>
+
+  <div>
+    <%= f.label :weight_kg, "体重 (kg)" %>
+    <%= f.number_field :weight_kg, step: 0.01 %>
+  </div>
+
+  <div>
+    <%= f.label :note, "特記事項" %>
+    <%= f.text_area :note %>
+  </div>
+
+  <%= f.submit %>
+<% end %>

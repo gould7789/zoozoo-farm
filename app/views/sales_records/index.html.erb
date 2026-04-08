@@ -1,0 +1,12 @@
+<%# 売上記録一覧ページ — Admin専用 %>
+<h1>매출 기록</h1>
+
+<%= link_to "새 매출 기록 추가", new_sales_record_path %>
+
+<% @sales_records.each do |sr| %>
+  <div>
+    <p><%= sr.sold_on.strftime("%Y-%m-%d") %> — <%= number_with_delimiter(sr.amount) %>원</p>
+    <%= link_to "수정", edit_sales_record_path(sr) %>
+    <%= button_to "삭제", sales_record_path(sr), method: :delete, data: { turbo_confirm: "정말 삭제하시겠습니까?" } %>
+  </div>
+<% end %>

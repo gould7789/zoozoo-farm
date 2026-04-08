@@ -1,0 +1,38 @@
+<%# 売上記録フォーム（new/edit共用） %>
+<%= form_with model: sales_record do |f| %>
+  <% if sales_record.errors.any? %>
+    <ul>
+      <% sales_record.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= f.label :sold_on, "매출 발생일" %>
+    <%= f.date_field :sold_on %>
+  </div>
+
+  <div>
+    <%= f.label :source, "판매처" %>
+    <%= f.select :source, {
+      "자판기 1" => "vending_1",
+      "자판기 2" => "vending_2",
+      "자판기 3" => "vending_3",
+      "자판기 4" => "vending_4",
+      "매점"     => "stall"
+    } %>
+  </div>
+
+  <div>
+    <%= f.label :amount, "매출액 (원)" %>
+    <%= f.number_field :amount, step: 1, min: 0 %>
+  </div>
+
+  <div>
+    <%= f.label :note, "특이사항" %>
+    <%= f.text_area :note %>
+  </div>
+
+  <%= f.submit %>
+<% end %>

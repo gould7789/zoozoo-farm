@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_07_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_08_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -88,6 +88,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_07_000001) do
     t.check_constraint "condition = ANY (ARRAY[0, 1, 2])", name: "chk_health_condition"
   end
 
+  create_table "notices", force: :cascade do |t|
+    t.text "body", null: false
+    t.integer "category", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category"], name: "index_notices_on_category"
+    t.index ["created_by_id"], name: "index_notices_on_created_by_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -114,4 +124,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_07_000001) do
   add_foreign_key "feeding_records", "users", column: "created_by_id"
   add_foreign_key "health_records", "animals"
   add_foreign_key "health_records", "users", column: "created_by_id"
+  add_foreign_key "notices", "users", column: "created_by_id"
 end

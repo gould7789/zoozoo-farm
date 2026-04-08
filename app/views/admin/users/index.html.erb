@@ -1,0 +1,14 @@
+<%# ユーザー管理一覧ページ — Admin専用 %>
+<h1>직원 관리</h1>
+
+<%= link_to "새 계정 생성", new_admin_user_path %>
+
+<% @users.each do |user| %>
+  <div>
+    <p><%= user.name %> (<%= user.email %>) — <%= user.admin? ? "관리자" : "스태프" %></p>
+    <% unless user.active? %>
+      <span>퇴사</span>
+    <% end %>
+    <%= link_to "수정", edit_admin_user_path(user) %>
+  </div>
+<% end %>

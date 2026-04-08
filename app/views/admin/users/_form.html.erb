@@ -1,0 +1,39 @@
+<%# ユーザーフォーム（new/edit共用） %>
+<%= form_with model: [:admin, user] do |f| %>
+  <% if user.errors.any? %>
+    <ul>
+      <% user.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= f.label :name, "이름" %>
+    <%= f.text_field :name %>
+  </div>
+
+  <div>
+    <%= f.label :email, "이메일" %>
+    <%= f.email_field :email %>
+  </div>
+
+  <div>
+    <%= f.label :password, "비밀번호" %>
+    <%= f.password_field :password, placeholder: user.persisted? ? "변경 시에만 입력" : "" %>
+  </div>
+
+  <div>
+    <%= f.label :role, "역할" %>
+    <%= f.select :role, { "관리자" => "admin", "스태프" => "staff" } %>
+  </div>
+
+  <% if user.persisted? %>
+    <div>
+      <%= f.label :active, "재직 중" %>
+      <%= f.check_box :active %>
+    </div>
+  <% end %>
+
+  <%= f.submit %>
+<% end %>

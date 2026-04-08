@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_08_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_08_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -98,6 +98,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_08_000001) do
     t.index ["created_by_id"], name: "index_notices_on_created_by_id"
   end
 
+  create_table "sales_records", force: :cascade do |t|
+    t.integer "amount", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.text "note"
+    t.date "sold_on", null: false
+    t.integer "source", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_by_id"], name: "index_sales_records_on_created_by_id"
+    t.index ["sold_on", "source"], name: "index_sales_records_on_sold_on_and_source", unique: true
+    t.index ["sold_on"], name: "index_sales_records_on_sold_on"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
@@ -125,4 +138,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_08_000001) do
   add_foreign_key "health_records", "animals"
   add_foreign_key "health_records", "users", column: "created_by_id"
   add_foreign_key "notices", "users", column: "created_by_id"
+  add_foreign_key "sales_records", "users", column: "created_by_id"
 end

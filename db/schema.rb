@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_08_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_08_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,6 +57,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_08_000002) do
     t.bigint "zone_id", null: false
     t.index ["zone_id"], name: "idx_animals_zone_id"
     t.index ["zone_id"], name: "index_animals_on_zone_id"
+  end
+
+  create_table "expense_records", force: :cascade do |t|
+    t.integer "amount", null: false
+    t.integer "category", null: false
+    t.datetime "created_at", null: false
+    t.bigint "created_by_id", null: false
+    t.text "description", null: false
+    t.date "spent_on", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category"], name: "index_expense_records_on_category"
+    t.index ["created_by_id"], name: "index_expense_records_on_created_by_id"
+    t.index ["spent_on"], name: "index_expense_records_on_spent_on"
   end
 
   create_table "feeding_records", force: :cascade do |t|
@@ -133,6 +146,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_08_000002) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "animals", "zones"
+  add_foreign_key "expense_records", "users", column: "created_by_id"
   add_foreign_key "feeding_records", "animals"
   add_foreign_key "feeding_records", "users", column: "created_by_id"
   add_foreign_key "health_records", "animals"

@@ -1,0 +1,14 @@
+<%# お知らせ一覧ページ %>
+<h1>공지 목록</h1>
+
+<%= link_to "새 공지 작성", new_notice_path %>
+
+<% @notices.each do |notice| %>
+  <div>
+    <p><%= notice.created_at.strftime("%Y-%m-%d") %> — <%= notice.body %></p>
+    <% if current_user.admin? || notice.created_by_id == current_user.id %>
+      <%= link_to "수정", edit_notice_path(notice) %>
+      <%= button_to "삭제", notice_path(notice), method: :delete, data: { turbo_confirm: "정말 삭제하시겠습니까?" } %>
+    <% end %>
+  </div>
+<% end %>

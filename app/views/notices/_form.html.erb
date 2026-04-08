@@ -1,0 +1,30 @@
+<%# お知らせフォーム（new/edit共用） %>
+<%= form_with model: notice do |f| %>
+  <% if notice.errors.any? %>
+    <ul>
+      <% notice.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= f.label :category, "카테고리" %>
+    <%= f.select :category, {
+      "전체"         => "general",
+      "사랑새관"     => "lovebird",
+      "앵무새관"     => "parrot",
+      "파충류관"     => "reptile",
+      "미니동물관"   => "small_animal",
+      "야외동물체험관" => "outdoor",
+      "격리실"       => "isolation"
+    } %>
+  </div>
+
+  <div>
+    <%= f.label :body, "내용" %>
+    <%= f.text_area :body, rows: 5 %>
+  </div>
+
+  <%= f.submit %>
+<% end %>

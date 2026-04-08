@@ -1,0 +1,39 @@
+<%# 支出記録フォーム（new/edit共用） %>
+<%= form_with model: expense_record do |f| %>
+  <% if expense_record.errors.any? %>
+    <ul>
+      <% expense_record.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= f.label :spent_on, "지출 발생일" %>
+    <%= f.date_field :spent_on %>
+  </div>
+
+  <div>
+    <%= f.label :category, "지출 종류" %>
+    <%= f.select :category, {
+      "동물 구매비" => "animal_purchase",
+      "먹이 구매비" => "food",
+      "병원비"      => "medical",
+      "시체 처리비" => "disposal",
+      "시설 유지보수" => "maintenance",
+      "기타"        => "other"
+    } %>
+  </div>
+
+  <div>
+    <%= f.label :amount, "지출액 (원)" %>
+    <%= f.number_field :amount, step: 1, min: 0 %>
+  </div>
+
+  <div>
+    <%= f.label :description, "지출 내용" %>
+    <%= f.text_area :description %>
+  </div>
+
+  <%= f.submit %>
+<% end %>

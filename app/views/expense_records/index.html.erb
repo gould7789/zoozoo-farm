@@ -1,0 +1,13 @@
+<%# 支出記録一覧ページ — Admin専用 %>
+<h1>지출 기록</h1>
+
+<%= link_to "새 지출 기록 추가", new_expense_record_path %>
+
+<% @expense_records.each do |er| %>
+  <div>
+    <p><%= er.spent_on.strftime("%Y-%m-%d") %> — <%= number_with_delimiter(er.amount) %>원</p>
+    <p><%= er.description %></p>
+    <%= link_to "수정", edit_expense_record_path(er) %>
+    <%= button_to "삭제", expense_record_path(er), method: :delete, data: { turbo_confirm: "정말 삭제하시겠습니까?" } %>
+  </div>
+<% end %>

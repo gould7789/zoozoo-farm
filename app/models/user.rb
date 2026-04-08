@@ -2,8 +2,12 @@
 class User < ApplicationRecord
   has_secure_password
 
-  # 作成した健康記録一覧
-  has_many :health_records, foreign_key: :created_by_id, dependent: :nullify
+  # 作成した各種記録一覧
+  has_many :health_records,   foreign_key: :created_by_id, dependent: :nullify
+  has_many :feeding_records,  foreign_key: :created_by_id, dependent: :nullify
+  has_many :notices,          foreign_key: :created_by_id, dependent: :nullify
+  has_many :sales_records,    foreign_key: :created_by_id, dependent: :nullify
+  has_many :expense_records,  foreign_key: :created_by_id, dependent: :nullify
 
   enum :role, { admin: 0, staff: 1 }
 

@@ -23,9 +23,29 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <main class="container mx-auto mt-28 px-5 flex">
+  <body class="bg-gray-50 min-h-screen">
+
+    <%# フラッシュメッセージ %>
+    <%= render "layouts/flash" %>
+
+    <% if logged_in? %>
+      <%# デスクトップ用サイドバー — lg以上でのみ表示 %>
+      <div class="hidden lg:flex lg:fixed lg:inset-y-0 lg:w-64 lg:flex-col lg:bg-white lg:border-r lg:border-gray-200 lg:z-30">
+        <%= render "layouts/sidebar" %>
+      </div>
+    <% end %>
+
+    <%# メインコンテンツ %>
+    <main class="<%= logged_in? ? 'lg:ml-64 pb-20 lg:pb-0 px-4 lg:px-8 pt-6' : '' %> min-h-screen">
       <%= yield %>
     </main>
+
+    <% if logged_in? %>
+      <%# モバイル用下部タブバー — lg以上では非表示 %>
+      <nav class="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-30">
+        <%= render "layouts/bottom_nav" %>
+      </nav>
+    <% end %>
+
   </body>
 </html>

@@ -59,7 +59,8 @@
             <%= button_to "삭제", sales_record_path(sr),
                 method: :delete,
                 data: { turbo_confirm: "정말 삭제하시겠습니까?" },
-                class: "flex-1 inline-flex items-center justify-center h-9 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" %>
+                form: { class: "flex-1" },
+                class: "w-full inline-flex items-center justify-center h-9 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" %>
           </div>
         </div>
       <% end %>
@@ -94,6 +95,7 @@
                   <%= button_to "삭제", sales_record_path(sr),
                       method: :delete,
                       data: { turbo_confirm: "정말 삭제하시겠습니까?" },
+                      form: { class: "contents" },
                       class: "text-xs text-red-500 hover:underline" %>
                 </div>
               </td>

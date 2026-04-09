@@ -47,6 +47,7 @@
                 <%= button_to "삭제", notice_path(notice),
                     method: :delete,
                     data: { turbo_confirm: "정말 삭제하시겠습니까?" },
+                    form: { class: "contents" },
                     class: "text-xs text-red-500 hover:underline" %>
               </div>
             <% end %>

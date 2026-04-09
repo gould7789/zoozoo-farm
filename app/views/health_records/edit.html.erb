@@ -1,6 +1,19 @@
 <%# 健康記録編集ページ %>
-<h1>건강 기록 수정</h1>
 
-<%= render "form", health_record: @health_record %>
+<div class="max-w-lg mx-auto">
 
-<%= link_to "목록으로", zone_animal_health_records_path(@zone, @animal) %>
+  <div class="flex items-center gap-3 mb-6">
+    <%= link_to zone_animal_health_records_path(@zone, @animal), class: "text-gray-400 hover:text-gray-600 transition-colors shrink-0" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+    <% end %>
+    <div>
+      <p class="text-xs text-gray-400"><%= @animal.species %> · <%= @health_record.recorded_on %></p>
+      <h1 class="text-xl font-bold text-gray-900">건강 기록 수정</h1>
+    </div>
+  </div>
+
+  <%= render "form", health_record: @health_record %>
+
+</div>

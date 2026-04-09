@@ -7,14 +7,13 @@ zone_names.each do |name|
 end
 puts "✓ Zones seeded: #{Zone.count}件"
 
-# ② Admin初期アカウント
-User.find_or_create_by!(email: "admin@zoo.local") do |u|
+# ② Admin初期アカウント（認証情報は .env から読み込む）
+admin_email    = ENV.fetch("SEED_ADMIN_EMAIL")    { raise "SEED_ADMIN_EMAIL is not set" }
+admin_password = ENV.fetch("SEED_ADMIN_PASSWORD") { raise "SEED_ADMIN_PASSWORD is not set" }
+
+User.find_or_create_by!(email: admin_email) do |u|
   u.name     = "Admin"
-  u.password = "changeme"
+  u.password = admin_password
   u.role     = :admin
 end
-puts "✓ Admin user seeded"
-puts ""
-puts "初期ログイン情報:"
-puts "  Email:    admin@zoo.local"
-puts "  Password: changeme"
+puts "✓ Admin user seeded (#{admin_email})"

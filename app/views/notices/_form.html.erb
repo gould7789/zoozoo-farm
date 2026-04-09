@@ -1,30 +1,50 @@
 <%# お知らせフォーム（new/edit共用） %>
 <%= form_with model: notice do |f| %>
+
   <% if notice.errors.any? %>
-    <ul>
-      <% notice.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-    </ul>
+    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-sm font-medium text-red-800 mb-2">입력 오류가 있습니다.</p>
+      <ul class="text-sm text-red-700 space-y-1 list-disc list-inside">
+        <% notice.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
   <% end %>
 
-  <div>
-    <%= f.label :category, "카테고리" %>
-    <%= f.select :category, {
-      "전체"         => "general",
-      "사랑새관"     => "lovebird",
-      "앵무새관"     => "parrot",
-      "파충류관"     => "reptile",
-      "미니동물관"   => "small_animal",
-      "야외동물체험관" => "outdoor",
-      "격리실"       => "isolation"
-    } %>
+  <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-4">
+
+    <div>
+      <%= f.label :category, "카테고리", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :category,
+          [
+            ["전체 공지", "general"],
+            ["사랑새관", "lovebird"],
+            ["앵무새관", "parrot"],
+            ["파충류관", "reptile"],
+            ["미니동물관", "small_animal"],
+            ["야외동물체험관", "outdoor"],
+            ["격리실", "isolation"]
+          ],
+          {},
+          class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" %>
+    </div>
+
+    <div>
+      <%= f.label :body, "내용", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_area :body,
+          rows: 6,
+          class: "w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none",
+          placeholder: "공지 내용을 입력하세요" %>
+    </div>
+
   </div>
 
-  <div>
-    <%= f.label :body, "내용" %>
-    <%= f.text_area :body, rows: 5 %>
+  <div class="mt-4 flex flex-col gap-3">
+    <%= f.submit notice.persisted? ? "저장" : "작성",
+        class: "w-full h-11 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer" %>
+    <%= link_to "취소", notices_path,
+        class: "w-full h-11 inline-flex items-center justify-center bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors" %>
   </div>
 
-  <%= f.submit %>
 <% end %>

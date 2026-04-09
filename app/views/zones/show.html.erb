@@ -1,27 +1,85 @@
 <%# 館詳細ページ — 所属動物一覧を表示 %>
 <%# @animals: active=trueの動物を種名・個体名順で表示 %>
-<h1><%= @zone.name %></h1>
 
-<% if @zone.description.present? %>
-  <p><%= @zone.description %></p>
-<% end %>
+<div class="max-w-2xl lg:max-w-4xl mx-auto">
 
-<%# 動物追加ボタンはAdmin専用 %>
-<% if current_user.admin? %>
-  <%= link_to "동물 추가", new_zone_animal_path(@zone) %>
-<% end %>
+  <%# ヘッダー — 戻るリンク・タイトル・動物追加ボタン %>
+  <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center gap-3 min-w-0">
+      <%= link_to zones_path, class: "text-gray-400 hover:text-gray-600 transition-colors shrink-0" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+      <% end %>
+      <div class="min-w-0">
+        <h1 class="text-xl font-bold text-gray-900 truncate"><%= @zone.name %></h1>
+        <% if @zone.description.present? %>
+          <p class="text-sm text-gray-500 mt-0.5 line-clamp-1"><%= @zone.description %></p>
+        <% end %>
+      </div>
+    </div>
+    <% if current_user.admin? %>
+      <%= link_to new_zone_animal_path(@zone),
+          class: "shrink-0 ml-3 inline-flex items-center gap-1.5 h-9 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+        추가
+      <% end %>
+    <% end %>
+  </div>
 
-<h2>동물 목록</h2>
+  <%# 動物リスト — モバイル: カード / デスクトップ: テーブル %>
+  <% if @animals.empty? %>
+    <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+      <p class="text-gray-400 text-sm">등록된 동물이 없습니다.</p>
+    </div>
+  <% else %>
 
-<% if @animals.empty? %>
-  <p>등록된 동물이 없습니다.</p>
-<% else %>
-  <% @animals.each do |animal| %>
-    <div>
-      <%= link_to animal.species, zone_animal_path(@zone, animal) %>
-      <% if animal.name.present? %>
-        （<%= animal.name %>）
+    <%# モバイルカードリスト %>
+    <div class="space-y-3 lg:hidden">
+      <% @animals.each do |animal| %>
+        <%= link_to zone_animal_path(@zone, animal),
+            class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all flex items-center justify-between block" do %>
+          <div>
+            <p class="text-sm font-semibold text-gray-900"><%= animal.species %></p>
+            <% if animal.name.present? %>
+              <p class="text-xs text-gray-500 mt-0.5"><%= animal.name %></p>
+            <% end %>
+          </div>
+          <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+        <% end %>
       <% end %>
     </div>
+
+    <%# デスクトップテーブル %>
+    <div class="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">종 이름</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">개체명</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">성별</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">CITES</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <% @animals.each do |animal| %>
+            <%= link_to zone_animal_path(@zone, animal), data: { turbo_frame: "_top" } do %>
+            <% end %>
+            <tr class="hover:bg-gray-50 cursor-pointer" onclick="location.href='<%= zone_animal_path(@zone, animal) %>'">
+              <td class="px-5 py-3.5 font-medium text-gray-900"><%= animal.species %></td>
+              <td class="px-5 py-3.5 text-gray-500"><%= animal.name.presence || "—" %></td>
+              <td class="px-5 py-3.5 text-gray-500"><%= animal.gender %></td>
+              <td class="px-5 py-3.5 text-gray-500"><%= animal.cites_grade == "none" ? "—" : animal.cites_grade.upcase %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
   <% end %>
-<% end %>
+
+</div>

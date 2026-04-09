@@ -1,39 +1,67 @@
 <%# ユーザーフォーム（new/edit共用） %>
 <%= form_with model: [:admin, user] do |f| %>
+
   <% if user.errors.any? %>
-    <ul>
-      <% user.errors.full_messages.each do |msg| %>
-        <li><%= msg %></li>
-      <% end %>
-    </ul>
-  <% end %>
-
-  <div>
-    <%= f.label :name, "이름" %>
-    <%= f.text_field :name %>
-  </div>
-
-  <div>
-    <%= f.label :email, "이메일" %>
-    <%= f.email_field :email %>
-  </div>
-
-  <div>
-    <%= f.label :password, "비밀번호" %>
-    <%= f.password_field :password, placeholder: user.persisted? ? "변경 시에만 입력" : "" %>
-  </div>
-
-  <div>
-    <%= f.label :role, "역할" %>
-    <%= f.select :role, { "관리자" => "admin", "스태프" => "staff" } %>
-  </div>
-
-  <% if user.persisted? %>
-    <div>
-      <%= f.label :active, "재직 중" %>
-      <%= f.check_box :active %>
+    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-sm font-medium text-red-800 mb-2">입력 오류가 있습니다.</p>
+      <ul class="text-sm text-red-700 space-y-1 list-disc list-inside">
+        <% user.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
     </div>
   <% end %>
 
-  <%= f.submit %>
+  <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-4">
+
+    <div>
+      <%= f.label :name, "이름", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_field :name,
+          class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500",
+          placeholder: "예: 홍길동" %>
+    </div>
+
+    <div>
+      <%= f.label :email, "이메일", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.email_field :email,
+          class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500",
+          placeholder: "email@example.com" %>
+    </div>
+
+    <div>
+      <%= f.label :password, "비밀번호", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.password_field :password,
+          class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500",
+          placeholder: user.persisted? ? "변경 시에만 입력" : "8자 이상" %>
+      <% if user.persisted? %>
+        <p class="text-xs text-gray-400 mt-1">비워두면 비밀번호가 변경되지 않습니다.</p>
+      <% end %>
+    </div>
+
+    <div>
+      <%= f.label :role, "역할", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :role,
+          [["관리자", "admin"], ["스태프", "staff"]],
+          {},
+          class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" %>
+    </div>
+
+    <% if user.persisted? %>
+      <div class="flex items-center gap-3 py-1">
+        <%= f.check_box :active,
+            class: "w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" %>
+        <%= f.label :active, "재직 중",
+            class: "text-sm font-medium text-gray-700 cursor-pointer" %>
+      </div>
+    <% end %>
+
+  </div>
+
+  <div class="mt-4 flex flex-col gap-3">
+    <%= f.submit user.persisted? ? "저장" : "계정 생성",
+        class: "w-full h-11 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer" %>
+    <%= link_to "취소", admin_users_path,
+        class: "w-full h-11 inline-flex items-center justify-center bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors" %>
+  </div>
+
 <% end %>

@@ -1,6 +1,19 @@
-<%# ユーザー編集ページ %>
-<h1>계정 수정</h1>
+<%# ユーザー編集ページ — Admin専用 %>
 
-<%= render "form", user: @user %>
+<div class="max-w-lg mx-auto">
 
-<%= link_to "목록으로", admin_users_path %>
+  <div class="flex items-center gap-3 mb-6">
+    <%= link_to admin_users_path, class: "text-gray-400 hover:text-gray-600 transition-colors shrink-0" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+    <% end %>
+    <div>
+      <p class="text-xs text-gray-400"><%= @user.email %></p>
+      <h1 class="text-xl font-bold text-gray-900">계정 수정</h1>
+    </div>
+  </div>
+
+  <%= render "form", user: @user %>
+
+</div>

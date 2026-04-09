@@ -5,7 +5,9 @@ class Admin::UsersController < ApplicationController
 
   def index
     # アクティブ・非アクティブ両方表示（退職者も確認できるように）
-    @users = User.order(:name)
+    # 役割ごとに分けて表示するため別々に取得
+    @admins = User.admin.order(:name)
+    @staffs = User.staff.order(:name)
   end
 
   def new

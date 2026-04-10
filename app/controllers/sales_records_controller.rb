@@ -4,8 +4,26 @@ class SalesRecordsController < ApplicationController
   before_action :set_sales_record, only: [ :edit, :update, :destroy ]
 
   def index
-    # 最新の売上日順に表示
-    @sales_records = SalesRecord.recent
+    all_records = SalesRecord.recent
+
+    # 年リスト（新しい順）
+    @all_years = all_records.map { |sr| sr.sold_on.year }.uniq
+
+    # 年月マップ { year => [month, ...] }（月は新しい順）
+    @months_by_year = all_records.group_by { |sr| sr.sold_on.year }
+                                 .transform_values { |rs| rs.map { |sr| sr.sold_on.month }.uniq }
+
+    # 選択中の年（パラメータがなければ最新年）
+    @selected_year = params[:year].present? ? params[:year].to_i : @all_years.first
+
+    # 選択中の月（パラメータがなければ選択年の最新月）
+    months_in_year = @months_by_year[@selected_year] || []
+    @selected_month = params[:month].present? ? params[:month].to_i : months_in_year.first
+
+    # 選択月のレコードのみ表示
+    @sales_records = all_records.select { |sr|
+      sr.sold_on.year == @selected_year && sr.sold_on.month == @selected_month
+    }
   end
 
   def new

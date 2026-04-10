@@ -10,6 +10,15 @@ class User < ApplicationRecord
   has_many :expense_records,  foreign_key: :created_by_id, dependent: :nullify
 
   enum :role, { admin: 0, staff: 1 }
+  # 직급 enum — adminのみ使用、staffはnil固定
+  enum :position, {
+    junior:            0,
+    associate:         1,
+    assistant_manager: 2,
+    manager:           3,
+    deputy_manager:    4,
+    general_manager:   5
+  }
 
   # アクティブなユーザーのみを返すスコープ（退職者除外）
   scope :active, -> { where(active: true) }

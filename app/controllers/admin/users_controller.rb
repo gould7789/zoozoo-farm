@@ -42,14 +42,20 @@ class Admin::UsersController < ApplicationController
 
     # 新規作成用パラメータ — パスワード必須
     def user_params
-      params.require(:user).permit(:name, :email, :password, :role)
+      permitted = params.require(:user).permit(:name, :email, :password, :role, :position, :is_team_leader, :hired_on, :contract_ends_on)
+      # positionが空文字の場合はnilに変換（enumに空文字を渡すとArgumentErrorになるため）
+      permitted[:position] = nil if permitted[:position].blank?
+      permitted
     end
 
     # 更新用パラメータ — パスワードは任意（空の場合は変更しない）、退職処理(active)も含む
     def user_update_params
-      permitted = params.require(:user).permit(:name, :email, :password, :role, :active)
+      permitted = params.require(:user).permit(:name, :email, :password, :role, :active,
+                                               :position, :is_team_leader, :hired_on, :contract_ends_on)
       # パスワードが空欄の場合は更新しない
       permitted.delete(:password) if permitted[:password].blank?
+      # positionが空文字の場合はnilに変換
+      permitted[:position] = nil if permitted[:position].blank?
       permitted
     end
 end

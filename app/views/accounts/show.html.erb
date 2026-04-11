@@ -31,7 +31,7 @@
       </div>
     </div>
 
-    <%# 정보 목록 %>
+    <%# 情報リスト %>
     <dl class="divide-y divide-gray-100">
 
       <div class="px-6 py-4 flex items-center gap-4">
@@ -40,7 +40,7 @@
       </div>
 
       <% if @user.admin? %>
-        <%# Admin: 직급 표시 %>
+        <%# Admin: 職位を表示 %>
         <div class="px-6 py-4 flex items-center gap-4">
           <dt class="text-sm text-gray-500 w-24 shrink-0">직급</dt>
           <dd class="text-sm text-gray-900">
@@ -52,7 +52,7 @@
           </dd>
         </div>
       <% else %>
-        <%# Staff: 입사일·계약종료일 표시 %>
+        <%# Staff: 入社日・契約終了日を表示 %>
         <div class="px-6 py-4 flex items-center gap-4">
           <dt class="text-sm text-gray-500 w-24 shrink-0">입사일</dt>
           <dd class="text-sm text-gray-900">

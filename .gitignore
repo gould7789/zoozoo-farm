@@ -46,3 +46,6 @@
 
 # RSpec failure tracking cache
 /spec/examples.txt
+
+# Stitch design reference images (local only)
+/stitch/

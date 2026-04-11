@@ -22,8 +22,12 @@ Rails.application.routes.draw do
   resources :sales_records,   except: [ :show ]
   resources :expense_records, except: [ :show ]
 
+  # マイページ
+  resource :account, only: [ :show ]
+
   # ユーザー管理（Admin専用ネームスペース）
   namespace :admin do
+    get "dashboard", to: "dashboard#index"
     resources :users, only: [ :index, :new, :create, :edit, :update ]
   end
 

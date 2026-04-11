@@ -1,6 +1,6 @@
 <%# 動物登録・編集の共通フォーム %>
 <%# new.html.erb と edit.html.erb から render "form" で呼び出す %>
-<%= form_with model: [@zone, @animal] do |f| %>
+<%= form_with model: [@zone, @animal], data: { controller: "form", action: "submit->form#submit" } do |f| %>
 
   <%# バリデーションエラー表示 %>
   <% if @animal.errors.any? %>
@@ -56,8 +56,9 @@
       <%= f.label :acquisition_note, "입수 경위 (선택)", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.text_area :acquisition_note,
           rows: 3,
-          class: "w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none",
-          placeholder: "예: 구매, 기증, 자연번식 등" %>
+          class: "w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-hidden",
+          placeholder: "예: 구매, 기증, 자연번식 등",
+          data: { controller: "textarea", action: "input->textarea#resize" } %>
     </div>
 
     <div>
@@ -74,15 +75,17 @@
       <%= f.label :note, "특이사항 (선택)", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.text_area :note,
           rows: 3,
-          class: "w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none",
-          placeholder: "선천적 기형, 성격 등 고정 특이사항" %>
+          class: "w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none overflow-hidden",
+          placeholder: "선천적 기형, 성격 등 고정 특이사항",
+          data: { controller: "textarea", action: "input->textarea#resize" } %>
     </div>
 
   </div>
 
   <div class="mt-4 flex flex-col gap-3">
     <%= f.submit @animal.persisted? ? "저장" : "등록",
-        class: "w-full h-11 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer" %>
+        class: "w-full h-11 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer",
+        data: { form_target: "submit" } %>
     <%= link_to "취소", @animal.persisted? ? zone_animal_path(@zone, @animal) : zone_path(@zone),
         class: "w-full h-11 inline-flex items-center justify-center bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors" %>
   </div>

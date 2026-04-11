@@ -1,6 +1,7 @@
 <%# フラッシュメッセージ — notice（成功）と alert（エラー）を画面上部に固定表示 %>
+<%# data-controller="flash" で3秒後に自動フェードアウト %>
 <% if flash[:notice] %>
-  <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4 pointer-events-none">
+  <div data-controller="flash" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4 pointer-events-none">
     <div class="bg-green-50 border border-green-200 text-green-800 text-sm rounded-lg px-4 py-3 shadow-md">
       <%= flash[:notice] %>
     </div>
@@ -8,7 +9,7 @@
 <% end %>
 
 <% if flash[:alert] %>
-  <div class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4 pointer-events-none">
+  <div data-controller="flash" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4 pointer-events-none">
     <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 shadow-md">
       <%= flash[:alert] %>
     </div>

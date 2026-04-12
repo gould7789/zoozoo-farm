@@ -8,9 +8,10 @@ Rails.application.routes.draw do
   delete "/logout", to: "sessions#destroy", as: :logout
 
   # 館（読み取り専用）→ 動物 → 記録（ネストルーティング）
+  # health_records → health_logs に変更（内部テーブル名の隠蔽）
   resources :zones, only: [ :index, :show ] do
     resources :animals do
-      resources :health_records,  except: [ :show ]
+      resources :health_logs,     except: [ :show ], controller: "health_records"
       resources :feeding_records, except: [ :show ]
     end
   end
@@ -18,17 +19,17 @@ Rails.application.routes.draw do
   # お知らせ（全体・館別統合）
   resources :notices, except: [ :show ]
 
-  # 売上・経費（Admin専用）
-  resources :sales_records,   except: [ :show ]
-  resources :expense_records, except: [ :show ]
+  # 売上・経費（Admin専用）— _records パターンを隠蔽
+  resources :sales,    except: [ :show ], controller: "sales_records"
+  resources :expenses, except: [ :show ], controller: "expense_records"
 
   # マイページ
   resource :account, only: [ :show ]
 
-  # ユーザー管理（Admin専用ネームスペース）
+  # ユーザー管理（Admin専用ネームスペース）— users → members に変更
   namespace :admin do
     get "dashboard", to: "dashboard#index"
-    resources :users, only: [ :index, :new, :create, :edit, :update ]
+    resources :members, except: [ :show ], controller: "users"
   end
 
   # ログイン後のルート

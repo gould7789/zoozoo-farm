@@ -15,7 +15,7 @@
         <h1 class="text-xl font-bold text-gray-900">건강 기록</h1>
       </div>
     </div>
-    <%= link_to new_zone_animal_health_record_path(@zone, @animal),
+    <%= link_to new_zone_animal_health_log_path(@zone, @animal),
         class: "shrink-0 ml-3 inline-flex items-center gap-1.5 h-9 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
@@ -52,14 +52,15 @@
               <%= badge[0] %>
             </span>
           </div>
+          <p class="text-xs text-gray-400 mt-0.5">작성자: <%= hr.created_by&.name || "—" %></p>
           <% if hr.note.present? %>
             <p class="text-sm text-gray-600 line-clamp-2"><%= hr.note %></p>
           <% end %>
           <% if current_user.admin? || hr.created_by_id == current_user.id %>
             <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
-              <%= link_to "수정", edit_zone_animal_health_record_path(@zone, @animal, hr),
+              <%= link_to "수정", edit_zone_animal_health_log_path(@zone, @animal, hr),
                   class: "flex-1 inline-flex items-center justify-center h-9 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
-              <%= button_to "삭제", zone_animal_health_record_path(@zone, @animal, hr),
+              <%= button_to "삭제", zone_animal_health_log_path(@zone, @animal, hr),
                   method: :delete,
                   data: { turbo_confirm: "정말 삭제하시겠습니까?" },
                   form: { class: "flex-1" },
@@ -75,11 +76,12 @@
       <table class="w-full text-sm">
         <thead class="bg-gray-50 border-b border-gray-200">
           <tr>
-            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">관찰일</th>
-            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">컨디션</th>
-            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">체중</th>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">관찰일</th>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">작성자</th>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">컨디션</th>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">체중</th>
             <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">특이사항</th>
-            <th class="px-5 py-3"></th>
+            <th class="px-5 py-3 w-24"></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-100">
@@ -91,20 +93,21 @@
                else ["—", "bg-gray-100 text-gray-600"]
                end %>
             <tr class="hover:bg-gray-50">
-              <td class="px-5 py-3.5 font-medium text-gray-900"><%= hr.recorded_on %></td>
-              <td class="px-5 py-3.5">
+              <td class="px-5 py-3.5 text-center font-medium text-gray-900"><%= hr.recorded_on %></td>
+              <td class="px-5 py-3.5 text-center text-gray-500"><%= hr.created_by&.name || "—" %></td>
+              <td class="px-5 py-3.5 text-center">
                 <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium <%= badge[1] %>">
                   <%= badge[0] %>
                 </span>
               </td>
-              <td class="px-5 py-3.5 text-gray-500"><%= hr.weight_kg.present? ? "#{hr.weight_kg} kg" : "—" %></td>
-              <td class="px-5 py-3.5 text-gray-500 max-w-xs truncate"><%= hr.note.presence || "—" %></td>
+              <td class="px-5 py-3.5 text-center text-gray-500"><%= hr.weight_kg.present? ? "#{hr.weight_kg} kg" : "—" %></td>
+              <td class="px-5 py-3.5 text-left text-gray-500 truncate"><%= hr.note.presence || "—" %></td>
               <td class="px-5 py-3.5">
                 <% if current_user.admin? || hr.created_by_id == current_user.id %>
-                  <div class="flex items-center gap-2 justify-end">
-                    <%= link_to "수정", edit_zone_animal_health_record_path(@zone, @animal, hr),
+                  <div class="flex items-center gap-2 justify-center">
+                    <%= link_to "수정", edit_zone_animal_health_log_path(@zone, @animal, hr),
                         class: "text-xs text-blue-600 hover:underline" %>
-                    <%= button_to "삭제", zone_animal_health_record_path(@zone, @animal, hr),
+                    <%= button_to "삭제", zone_animal_health_log_path(@zone, @animal, hr),
                         method: :delete,
                         data: { turbo_confirm: "정말 삭제하시겠습니까?" },
                         form: { class: "contents" },

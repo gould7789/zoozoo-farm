@@ -2,8 +2,9 @@
 # zonesはシードデータで固定 — 読み取り専用（indexとshowのみ）
 class ZonesController < ApplicationController
   def index
-    # 全館をid順で取得
-    @zones = Zone.all.order(:id)
+    # 表示順を固定 — シードデータの並び順に合わせて名前でソート
+    display_order = [ "사랑새관", "앵무새관", "파충류관", "미니동물관", "야외동물체험관", "격리실" ]
+    @zones = Zone.all.sort_by { |z| display_order.index(z.name) || 999 }
   end
 
   def show

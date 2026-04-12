@@ -1,4 +1,4 @@
-# 🦁 Zoo Keeper
+# Zoo Zoo Farm
 
 動物園の飼育員がスマートフォンで現場からすぐに動物管理記録を入力できる、**モバイルファーストのWebアプリケーション**。
 
@@ -19,16 +19,15 @@
 
 | 項目 | 内容 |
 |------|------|
-| Language | Ruby 4.0.1 |
-| Framework | Ruby on Rails 8.1 |
+| Language | Ruby |
+| Framework | Ruby on Rails |
+| Frontend | HTML(ERB) / CSS(Tailwind) / Java Script |
 | Database | PostgreSQL |
-| CSS | Tailwind CSS（モバイルファースト） |
-| Frontend | Hotwire（Turbo + Stimulus） |
 | 認証 | has_secure_password（bcrypt） |
-| テスト | RSpec / FactoryBot / Shoulda-Matchers / Capybara |
+| テスト | RSpec / FactoryBot / Capybara |
 | CI/CD | GitHub Actions → Render 自動デプロイ |
 | セキュリティ | Brakeman / bundler-audit |
-| Linter | RuboCop（rails-omakase） |
+| Linter | RuboCop |
 
 ---
 

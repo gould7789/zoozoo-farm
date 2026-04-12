@@ -4,8 +4,8 @@ class CreateAnimals < ActiveRecord::Migration[8.1]
     # 既存の誤ったanimalsテーブルを削除してから正しい構造で再作成する
     drop_table :animals, if_exists: true
 
-    create_table :animals do |t|
-      t.references :zone,             null: false, foreign_key: true          # 所属館
+    create_table :animals, id: :uuid do |t|
+      t.references :zone,             null: false, foreign_key: true, type: :uuid  # 所属館
       t.string     :name,             limit: 100                              # 個体名
       t.string     :species,          null: false, limit: 100                 # 種名（例: インコ）
       t.integer    :gender,           null: false, default: 2, limit: 2       # 性別

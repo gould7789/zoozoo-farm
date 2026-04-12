@@ -10,39 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_10_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_13_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pgcrypto"
 
-  create_table "active_storage_attachments", force: :cascade do |t|
-    t.bigint "blob_id", null: false
-    t.datetime "created_at", null: false
-    t.string "name", null: false
-    t.bigint "record_id", null: false
-    t.string "record_type", null: false
-    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
-    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
-  end
-
-  create_table "active_storage_blobs", force: :cascade do |t|
-    t.bigint "byte_size", null: false
-    t.string "checksum"
-    t.string "content_type"
-    t.datetime "created_at", null: false
-    t.string "filename", null: false
-    t.string "key", null: false
-    t.text "metadata"
-    t.string "service_name", null: false
-    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
-  end
-
-  create_table "active_storage_variant_records", force: :cascade do |t|
-    t.bigint "blob_id", null: false
-    t.string "variation_digest", null: false
-    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
-  end
-
-  create_table "animals", force: :cascade do |t|
+  create_table "animals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.date "acquired_at"
     t.text "acquisition_note"
     t.boolean "active", default: true, null: false
@@ -54,16 +27,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_10_000001) do
     t.text "note"
     t.string "species", limit: 100, null: false
     t.datetime "updated_at", null: false
-    t.bigint "zone_id", null: false
+    t.uuid "zone_id", null: false
     t.index ["zone_id"], name: "idx_animals_zone_id"
     t.index ["zone_id"], name: "index_animals_on_zone_id"
   end
 
-  create_table "expense_records", force: :cascade do |t|
+  create_table "expense_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.integer "amount", null: false
     t.integer "category", null: false
     t.datetime "created_at", null: false
-    t.bigint "created_by_id", null: false
+    t.uuid "created_by_id"
     t.text "description", null: false
     t.date "spent_on", null: false
     t.datetime "updated_at", null: false
@@ -72,11 +45,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_10_000001) do
     t.index ["spent_on"], name: "index_expense_records_on_spent_on"
   end
 
-  create_table "feeding_records", force: :cascade do |t|
+  create_table "feeding_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.integer "amount_g"
-    t.bigint "animal_id", null: false
+    t.uuid "animal_id", null: false
     t.datetime "created_at", null: false
-    t.bigint "created_by_id", null: false
+    t.uuid "created_by_id"
     t.datetime "fed_at", null: false
     t.string "food_type", limit: 100, null: false
     t.text "note"
@@ -86,11 +59,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_10_000001) do
     t.index ["fed_at"], name: "index_feeding_records_on_fed_at"
   end
 
-  create_table "health_records", force: :cascade do |t|
-    t.bigint "animal_id", null: false
+  create_table "health_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "animal_id", null: false
     t.integer "condition", default: 0, null: false
     t.datetime "created_at", null: false
-    t.bigint "created_by_id", null: false
+    t.uuid "created_by_id"
     t.text "note"
     t.date "recorded_on", null: false
     t.datetime "updated_at", null: false
@@ -101,20 +74,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_10_000001) do
     t.check_constraint "condition = ANY (ARRAY[0, 1, 2])", name: "chk_health_condition"
   end
 
-  create_table "notices", force: :cascade do |t|
+  create_table "notices", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.text "body", null: false
     t.integer "category", default: 0, null: false
     t.datetime "created_at", null: false
-    t.bigint "created_by_id", null: false
+    t.uuid "created_by_id"
     t.datetime "updated_at", null: false
     t.index ["category"], name: "index_notices_on_category"
     t.index ["created_by_id"], name: "index_notices_on_created_by_id"
   end
 
-  create_table "sales_records", force: :cascade do |t|
+  create_table "sales_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.integer "amount", null: false
     t.datetime "created_at", null: false
-    t.bigint "created_by_id", null: false
+    t.uuid "created_by_id"
     t.text "note"
     t.date "sold_on", null: false
     t.integer "source", null: false
@@ -124,7 +97,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_10_000001) do
     t.index ["sold_on"], name: "index_sales_records_on_sold_on"
   end
 
-  create_table "users", force: :cascade do |t|
+  create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "active", default: true, null: false
     t.date "contract_ends_on"
     t.datetime "created_at", null: false
@@ -139,7 +112,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_10_000001) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
-  create_table "zones", force: :cascade do |t|
+  create_table "zones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
     t.string "name", limit: 100, null: false
@@ -147,8 +120,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_10_000001) do
     t.index ["name"], name: "index_zones_on_name", unique: true
   end
 
-  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "animals", "zones"
   add_foreign_key "expense_records", "users", column: "created_by_id"
   add_foreign_key "feeding_records", "animals"

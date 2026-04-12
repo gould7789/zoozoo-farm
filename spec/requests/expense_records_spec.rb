@@ -9,7 +9,7 @@ RSpec.describe "ExpenseRecords", type: :request do
     # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
       it "ログインページにリダイレクトする" do
-        get expense_records_path
+        get expenses_path
         expect(response).to redirect_to(login_path)
       end
     end
@@ -19,7 +19,7 @@ RSpec.describe "ExpenseRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        get expense_records_path
+        get expenses_path
         expect(response).to redirect_to(root_path)
       end
     end
@@ -29,7 +29,7 @@ RSpec.describe "ExpenseRecords", type: :request do
       before { sign_in(admin) }
 
       it "200を返す" do
-        get expense_records_path
+        get expenses_path
         expect(response).to have_http_status(:ok)
       end
     end
@@ -39,7 +39,7 @@ RSpec.describe "ExpenseRecords", type: :request do
     # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
       it "ログインページにリダイレクトする" do
-        get new_expense_record_path
+        get new_expense_path
         expect(response).to redirect_to(login_path)
       end
     end
@@ -49,7 +49,7 @@ RSpec.describe "ExpenseRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        get new_expense_record_path
+        get new_expense_path
         expect(response).to redirect_to(root_path)
       end
     end
@@ -59,7 +59,7 @@ RSpec.describe "ExpenseRecords", type: :request do
       before { sign_in(admin) }
 
       it "200を返す" do
-        get new_expense_record_path
+        get new_expense_path
         expect(response).to have_http_status(:ok)
       end
     end
@@ -73,7 +73,7 @@ RSpec.describe "ExpenseRecords", type: :request do
     # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
       it "ログインページにリダイレクトする" do
-        post expense_records_path, params: valid_params
+        post expenses_path, params: valid_params
         expect(response).to redirect_to(login_path)
       end
     end
@@ -83,7 +83,7 @@ RSpec.describe "ExpenseRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        post expense_records_path, params: valid_params
+        post expenses_path, params: valid_params
         expect(response).to redirect_to(root_path)
       end
     end
@@ -93,8 +93,8 @@ RSpec.describe "ExpenseRecords", type: :request do
       before { sign_in(admin) }
 
       it "created_byが自分のIDで保存されて一覧ページにリダイレクトする" do
-        post expense_records_path, params: valid_params
-        expect(response).to redirect_to(expense_records_path)
+        post expenses_path, params: valid_params
+        expect(response).to redirect_to(expenses_path)
         expect(ExpenseRecord.last.created_by).to eq(admin)
       end
     end
@@ -108,7 +108,7 @@ RSpec.describe "ExpenseRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        get edit_expense_record_path(expense_record)
+        get edit_expense_path(expense_record)
         expect(response).to redirect_to(root_path)
       end
     end
@@ -118,7 +118,7 @@ RSpec.describe "ExpenseRecords", type: :request do
       before { sign_in(admin) }
 
       it "200を返す" do
-        get edit_expense_record_path(expense_record)
+        get edit_expense_path(expense_record)
         expect(response).to have_http_status(:ok)
       end
     end
@@ -133,7 +133,7 @@ RSpec.describe "ExpenseRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        patch expense_record_path(expense_record), params: valid_params
+        patch expense_path(expense_record), params: valid_params
         expect(response).to redirect_to(root_path)
       end
     end
@@ -143,8 +143,8 @@ RSpec.describe "ExpenseRecords", type: :request do
       before { sign_in(admin) }
 
       it "支出記録を更新して一覧ページにリダイレクトする" do
-        patch expense_record_path(expense_record), params: valid_params
-        expect(response).to redirect_to(expense_records_path)
+        patch expense_path(expense_record), params: valid_params
+        expect(response).to redirect_to(expenses_path)
         expect(expense_record.reload.amount).to eq(9000)
       end
     end
@@ -158,7 +158,7 @@ RSpec.describe "ExpenseRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        delete expense_record_path(expense_record)
+        delete expense_path(expense_record)
         expect(response).to redirect_to(root_path)
       end
     end
@@ -168,8 +168,8 @@ RSpec.describe "ExpenseRecords", type: :request do
       before { sign_in(admin) }
 
       it "支出記録を削除して一覧ページにリダイレクトする" do
-        delete expense_record_path(expense_record)
-        expect(response).to redirect_to(expense_records_path)
+        delete expense_path(expense_record)
+        expect(response).to redirect_to(expenses_path)
         expect { expense_record.reload }.to raise_error(ActiveRecord::RecordNotFound)
       end
     end

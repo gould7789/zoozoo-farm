@@ -35,7 +35,7 @@ class SalesRecordsController < ApplicationController
     # created_byは必ずログイン中のAdminを設定
     @sales_record.created_by = current_user
     if @sales_record.save
-      redirect_to sales_records_path, notice: "매출 기록을 저장했습니다."
+      redirect_to sales_path, notice: "매출 기록을 저장했습니다."
     else
       render :new, status: :unprocessable_entity
     end
@@ -46,7 +46,7 @@ class SalesRecordsController < ApplicationController
 
   def update
     if @sales_record.update(sales_record_params)
-      redirect_to sales_records_path, notice: "매출 기록을 수정했습니다."
+      redirect_to sales_path, notice: "매출 기록을 수정했습니다."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -54,7 +54,7 @@ class SalesRecordsController < ApplicationController
 
   def destroy
     @sales_record.destroy
-    redirect_to sales_records_path, notice: "매출 기록을 삭제했습니다."
+    redirect_to sales_path, notice: "매출 기록을 삭제했습니다."
   end
 
   private

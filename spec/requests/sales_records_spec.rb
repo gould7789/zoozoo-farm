@@ -9,7 +9,7 @@ RSpec.describe "SalesRecords", type: :request do
     # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
       it "ログインページにリダイレクトする" do
-        get sales_records_path
+        get sales_path
         expect(response).to redirect_to(login_path)
       end
     end
@@ -19,7 +19,7 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        get sales_records_path
+        get sales_path
         expect(response).to redirect_to(root_path)
       end
     end
@@ -29,7 +29,7 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(admin) }
 
       it "200を返す" do
-        get sales_records_path
+        get sales_path
         expect(response).to have_http_status(:ok)
       end
     end
@@ -39,7 +39,7 @@ RSpec.describe "SalesRecords", type: :request do
     # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
       it "ログインページにリダイレクトする" do
-        get new_sales_record_path
+        get new_sale_path
         expect(response).to redirect_to(login_path)
       end
     end
@@ -49,7 +49,7 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        get new_sales_record_path
+        get new_sale_path
         expect(response).to redirect_to(root_path)
       end
     end
@@ -59,7 +59,7 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(admin) }
 
       it "200を返す" do
-        get new_sales_record_path
+        get new_sale_path
         expect(response).to have_http_status(:ok)
       end
     end
@@ -73,7 +73,7 @@ RSpec.describe "SalesRecords", type: :request do
     # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
       it "ログインページにリダイレクトする" do
-        post sales_records_path, params: valid_params
+        post sales_path, params: valid_params
         expect(response).to redirect_to(login_path)
       end
     end
@@ -83,7 +83,7 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        post sales_records_path, params: valid_params
+        post sales_path, params: valid_params
         expect(response).to redirect_to(root_path)
       end
     end
@@ -93,8 +93,8 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(admin) }
 
       it "created_byが自分のIDで保存されて一覧ページにリダイレクトする" do
-        post sales_records_path, params: valid_params
-        expect(response).to redirect_to(sales_records_path)
+        post sales_path, params: valid_params
+        expect(response).to redirect_to(sales_path)
         expect(SalesRecord.last.created_by).to eq(admin)
       end
     end
@@ -108,7 +108,7 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        get edit_sales_record_path(sales_record)
+        get edit_sale_path(sales_record)
         expect(response).to redirect_to(root_path)
       end
     end
@@ -118,7 +118,7 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(admin) }
 
       it "200を返す" do
-        get edit_sales_record_path(sales_record)
+        get edit_sale_path(sales_record)
         expect(response).to have_http_status(:ok)
       end
     end
@@ -133,7 +133,7 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        patch sales_record_path(sales_record), params: valid_params
+        patch sale_path(sales_record), params: valid_params
         expect(response).to redirect_to(root_path)
       end
     end
@@ -143,8 +143,8 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(admin) }
 
       it "売上記録を更新して一覧ページにリダイレクトする" do
-        patch sales_record_path(sales_record), params: valid_params
-        expect(response).to redirect_to(sales_records_path)
+        patch sale_path(sales_record), params: valid_params
+        expect(response).to redirect_to(sales_path)
         expect(sales_record.reload.amount).to eq(9000)
       end
     end
@@ -158,7 +158,7 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        delete sales_record_path(sales_record)
+        delete sale_path(sales_record)
         expect(response).to redirect_to(root_path)
       end
     end
@@ -168,8 +168,8 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(admin) }
 
       it "売上記録を削除して一覧ページにリダイレクトする" do
-        delete sales_record_path(sales_record)
-        expect(response).to redirect_to(sales_records_path)
+        delete sale_path(sales_record)
+        expect(response).to redirect_to(sales_path)
         expect { sales_record.reload }.to raise_error(ActiveRecord::RecordNotFound)
       end
     end

@@ -35,7 +35,7 @@ class ExpenseRecordsController < ApplicationController
     # created_byは必ずログイン中のAdminを設定
     @expense_record.created_by = current_user
     if @expense_record.save
-      redirect_to expense_records_path, notice: "지출 기록을 저장했습니다."
+      redirect_to expenses_path, notice: "지출 기록을 저장했습니다."
     else
       render :new, status: :unprocessable_entity
     end
@@ -46,7 +46,7 @@ class ExpenseRecordsController < ApplicationController
 
   def update
     if @expense_record.update(expense_record_params)
-      redirect_to expense_records_path, notice: "지출 기록을 수정했습니다."
+      redirect_to expenses_path, notice: "지출 기록을 수정했습니다."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -54,7 +54,7 @@ class ExpenseRecordsController < ApplicationController
 
   def destroy
     @expense_record.destroy
-    redirect_to expense_records_path, notice: "지출 기록을 삭제했습니다."
+    redirect_to expenses_path, notice: "지출 기록을 삭제했습니다."
   end
 
   private

@@ -2,11 +2,11 @@
 # 動物ごとの日々の健康観察データを管理する
 class CreateHealthRecords < ActiveRecord::Migration[8.0]
   def change
-    create_table :health_records do |t|
+    create_table :health_records, id: :uuid do |t|
       # 対象動物（動物が削除されても記録は残す設計）
-      t.references :animal,     null: false, foreign_key: true
+      t.references :animal,     null: false, foreign_key: true, type: :uuid
       # 作成者
-      t.references :created_by, null: false, foreign_key: { to_table: :users }
+      t.references :created_by, null: false, foreign_key: { to_table: :users }, type: :uuid
       # 実際の観察日（created_atと分離 — 昨日観察した内容を今日入力するケースがある）
       t.date       :recorded_on, null: false
       # 体重

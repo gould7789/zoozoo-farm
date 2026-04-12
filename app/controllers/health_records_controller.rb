@@ -21,7 +21,7 @@ class HealthRecordsController < ApplicationController
     # created_byは必ずログイン中のユーザーを設定
     @health_record.created_by = current_user
     if @health_record.save
-      redirect_to zone_animal_health_records_path(@zone, @animal), notice: "건강 기록을 저장했습니다."
+      redirect_to zone_animal_health_logs_path(@zone, @animal), notice: "건강 기록을 저장했습니다."
     else
       render :new, status: :unprocessable_entity
     end
@@ -32,7 +32,7 @@ class HealthRecordsController < ApplicationController
 
   def update
     if @health_record.update(health_record_params)
-      redirect_to zone_animal_health_records_path(@zone, @animal), notice: "건강 기록을 수정했습니다."
+      redirect_to zone_animal_health_logs_path(@zone, @animal), notice: "건강 기록을 수정했습니다."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -40,7 +40,7 @@ class HealthRecordsController < ApplicationController
 
   def destroy
     @health_record.destroy
-    redirect_to zone_animal_health_records_path(@zone, @animal), notice: "건강 기록을 삭제했습니다."
+    redirect_to zone_animal_health_logs_path(@zone, @animal), notice: "건강 기록을 삭제했습니다."
   end
 
   private

@@ -1,7 +1,7 @@
 # ゾーンテーブルを作成するマイグレーション
 class CreateZones < ActiveRecord::Migration[8.1]
   def change
-    create_table :zones do |t|
+    create_table :zones, id: :uuid do |t|
       t.string :name,        null: false, limit: 100  # 館名（例: 사랑새관）— UNIQUEインデックスで重複防止
       t.text   :description                            # 館の説明（任意）
 

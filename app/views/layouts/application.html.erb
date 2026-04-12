@@ -10,6 +10,12 @@
     <%= csp_meta_tag %>
 
     <%= yield :head %>
+    <style>
+      .zoo-bg { background-image: url('/images/bg_mobile.png'); }
+      @media (min-width: 1024px) {
+        .zoo-bg { background-image: url('/images/bg_desktop.png'); }
+      }
+    </style>
 
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
@@ -23,7 +29,8 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-gray-50 min-h-screen">
+  <%# モバイル/デスクトップで背景画像を切り替え %>
+  <body class="min-h-screen bg-cover bg-top bg-no-repeat zoo-bg">
 
     <%# フラッシュメッセージ %>
     <%= render "layouts/flash" %>
@@ -33,10 +40,17 @@
       <div class="hidden lg:flex lg:fixed lg:inset-y-0 lg:w-64 lg:flex-col lg:bg-white lg:border-r lg:border-gray-200 lg:z-30">
         <%= render "layouts/sidebar" %>
       </div>
+
+      <%# モバイル用上部ロゴヘッダー — lg未満でのみ表示 %>
+      <div class="lg:hidden flex justify-center pt-0 pb-3">
+        <%= link_to zones_path, class: "inline-block overflow-hidden h-[260px]" do %>
+          <%= image_tag "main_logo.png", alt: "Zoo Zoo Farm", class: "h-[420px] w-auto -mt-20 drop-shadow-md hover:opacity-90 transition-opacity" %>
+        <% end %>
+      </div>
     <% end %>
 
     <%# メインコンテンツ %>
-    <main class="<%= logged_in? ? 'lg:ml-64 pb-20 lg:pb-0 px-4 lg:px-8 pt-6' : '' %> min-h-screen">
+    <main class="<%= logged_in? ? 'lg:ml-64 pb-20 lg:pb-0 px-4 lg:px-8 pt-2 lg:pt-6' : '' %> min-h-screen">
       <%= yield %>
     </main>
 

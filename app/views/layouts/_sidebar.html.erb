@@ -2,22 +2,29 @@
 <div class="flex flex-col h-full">
 
   <%# ロゴ・ユーザー情報 %>
-  <div class="px-6 py-5 border-b border-gray-200">
-    <div class="flex items-center gap-2 mb-1">
-      <%# <span class="text-xl">🦁</span> %>
-      <h1 class="text-base font-bold text-gray-900">Zoo Zoo Farm</h1>
+  <div class="px-4 pt-0 pb-2 border-b border-gray-200">
+    <div class="flex justify-center -mt-10 -mb-10">
+      <%= link_to image_tag("main_logo.png", alt: "Zoo Zoo Farm", class: "w-52 object-contain drop-shadow-md hover:opacity-90 transition-opacity"), zones_path, class: "inline-block" %>
     </div>
-    <%# ユーザー情報をクリックするとマイページへ %>
-    <%= link_to account_path, class: "group inline-block mt-1" do %>
-      <p class="text-xs text-gray-500 truncate group-hover:text-gray-700"><%= current_user.name %></p>
-      <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full <%= current_user.admin? ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600' %>">
-        <%= current_user.admin? ? "관리자" : "스태프" %>
-      </span>
-    <% end %>
+    <%# ユーザープロフィール — 将来的にプロフィール写真を追加予定 %>
+    <div class="flex items-center gap-3 px-2 py-2 relative z-10">
+      <%= link_to account_path, class: "w-9 h-9 rounded-full bg-green-100 flex items-center justify-center shrink-0 hover:bg-green-200 transition-colors" do %>
+        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+        </svg>
+      <% end %>
+      <div class="min-w-0">
+        <p class="text-sm font-medium text-gray-800 truncate"><%= current_user.name %></p>
+        <span class="inline-block text-xs px-2 py-0.5 rounded-full <%= current_user.admin? ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' %>">
+          <%= current_user.admin? ? "관리자" : "스태프" %>
+        </span>
+      </div>
+    </div>
   </div>
 
   <%# ナビゲーションリンク %>
-  <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+  <nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
 
     <%= link_to zones_path, class: sidebar_link_class(zones_path) do %>
       <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,9 +86,15 @@
   </nav>
 
   <%# ログアウト %>
-  <div class="px-3 py-4 border-t border-gray-200">
-    <%= button_to "로그아웃", logout_path, method: :delete,
-        class: "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors" %>
+  <div class="px-3 py-3 border-t border-gray-200">
+    <%= button_to logout_path, method: :delete,
+        class: "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors group" do %>
+      <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+      </svg>
+      로그아웃
+    <% end %>
   </div>
 
 </div>

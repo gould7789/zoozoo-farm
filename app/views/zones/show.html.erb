@@ -4,7 +4,7 @@
 <div class="max-w-2xl lg:max-w-4xl mx-auto">
 
   <%# ヘッダー — 戻るリンク・タイトル・動物追加ボタン %>
-  <div class="flex items-center justify-between mb-6">
+  <div class="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
     <div class="flex items-center gap-3 min-w-0">
       <%= link_to zones_path, class: "text-gray-400 hover:text-gray-600 transition-colors shrink-0" do %>
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -20,7 +20,7 @@
     </div>
     <% if current_user.admin? %>
       <%= link_to new_zone_animal_path(@zone),
-          class: "shrink-0 ml-3 inline-flex items-center gap-1.5 h-9 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
+          class: "shrink-0 ml-3 inline-flex items-center gap-1.5 h-9 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
@@ -44,7 +44,7 @@
         </svg>
         <input type="text"
                placeholder="종 이름 또는 개체명으로 검색"
-               class="w-full h-10 pl-9 pr-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+               class="w-full h-10 pl-9 pr-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
                data-search-target="input"
                data-action="input->search#filter">
       </div>

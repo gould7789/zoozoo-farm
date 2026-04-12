@@ -4,10 +4,10 @@ class Admin::UsersController < ApplicationController
   before_action :set_user, only: [ :edit, :update ]
 
   def index
-    # アクティブ・非アクティブ両方表示（退職者も確認できるように）
-    # 役割ごとに分けて表示するため別々に取得
-    @admins = User.admin.order(:name)
-    @staffs = User.staff.order(:name)
+    # 재직 중인 관리자/스태프와 퇴사자를 별도로 취득해 뷰에서 분리 표시
+    @admins         = User.admin.where(active: true).order(:name)
+    @staffs         = User.staff.where(active: true).order(:name)
+    @inactive_users = User.where(active: false).order(:name)
   end
 
   def new

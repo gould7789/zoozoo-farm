@@ -1,0 +1,72 @@
+ko:
+  activerecord:
+    errors:
+      # 属性名を先頭に付けない — メッセージ自体に含めているため
+      full_messages:
+        format: "%{message}"
+      messages:
+        taken: "이미 사용 중입니다."
+        blank: "을(를) 입력해주세요."
+        too_short: "은(는) %{count}자 이상이어야 합니다."
+        too_long: "은(는) %{count}자 이하여야 합니다."
+        invalid: "형식이 올바르지 않습니다."
+        inclusion: "유효하지 않은 값입니다."
+        confirmation: "이 일치하지 않습니다."
+        empty: "을(를) 입력해주세요."
+        not_a_number: "숫자를 입력해주세요."
+        greater_than_or_equal_to: "%{count} 이상의 값을 입력해주세요."
+        less_than_or_equal_to: "%{count} 이하의 값을 입력해주세요."
+      models:
+        user:
+          attributes:
+            email:
+              taken: "이미 사용 중인 이메일입니다."
+              blank: "이메일을 입력해주세요."
+              invalid: "이메일 형식이 올바르지 않습니다."
+            name:
+              blank: "이름을 입력해주세요."
+            password:
+              blank: "비밀번호를 입력해주세요."
+              too_short: "비밀번호는 %{count}자 이상이어야 합니다."
+        animal:
+          attributes:
+            species:
+              blank: "종 이름을 입력해주세요."
+        health_record:
+          attributes:
+            recorded_on:
+              blank: "관찰일을 입력해주세요."
+            condition:
+              blank: "상태를 선택해주세요."
+        feeding_record:
+          attributes:
+            fed_at:
+              blank: "급여 일시를 입력해주세요."
+            food_type:
+              blank: "먹이 종류를 입력해주세요."
+        notice:
+          attributes:
+            body:
+              blank: "내용을 입력해주세요."
+        sales_record:
+          attributes:
+            sold_on:
+              blank: "매출 발생일을 입력해주세요."
+            source:
+              blank: "판매처를 선택해주세요."
+            amount:
+              blank: "금액을 입력해주세요."
+              not_a_number: "금액은 숫자를 입력해주세요."
+              greater_than_or_equal_to: "금액은 0 이상이어야 합니다."
+        expense_record:
+          attributes:
+            spent_on:
+              blank: "지출 발생일을 입력해주세요."
+            category:
+              blank: "지출 종류를 선택해주세요."
+            amount:
+              blank: "금액을 입력해주세요."
+              not_a_number: "금액은 숫자를 입력해주세요."
+              greater_than_or_equal_to: "금액은 0 이상이어야 합니다."
+            description:
+              blank: "지출 내용을 입력해주세요."

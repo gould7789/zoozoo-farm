@@ -1,9 +1,9 @@
 # 売上記録テーブルの作成マイグレーション（Admin専用）
 class CreateSalesRecords < ActiveRecord::Migration[8.0]
   def change
-    create_table :sales_records do |t|
+    create_table :sales_records, id: :uuid do |t|
       # 入力した管理者
-      t.references :created_by, null: false, foreign_key: { to_table: :users }
+      t.references :created_by, null: false, foreign_key: { to_table: :users }, type: :uuid
       # 売上発生日
       t.date    :sold_on, null: false
       # 販売先 enum（0=自販機1, 1=自販機2, 2=自販機3, 3=自販機4, 4=売店）

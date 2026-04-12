@@ -1,11 +1,11 @@
 # 給餌記録テーブルを作成するマイグレーション
 class CreateFeedingRecords < ActiveRecord::Migration[8.0]
   def change
-    create_table :feeding_records do |t|
+    create_table :feeding_records, id: :uuid do |t|
       # 対象動物
-      t.references :animal,     null: false, foreign_key: true
+      t.references :animal,     null: false, foreign_key: true, type: :uuid
       # 作成者
-      t.references :created_by, null: false, foreign_key: { to_table: :users }
+      t.references :created_by, null: false, foreign_key: { to_table: :users }, type: :uuid
       # 給餌日時（日付＋時刻）
       t.datetime   :fed_at,     null: false
       # 餌の種類（ペレット、野菜、果物など）

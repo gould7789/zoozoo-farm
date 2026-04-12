@@ -1,4 +1,5 @@
 <%# ユーザー管理一覧ページ — Admin専用 %>
+<%# 재직 중(관리자/스태프)과 퇴사자를 별도 섹션으로 분리 표시 %>
 
 <%# 직급 한국어 표시용 매핑 %>
 <% position_label = {
@@ -20,10 +21,10 @@
     관리
   <% end %>
 
-  <div class="flex items-center justify-between mb-6">
+  <div class="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
     <h1 class="text-xl font-bold text-gray-900">직원 관리</h1>
     <%= link_to new_admin_user_path,
-        class: "inline-flex items-center gap-1.5 h-9 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
+        class: "inline-flex items-center gap-1.5 h-9 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
       </svg>
@@ -31,7 +32,7 @@
     <% end %>
   </div>
 
-  <%# 관리자 섹션 %>
+  <%# ━━━ 관리자 섹션 ━━━ %>
   <div class="mb-8">
     <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">관리자 · <%= @admins.size %>명</h2>
 
@@ -51,9 +52,6 @@
                 <% if user.is_team_leader? %>
                   <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600">팀장</span>
                 <% end %>
-                <% unless user.active? %>
-                  <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">퇴사</span>
-                <% end %>
               </div>
               <p class="text-xs text-gray-400 mt-1 truncate"><%= user.email %></p>
             </div>
@@ -66,13 +64,13 @@
 
     <%# デスクトップテーブル %>
     <div class="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <table class="w-full text-sm">
-        <thead class="bg-purple-50 border-b border-gray-200">
+      <table class="w-full text-sm table-fixed">
+        <thead class="bg-gray-50 border-b border-gray-200">
           <tr>
             <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">이름</th>
-            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">직급</th>
-            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">이메일</th>
-            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">재직 상태</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">직급</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-56">이메일</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">재직 상태</th>
             <th class="px-5 py-3 w-16"></th>
           </tr>
         </thead>
@@ -92,13 +90,9 @@
                   <% end %>
                 </div>
               </td>
-              <td class="px-5 py-3.5 text-gray-500"><%= user.email %></td>
+              <td class="px-5 py-3.5 text-gray-500 truncate"><%= user.email %></td>
               <td class="px-5 py-3.5">
-                <% if user.active? %>
-                  <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">재직 중</span>
-                <% else %>
-                  <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">퇴사</span>
-                <% end %>
+                <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">재직 중</span>
               </td>
               <td class="px-5 py-3.5 text-right">
                 <%= link_to "수정", edit_admin_user_path(user), class: "text-xs text-blue-600 hover:underline" %>
@@ -110,8 +104,8 @@
     </div>
   </div>
 
-  <%# 스태프 섹션 %>
-  <div>
+  <%# ━━━ 스태프 섹션 ━━━ %>
+  <div class="mb-8">
     <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">스태프 · <%= @staffs.size %>명</h2>
 
     <% if @staffs.empty? %>
@@ -129,11 +123,11 @@
                 <div class="flex items-center gap-2 flex-wrap">
                   <p class="text-sm font-semibold text-gray-900"><%= user.name %></p>
                   <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-600">아르바이트</span>
-                  <% unless user.active? %>
-                    <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">퇴사</span>
-                  <% end %>
                 </div>
                 <p class="text-xs text-gray-400 mt-1 truncate"><%= user.email %></p>
+                <% if user.contract_ends_on.present? %>
+                  <p class="text-xs text-gray-400 mt-0.5">계약만료: <%= user.contract_ends_on %></p>
+                <% end %>
               </div>
               <%= link_to "수정", edit_admin_user_path(user),
                   class: "shrink-0 ml-3 inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
@@ -144,13 +138,14 @@
 
       <%# デスクトップテーブル %>
       <div class="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <table class="w-full text-sm">
+        <table class="w-full text-sm table-fixed">
           <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
               <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">이름</th>
               <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">직급</th>
-              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">이메일</th>
-              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">재직 상태</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-44">이메일</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">계약만료일</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">재직 상태</th>
               <th class="px-5 py-3 w-16"></th>
             </tr>
           </thead>
@@ -159,13 +154,10 @@
               <tr class="hover:bg-gray-50">
                 <td class="px-5 py-3.5 font-medium text-gray-900"><%= user.name %></td>
                 <td class="px-5 py-3.5 text-gray-500">아르바이트</td>
-                <td class="px-5 py-3.5 text-gray-500"><%= user.email %></td>
+                <td class="px-5 py-3.5 text-gray-500 truncate"><%= user.email %></td>
+                <td class="px-5 py-3.5 text-gray-500"><%= user.contract_ends_on.presence || "—" %></td>
                 <td class="px-5 py-3.5">
-                  <% if user.active? %>
-                    <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">재직 중</span>
-                  <% else %>
-                    <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">퇴사</span>
-                  <% end %>
+                  <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">재직 중</span>
                 </td>
                 <td class="px-5 py-3.5 text-right">
                   <%= link_to "수정", edit_admin_user_path(user), class: "text-xs text-blue-600 hover:underline" %>
@@ -178,5 +170,69 @@
 
     <% end %>
   </div>
+
+  <%# ━━━ 퇴사자 섹션 ━━━ %>
+  <% if @inactive_users.any? %>
+    <div>
+      <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">퇴사자 · <%= @inactive_users.size %>명</h2>
+
+      <%# モバイルカードリスト %>
+      <div class="space-y-3 lg:hidden">
+        <% @inactive_users.each do |user| %>
+          <div class="bg-white/60 rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="text-sm font-semibold text-gray-500"><%= user.name %></p>
+                  <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                    <%= user.admin? ? "관리자" : "스태프" %>
+                  </span>
+                  <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">퇴사</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-1 truncate"><%= user.email %></p>
+                <% if user.contract_ends_on.present? %>
+                  <p class="text-xs text-gray-400 mt-0.5">계약만료: <%= user.contract_ends_on %></p>
+                <% end %>
+              </div>
+              <%= link_to "수정", edit_admin_user_path(user),
+                  class: "shrink-0 ml-3 inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-gray-500 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# デスクトップテーブル %>
+      <div class="hidden lg:block bg-white/60 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <table class="w-full text-sm table-fixed">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-36">이름</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">구분</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-44">이메일</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-28">계약만료일</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">상태</th>
+              <th class="px-5 py-3 w-16"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <% @inactive_users.each do |user| %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-5 py-3.5 font-medium text-gray-400"><%= user.name %></td>
+                <td class="px-5 py-3.5 text-gray-400"><%= user.admin? ? "관리자" : "스태프" %></td>
+                <td class="px-5 py-3.5 text-gray-400 truncate"><%= user.email %></td>
+                <td class="px-5 py-3.5 text-gray-400"><%= user.contract_ends_on.presence || "—" %></td>
+                <td class="px-5 py-3.5">
+                  <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">퇴사</span>
+                </td>
+                <td class="px-5 py-3.5 text-right">
+                  <%= link_to "수정", edit_admin_user_path(user), class: "text-xs text-blue-600 hover:underline" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
 
 </div>

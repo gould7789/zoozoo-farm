@@ -12,7 +12,7 @@
 
   <div class="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
     <h1 class="text-xl font-bold text-gray-900">매출 기록</h1>
-    <%= link_to new_sales_record_path,
+    <%= link_to new_sale_path,
         class: "inline-flex items-center gap-1.5 h-9 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
@@ -27,7 +27,7 @@
     <div class="flex flex-wrap gap-2 mb-2">
       <% @all_years.each do |year| %>
         <% year_active = (year == @selected_year) %>
-        <%= link_to sales_records_path(year: year),
+        <%= link_to sales_path(year: year),
             class: "inline-flex items-center h-8 px-4 rounded-lg text-xs font-bold transition-colors #{year_active ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}" do %>
           <%= year %>
         <% end %>
@@ -37,7 +37,7 @@
     <div class="flex flex-wrap gap-2 mb-6">
       <% (@months_by_year[@selected_year] || []).each do |month| %>
         <% month_active = (month == @selected_month) %>
-        <%= link_to sales_records_path(year: @selected_year, month: month),
+        <%= link_to sales_path(year: @selected_year, month: month),
             class: "inline-flex items-center h-8 px-3 rounded-lg text-xs font-medium transition-colors #{month_active ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'}" do %>
           <%= "%02d" % month %>월
         <% end %>
@@ -91,9 +91,9 @@
               <p class="text-sm text-gray-600"><%= sr.note %></p>
             <% end %>
             <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
-              <%= link_to "수정", edit_sales_record_path(sr),
+              <%= link_to "수정", edit_sale_path(sr),
                   class: "flex-1 inline-flex items-center justify-center h-9 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
-              <%= button_to "삭제", sales_record_path(sr),
+              <%= button_to "삭제", sale_path(sr),
                   method: :delete,
                   data: { turbo_confirm: "정말 삭제하시겠습니까?" },
                   form: { class: "flex-1" },
@@ -108,28 +108,28 @@
         <table class="w-full text-sm">
           <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">날짜</th>
-              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">판매처</th>
-              <th class="text-right px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">매출액</th>
+              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">날짜</th>
+              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">판매처</th>
+              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">매출액</th>
               <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">특이사항</th>
-              <th class="px-5 py-3"></th>
+              <th class="px-5 py-3 w-24"></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <% @sales_records.each do |sr| %>
               <tr class="hover:bg-gray-50">
-                <td class="px-5 py-3.5 font-medium text-gray-900"><%= sr.sold_on.strftime("%Y-%m-%d") %></td>
-                <td class="px-5 py-3.5">
+                <td class="px-5 py-3.5 text-center font-medium text-gray-900"><%= sr.sold_on.strftime("%Y-%m-%d") %></td>
+                <td class="px-5 py-3.5 text-center">
                   <span class="inline-block px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
                     <%= source_label[sr.source] || sr.source %>
                   </span>
                 </td>
-                <td class="px-5 py-3.5 text-right font-semibold text-gray-900"><%= number_with_delimiter(sr.amount) %>원</td>
-                <td class="px-5 py-3.5 text-gray-500 max-w-xs truncate"><%= sr.note.presence || "—" %></td>
+                <td class="px-5 py-3.5 text-center font-semibold text-gray-900"><%= number_with_delimiter(sr.amount) %>원</td>
+                <td class="px-5 py-3.5 text-left text-gray-500 truncate"><%= sr.note.presence || "—" %></td>
                 <td class="px-5 py-3.5">
-                  <div class="flex items-center gap-2 justify-end">
-                    <%= link_to "수정", edit_sales_record_path(sr), class: "text-xs text-blue-600 hover:underline" %>
-                    <%= button_to "삭제", sales_record_path(sr),
+                  <div class="flex items-center gap-2 justify-center">
+                    <%= link_to "수정", edit_sale_path(sr), class: "text-xs text-blue-600 hover:underline" %>
+                    <%= button_to "삭제", sale_path(sr),
                         method: :delete,
                         data: { turbo_confirm: "정말 삭제하시겠습니까?" },
                         form: { class: "contents" },

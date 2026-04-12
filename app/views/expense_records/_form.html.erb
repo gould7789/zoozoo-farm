@@ -1,5 +1,5 @@
 <%# 支出記録フォーム（new/edit共用） %>
-<%= form_with model: expense_record, data: { controller: "form", action: "submit->form#submit" } do |f| %>
+<%= form_with model: expense_record, url: expense_record.new_record? ? expenses_path : expense_path(expense_record), data: { controller: "form", action: "submit->form#submit" } do |f| %>
 
   <% if expense_record.errors.any? %>
     <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -64,7 +64,7 @@
     <%= f.submit expense_record.persisted? ? "저장" : "등록",
         class: "w-full h-11 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer",
         data: { form_target: "submit" } %>
-    <%= link_to "취소", expense_records_path,
+    <%= link_to "취소", expenses_path,
         class: "w-full h-11 inline-flex items-center justify-center bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors" %>
   </div>
 

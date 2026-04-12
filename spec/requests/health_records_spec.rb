@@ -13,7 +13,7 @@ RSpec.describe "HealthRecords", type: :request do
     # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
       it "ログインページにリダイレクトする" do
-        get zone_animal_health_records_path(zone, animal)
+        get zone_animal_health_logs_path(zone, animal)
         expect(response).to redirect_to(login_path)
       end
     end
@@ -23,7 +23,7 @@ RSpec.describe "HealthRecords", type: :request do
       before { sign_in(staff) }
 
       it "200を返す" do
-        get zone_animal_health_records_path(zone, animal)
+        get zone_animal_health_logs_path(zone, animal)
         expect(response).to have_http_status(:ok)
       end
     end
@@ -33,7 +33,7 @@ RSpec.describe "HealthRecords", type: :request do
     # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
       it "ログインページにリダイレクトする" do
-        get new_zone_animal_health_record_path(zone, animal)
+        get new_zone_animal_health_log_path(zone, animal)
         expect(response).to redirect_to(login_path)
       end
     end
@@ -43,7 +43,7 @@ RSpec.describe "HealthRecords", type: :request do
       before { sign_in(staff) }
 
       it "200を返す" do
-        get new_zone_animal_health_record_path(zone, animal)
+        get new_zone_animal_health_log_path(zone, animal)
         expect(response).to have_http_status(:ok)
       end
     end
@@ -55,7 +55,7 @@ RSpec.describe "HealthRecords", type: :request do
     # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
       it "ログインページにリダイレクトする" do
-        post zone_animal_health_records_path(zone, animal), params: valid_params
+        post zone_animal_health_logs_path(zone, animal), params: valid_params
         expect(response).to redirect_to(login_path)
       end
     end
@@ -65,8 +65,8 @@ RSpec.describe "HealthRecords", type: :request do
       before { sign_in(staff) }
 
       it "created_byが自分のIDで保存されて一覧ページにリダイレクトする" do
-        post zone_animal_health_records_path(zone, animal), params: valid_params
-        expect(response).to redirect_to(zone_animal_health_records_path(zone, animal))
+        post zone_animal_health_logs_path(zone, animal), params: valid_params
+        expect(response).to redirect_to(zone_animal_health_logs_path(zone, animal))
         expect(HealthRecord.last.created_by).to eq(staff)
       end
     end
@@ -79,7 +79,7 @@ RSpec.describe "HealthRecords", type: :request do
       before { sign_in(staff) }
 
       it "200を返す" do
-        get edit_zone_animal_health_record_path(zone, animal, health_record)
+        get edit_zone_animal_health_log_path(zone, animal, health_record)
         expect(response).to have_http_status(:ok)
       end
     end
@@ -90,7 +90,7 @@ RSpec.describe "HealthRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        get edit_zone_animal_health_record_path(zone, animal, health_record)
+        get edit_zone_animal_health_log_path(zone, animal, health_record)
         expect(response).to redirect_to(root_path)
       end
     end
@@ -101,7 +101,7 @@ RSpec.describe "HealthRecords", type: :request do
       before { sign_in(admin) }
 
       it "200を返す" do
-        get edit_zone_animal_health_record_path(zone, animal, health_record)
+        get edit_zone_animal_health_log_path(zone, animal, health_record)
         expect(response).to have_http_status(:ok)
       end
     end
@@ -116,8 +116,8 @@ RSpec.describe "HealthRecords", type: :request do
       before { sign_in(staff) }
 
       it "記録を更新して一覧ページにリダイレクトする" do
-        patch zone_animal_health_record_path(zone, animal, health_record), params: valid_params
-        expect(response).to redirect_to(zone_animal_health_records_path(zone, animal))
+        patch zone_animal_health_log_path(zone, animal, health_record), params: valid_params
+        expect(response).to redirect_to(zone_animal_health_logs_path(zone, animal))
         expect(health_record.reload.condition).to eq("caution")
       end
     end
@@ -128,7 +128,7 @@ RSpec.describe "HealthRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        patch zone_animal_health_record_path(zone, animal, health_record), params: valid_params
+        patch zone_animal_health_log_path(zone, animal, health_record), params: valid_params
         expect(response).to redirect_to(root_path)
       end
     end
@@ -141,8 +141,8 @@ RSpec.describe "HealthRecords", type: :request do
       before { sign_in(staff) }
 
       it "記録を削除して一覧ページにリダイレクトする" do
-        delete zone_animal_health_record_path(zone, animal, health_record)
-        expect(response).to redirect_to(zone_animal_health_records_path(zone, animal))
+        delete zone_animal_health_log_path(zone, animal, health_record)
+        expect(response).to redirect_to(zone_animal_health_logs_path(zone, animal))
         expect { health_record.reload }.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
@@ -153,7 +153,7 @@ RSpec.describe "HealthRecords", type: :request do
       before { sign_in(staff) }
 
       it "ルートにリダイレクトする" do
-        delete zone_animal_health_record_path(zone, animal, health_record)
+        delete zone_animal_health_log_path(zone, animal, health_record)
         expect(response).to redirect_to(root_path)
       end
     end
@@ -164,8 +164,8 @@ RSpec.describe "HealthRecords", type: :request do
       before { sign_in(admin) }
 
       it "記録を削除して一覧ページにリダイレクトする" do
-        delete zone_animal_health_record_path(zone, animal, health_record)
-        expect(response).to redirect_to(zone_animal_health_records_path(zone, animal))
+        delete zone_animal_health_log_path(zone, animal, health_record)
+        expect(response).to redirect_to(zone_animal_health_logs_path(zone, animal))
         expect { health_record.reload }.to raise_error(ActiveRecord::RecordNotFound)
       end
     end

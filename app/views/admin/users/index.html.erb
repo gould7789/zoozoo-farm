@@ -11,10 +11,10 @@
   "general_manager"   => "부장"
 } %>
 
-<div class="max-w-2xl lg:max-w-4xl mx-auto">
+<div class="max-w-2xl md:max-w-4xl mx-auto">
 
   <%# モバイルのみ表示 — 管理ハブへの戻るボタン %>
-  <%= link_to admin_dashboard_path, class: "lg:hidden inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4" do %>
+  <%= link_to admin_dashboard_path, class: "md:hidden inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4" do %>
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
     </svg>
@@ -37,7 +37,7 @@
     <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">관리자 · <%= @admins.size %>명</h2>
 
     <%# モバイルカードリスト %>
-    <div class="space-y-3 lg:hidden">
+    <div class="space-y-3 md:hidden">
       <% @admins.each do |user| %>
         <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
           <div class="flex items-start justify-between">
@@ -63,7 +63,7 @@
     </div>
 
     <%# デスクトップテーブル %>
-    <div class="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <table class="w-full text-sm table-fixed">
         <thead class="bg-gray-50 border-b border-gray-200">
           <tr>
@@ -115,7 +115,7 @@
     <% else %>
 
       <%# モバイルカードリスト %>
-      <div class="space-y-3 lg:hidden">
+      <div class="space-y-3 md:hidden">
         <% @staffs.each do |user| %>
           <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
             <div class="flex items-start justify-between">
@@ -137,7 +137,7 @@
       </div>
 
       <%# デスクトップテーブル %>
-      <div class="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <table class="w-full text-sm table-fixed">
           <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
@@ -177,7 +177,7 @@
       <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">퇴사자 · <%= @inactive_users.size %>명</h2>
 
       <%# モバイルカードリスト %>
-      <div class="space-y-3 lg:hidden">
+      <div class="space-y-3 md:hidden">
         <% @inactive_users.each do |user| %>
           <div class="bg-white/60 rounded-xl border border-gray-200 p-4 shadow-sm">
             <div class="flex items-start justify-between">
@@ -202,7 +202,7 @@
       </div>
 
       <%# デスクトップテーブル %>
-      <div class="hidden lg:block bg-white/60 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="hidden md:block bg-white/60 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <table class="w-full text-sm table-fixed">
           <thead class="bg-gray-50 border-b border-gray-200">
             <tr>

@@ -1,7 +1,7 @@
 <%# 館詳細ページ — 所属動物一覧を表示 %>
 <%# @animals: active=trueの動物を種名・個体名順で表示 %>
 
-<div class="max-w-2xl lg:max-w-4xl mx-auto">
+<div class="max-w-2xl md:max-w-4xl mx-auto">
 
   <%# ヘッダー — 戻るリンク・タイトル・動物追加ボタン %>
   <div class="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
@@ -50,7 +50,7 @@
       </div>
 
       <%# モバイルカードリスト %>
-      <div class="space-y-3 lg:hidden mt-4">
+      <div class="space-y-3 md:hidden mt-4">
         <% @animals.each do |animal| %>
           <%= link_to zone_animal_path(@zone, animal),
               class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all flex items-center justify-between block",
@@ -70,7 +70,7 @@
       </div>
 
       <%# デスクトップテーブル %>
-      <div class="hidden lg:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-4">
+      <div class="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-4">
         <table class="w-full text-sm">
           <thead class="bg-gray-50 border-b border-gray-200">
             <tr>

@@ -37,26 +37,26 @@
 
     <% if logged_in? %>
       <%# デスクトップ用サイドバー — lg以上でのみ表示 %>
-      <div class="hidden lg:flex lg:fixed lg:inset-y-0 lg:w-64 lg:flex-col lg:bg-white lg:border-r lg:border-gray-200 lg:z-30">
+      <div class="hidden md:flex md:fixed md:inset-y-0 md:w-64 md:flex-col md:bg-white md:border-r md:border-gray-200 md:z-30">
         <%= render "layouts/sidebar" %>
       </div>
 
       <%# モバイル用上部ロゴヘッダー — lg未満でのみ表示 %>
-      <div class="lg:hidden flex justify-center pt-0 pb-3">
-        <%= link_to zones_path, class: "inline-block overflow-hidden h-[260px]" do %>
-          <%= image_tag "main_logo.png", alt: "Zoo Zoo Farm", class: "h-[420px] w-auto -mt-20 drop-shadow-md hover:opacity-90 transition-opacity" %>
+      <div class="md:hidden flex justify-center pt-2 pb-1">
+        <%= link_to zones_path, class: "inline-block" do %>
+          <%= image_tag "main_logo.png", alt: "Zoo Zoo Farm", class: "h-48 w-auto drop-shadow-md hover:opacity-90 transition-opacity" %>
         <% end %>
       </div>
     <% end %>
 
     <%# メインコンテンツ %>
-    <main class="<%= logged_in? ? 'lg:ml-64 pb-20 lg:pb-0 px-4 lg:px-8 pt-2 lg:pt-6' : '' %> min-h-screen">
+    <main class="<%= logged_in? ? 'md:ml-64 pb-20 md:pb-0 px-4 md:px-8 pt-2 md:pt-6' : '' %> min-h-screen">
       <%= yield %>
     </main>
 
     <% if logged_in? %>
       <%# モバイル用下部タブバー — lg以上では非表示 %>
-      <nav class="lg:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-30">
+      <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-30">
         <%= render "layouts/bottom_nav" %>
       </nav>
     <% end %>

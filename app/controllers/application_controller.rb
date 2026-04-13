@@ -10,6 +10,23 @@ class ApplicationController < ActionController::Base
 
   helper_method :current_user, :logged_in?
 
+  # 範囲外の数値がDBに渡された場合（integer overflow等）
+  rescue_from ActiveRecord::RangeError do
+    redirect_back fallback_location: root_path,
+                  alert: "입력값이 허용 범위를 초과했습니다. 숫자를 확인해주세요."
+  end
+
+  # 存在しないレコードへのアクセス
+  rescue_from ActiveRecord::RecordNotFound do
+    redirect_to root_path, alert: "요청한 데이터를 찾을 수 없습니다."
+  end
+
+  # Strong Parametersの必須キーが欠落している場合
+  rescue_from ActionController::ParameterMissing do
+    redirect_back fallback_location: root_path,
+                  alert: "필수 항목이 누락됐습니다."
+  end
+
   private
 
     def current_user

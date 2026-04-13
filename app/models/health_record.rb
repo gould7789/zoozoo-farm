@@ -11,6 +11,8 @@ class HealthRecord < ApplicationRecord
 
   # 観察日は必須
   validates :recorded_on, presence: true
+  # 体重は0以上9999.99以下
+  validates :weight_kg, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 9_999.99 }, allow_nil: true
 
   # 最新の観察日順に並べるスコープ
   scope :recent, -> { order(recorded_on: :desc) }

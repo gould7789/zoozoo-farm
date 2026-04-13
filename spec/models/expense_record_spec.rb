@@ -9,8 +9,8 @@ RSpec.describe ExpenseRecord, type: :model do
     it { should validate_presence_of(:category) }
     # 支出額は必須
     it { should validate_presence_of(:amount) }
-    # 支出額は0以上の整数
-    it { should validate_numericality_of(:amount).only_integer.is_greater_than_or_equal_to(0) }
+    # 支出額は0以上9999999以下の整数
+    it { should validate_numericality_of(:amount).only_integer.is_greater_than_or_equal_to(0).is_less_than_or_equal_to(9_999_999) }
     # 支出内容は必須（監査対応）
     it { should validate_presence_of(:description) }
   end

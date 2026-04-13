@@ -16,7 +16,7 @@ class SalesRecord < ApplicationRecord
   validates :sold_on, presence: true
   validates :source,  presence: true
   validates :amount,  presence: true,
-                      numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+                      numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 9_999_999 }
 
   # 同じ日・同じ販売先の重複を防ぐ
   validates :source, uniqueness: { scope: :sold_on }

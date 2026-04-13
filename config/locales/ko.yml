@@ -38,12 +38,16 @@ ko:
               blank: "관찰일을 입력해주세요."
             condition:
               blank: "상태를 선택해주세요."
+            weight_kg:
+              less_than_or_equal_to: "체중은 9,999.99kg 이하로 입력해주세요."
         feeding_record:
           attributes:
             fed_at:
               blank: "급여 일시를 입력해주세요."
             food_type:
               blank: "먹이 종류를 입력해주세요."
+            amount_g:
+              less_than_or_equal_to: "급여량은 99,999g 이하로 입력해주세요."
         notice:
           attributes:
             body:
@@ -58,6 +62,7 @@ ko:
               blank: "금액을 입력해주세요."
               not_a_number: "금액은 숫자를 입력해주세요."
               greater_than_or_equal_to: "금액은 0 이상이어야 합니다."
+              less_than_or_equal_to: "금액은 9,999,999원 이하로 입력해주세요."
         expense_record:
           attributes:
             spent_on:
@@ -68,5 +73,6 @@ ko:
               blank: "금액을 입력해주세요."
               not_a_number: "금액은 숫자를 입력해주세요."
               greater_than_or_equal_to: "금액은 0 이상이어야 합니다."
+              less_than_or_equal_to: "금액은 9,999,999원 이하로 입력해주세요."
             description:
               blank: "지출 내용을 입력해주세요."

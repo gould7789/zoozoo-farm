@@ -1,0 +1,284 @@
+<%# ユーザー管理一覧ページ — Admin専用 %>
+<%# 재직 중(관리자/스태프)과 퇴사자를 별도 섹션으로 분리 표시 %>
+
+<%# 직급 한국어 표시용 매핑 %>
+<% position_label = {
+  "junior"            => "사원",
+  "associate"         => "주임",
+  "assistant_manager" => "대리",
+  "manager"           => "과장",
+  "deputy_manager"    => "차장",
+  "general_manager"   => "부장"
+} %>
+
+<div class="max-w-2xl md:max-w-4xl mx-auto">
+
+  <%# モバイルのみ表示 — 管理ハブへの戻るボタン %>
+  <%= link_to admin_dashboard_path, class: "md:hidden inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4" do %>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+    </svg>
+    관리
+  <% end %>
+
+  <div class="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
+    <h1 class="text-xl font-bold text-gray-900">직원 관리</h1>
+    <%= link_to new_admin_member_path,
+        class: "inline-flex items-center gap-1.5 h-9 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      새 계정 생성
+    <% end %>
+  </div>
+
+  <%# ━━━ 관리자 섹션 ━━━ %>
+  <div class="mb-8">
+    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">관리자 · <%= @admins.size %>명</h2>
+
+    <%# モバイルカードリスト %>
+    <div class="space-y-3 md:hidden">
+      <% @admins.each do |user| %>
+        <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+          <div class="flex items-start justify-between">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <p class="text-sm font-semibold text-gray-900"><%= user.name %></p>
+                <% if user.position.present? %>
+                  <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600">
+                    <%= position_label[user.position] %>
+                  </span>
+                <% end %>
+                <% if user.is_team_leader? %>
+                  <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600">팀장</span>
+                <% end %>
+              </div>
+              <p class="text-xs text-gray-400 mt-1 truncate"><%= user.email %></p>
+            </div>
+            <div class="flex gap-2 shrink-0 ml-3">
+              <%= link_to "수정", edit_admin_member_path(user),
+                  class: "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
+              <% if user != current_user %>
+                <%= button_to "삭제", admin_member_path(user),
+                    method: :delete,
+                    data: { turbo_confirm: "이 계정을 삭제하면 작성한 기록의 작성자 정보가 사라집니다. 계속하시겠습니까?" },
+                    form: { class: "contents" },
+                    class: "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" %>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%# デスクトップテーブル %>
+    <div class="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <table class="w-full text-sm table-fixed">
+        <thead class="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">이름</th>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">직급</th>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">이메일</th>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-28">재직 상태</th>
+            <th class="px-5 py-3 w-24"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <% @admins.each do |user| %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-5 py-3.5 font-medium text-gray-900"><%= user.name %></td>
+              <td class="px-5 py-3.5 text-center">
+                <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                  <% if user.position.present? %>
+                    <span class="text-gray-700"><%= position_label[user.position] %></span>
+                  <% else %>
+                    <span class="text-gray-300">-</span>
+                  <% end %>
+                  <% if user.is_team_leader? %>
+                    <span class="inline-block px-1.5 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-600">팀장</span>
+                  <% end %>
+                </div>
+              </td>
+              <td class="px-5 py-3.5 text-gray-500 text-center truncate"><%= user.email %></td>
+              <td class="px-5 py-3.5 text-center">
+                <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">재직 중</span>
+              </td>
+              <td class="px-5 py-3.5 text-center">
+                <div class="flex items-center gap-2 justify-center">
+                  <%= link_to "수정", edit_admin_member_path(user), class: "text-xs text-blue-600 hover:underline" %>
+                  <% if user != current_user %>
+                    <%= button_to "삭제", admin_member_path(user),
+                        method: :delete,
+                        data: { turbo_confirm: "이 계정을 삭제하면 작성한 기록의 작성자 정보가 사라집니다. 계속하시겠습니까?" },
+                        form: { class: "inline" },
+                        class: "text-xs text-red-500 hover:underline" %>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <%# ━━━ 스태프 섹션 ━━━ %>
+  <div class="mb-8">
+    <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">스태프 · <%= @staffs.size %>명</h2>
+
+    <% if @staffs.empty? %>
+      <div class="bg-white rounded-xl border border-gray-200 p-8 text-center">
+        <p class="text-gray-400 text-sm">등록된 스태프가 없습니다.</p>
+      </div>
+    <% else %>
+
+      <%# モバイルカードリスト %>
+      <div class="space-y-3 md:hidden">
+        <% @staffs.each do |user| %>
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="text-sm font-semibold text-gray-900"><%= user.name %></p>
+                  <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-600">아르바이트</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-1 truncate"><%= user.email %></p>
+                <% if user.contract_ends_on.present? %>
+                  <p class="text-xs text-gray-400 mt-0.5">계약만료: <%= user.contract_ends_on %></p>
+                <% end %>
+              </div>
+            <div class="flex gap-2 shrink-0 ml-3">
+              <%= link_to "수정", edit_admin_member_path(user),
+                  class: "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
+              <%= button_to "삭제", admin_member_path(user),
+                  method: :delete,
+                  data: { turbo_confirm: "이 계정을 삭제하면 작성한 기록의 작성자 정보가 사라집니다. 계속하시겠습니까?" },
+                  form: { class: "contents" },
+                  class: "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" %>
+            </div>
+          </div>
+        </div>
+        <% end %>
+      </div>
+
+      <%# デスクトップテーブル %>
+      <div class="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <table class="w-full text-sm table-fixed">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">이름</th>
+              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">직급</th>
+              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">이메일</th>
+              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-36">계약만료일</th>
+              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">재직 상태</th>
+              <th class="px-5 py-3 w-24"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <% @staffs.each do |user| %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-5 py-3.5 font-medium text-gray-900"><%= user.name %></td>
+                <td class="px-5 py-3.5 text-gray-500 text-center">아르바이트</td>
+                <td class="px-5 py-3.5 text-gray-500 text-center truncate"><%= user.email %></td>
+                <td class="px-5 py-3.5 text-gray-500 text-center"><%= user.contract_ends_on.presence || "—" %></td>
+                <td class="px-5 py-3.5 text-center">
+                  <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">재직 중</span>
+                </td>
+                <td class="px-5 py-3.5 text-center">
+                  <div class="flex items-center gap-2 justify-center">
+                    <%= link_to "수정", edit_admin_member_path(user), class: "text-xs text-blue-600 hover:underline" %>
+                    <%= button_to "삭제", admin_member_path(user),
+                        method: :delete,
+                        data: { turbo_confirm: "이 계정을 삭제하면 작성한 기록의 작성자 정보가 사라집니다. 계속하시겠습니까?" },
+                        form: { class: "inline" },
+                        class: "text-xs text-red-500 hover:underline" %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+    <% end %>
+  </div>
+
+  <%# ━━━ 퇴사자 섹션 ━━━ %>
+  <% if @inactive_users.any? %>
+    <div>
+      <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">퇴사자 · <%= @inactive_users.size %>명</h2>
+
+      <%# モバイルカードリスト %>
+      <div class="space-y-3 md:hidden">
+        <% @inactive_users.each do |user| %>
+          <div class="bg-white/60 rounded-xl border border-gray-200 p-4 shadow-sm">
+            <div class="flex items-start justify-between">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="text-sm font-semibold text-gray-500"><%= user.name %></p>
+                  <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                    <%= user.admin? ? "관리자" : "스태프" %>
+                  </span>
+                  <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">퇴사</span>
+                </div>
+                <p class="text-xs text-gray-400 mt-1 truncate"><%= user.email %></p>
+                <% if user.contract_ends_on.present? %>
+                  <p class="text-xs text-gray-400 mt-0.5">계약만료: <%= user.contract_ends_on %></p>
+                <% end %>
+              </div>
+            <div class="flex gap-2 shrink-0 ml-3">
+              <%= link_to "수정", edit_admin_member_path(user),
+                  class: "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-gray-500 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
+              <%= button_to "삭제", admin_member_path(user),
+                  method: :delete,
+                  data: { turbo_confirm: "이 계정을 삭제하면 작성한 기록의 작성자 정보가 사라집니다. 계속하시겠습니까?" },
+                  form: { class: "contents" },
+                  class: "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" %>
+            </div>
+          </div>
+        </div>
+        <% end %>
+      </div>
+
+      <%# デスクトップテーブル %>
+      <div class="hidden md:block bg-white/60 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <table class="w-full text-sm table-fixed">
+          <thead class="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-32">이름</th>
+              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-32">구분</th>
+              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">이메일</th>
+              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-36">계약만료일</th>
+              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">상태</th>
+              <th class="px-5 py-3 w-24"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <% @inactive_users.each do |user| %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-5 py-3.5 font-medium text-gray-400"><%= user.name %></td>
+                <td class="px-5 py-3.5 text-gray-400 text-center"><%= user.admin? ? "관리자" : "스태프" %></td>
+                <td class="px-5 py-3.5 text-gray-400 text-center truncate"><%= user.email %></td>
+                <td class="px-5 py-3.5 text-gray-400 text-center"><%= user.contract_ends_on.presence || "—" %></td>
+                <td class="px-5 py-3.5 text-center">
+                  <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">퇴사</span>
+                </td>
+                <td class="px-5 py-3.5 text-center">
+                  <div class="flex items-center gap-2 justify-center">
+                    <%= link_to "수정", edit_admin_member_path(user), class: "text-xs text-blue-600 hover:underline" %>
+                    <%= button_to "삭제", admin_member_path(user),
+                        method: :delete,
+                        data: { turbo_confirm: "이 계정을 삭제하면 작성한 기록의 작성자 정보가 사라집니다. 계속하시겠습니까?" },
+                        form: { class: "inline" },
+                        class: "text-xs text-red-500 hover:underline" %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
+
+</div>

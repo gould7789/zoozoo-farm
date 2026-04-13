@@ -9,6 +9,7 @@
 
 # Ignore all environment files.
 /.env*
+!/.env.example
 
 # Ignore all logfiles and tempfiles.
 /log/*
@@ -45,3 +46,12 @@
 
 # RSpec failure tracking cache
 /spec/examples.txt
+
+# Stitch design reference images (local only)
+/stitch/
+
+# macOS metadata
+.DS_Store
+
+# Local-only image assets
+/app/assets/images/main_logo_sub.png

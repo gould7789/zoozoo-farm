@@ -1,4 +1,4 @@
-# 🦁 Zoo Keeper
+# Zoo Zoo Farm
 
 動物園の飼育員がスマートフォンで現場からすぐに動物管理記録を入力できる、**モバイルファーストのWebアプリケーション**。
 
@@ -12,72 +12,90 @@
 - ロールベースのアクセス制御（Admin / Staff）
 - 展示館単位での動物分類およびお知らせ機能
 - Admin専用の売上・経費記録管理
+- 管理者ダッシュボード・マイページ機能
 
 ---
 
 ## 技術スタック
 
-| 項目 | 内容 |
-|------|------|
-| Language | Ruby 4.0.1 |
-| Framework | Ruby on Rails 8.1 |
-| Database | PostgreSQL |
-| CSS | Tailwind CSS（モバイルファースト） |
-| Frontend | Hotwire（Turbo + Stimulus） |
-| 認証 | has_secure_password（bcrypt） |
-| テスト | RSpec / FactoryBot / Shoulda-Matchers / Capybara |
-| CI/CD | GitHub Actions → Render 自動デプロイ |
-| セキュリティ | Brakeman / bundler-audit |
-| Linter | RuboCop（rails-omakase） |
+| 項目         | 内容                                       |
+| ------------ | ------------------------------------------ |
+| Language     | Ruby                                       |
+| Framework    | Ruby on Rails                              |
+| Frontend     | HTML(ERB) / CSS(Tailwind CSS) / JavaScript |
+| Database     | PostgreSQL（UUID v7 主キー）               |
+| 認証         | has_secure_password（bcrypt）              |
+| テスト       | RSpec / FactoryBot / Shoulda-Matchers      |
+| CI/CD        | GitHub Actions → Render 自動デプロイ       |
+| セキュリティ | Brakeman / bundler-audit                   |
+| Linter       | RuboCop                                    |
 
 ---
 
 ## 主な機能
 
 ### Admin（正社員飼育員）
+
 - 全動物のCRUD操作
 - すべての健康・給餌記録の編集・削除
 - Staffアカウントの作成・退職処理（論理削除）
-- 売上・経費記録の管理
-- 全体・館別お知らせの作成
+- 売上・経費記録の管理（月別フィルター）
+- 全体・館別お知らせの作成・編集・削除
+- 管理者ダッシュボード（売上・経費・職員管理ハブ）
 
 ### Staff（アルバイト飼育員）
+
 - 健康記録の追加（自分の記録のみ編集・削除）
 - 給餌記録の追加（自分の記録のみ編集・削除）
-- お知らせの確認
+- お知らせの確認・作成（自分の投稿のみ編集・削除）
+- マイページで自身のアカウント情報を確認
 
 ---
 
 ## ER図
 
-<!-- ER図画像を挿入予定 -->
-> `docs/erd.png` 追加予定
+<img width="2790" height="762" alt="データベースERD" src="https://github.com/user-attachments/assets/17e31f2e-30af-4380-84f6-83f2ce6ee1c6" />
 
-```
-zones（シードデータで固定）
-  └── animals
-        ├── health_records  (created_by → users)
-        └── feeding_records (created_by → users)
+---
 
-users
-  ├── health_records
-  ├── feeding_records
-  ├── notices
-  ├── sales_records
-  └── expense_records
-```
+## データベース設計
+
+### 主キー
+
+全テーブルで **UUID v7** を採用。時系列ソートが可能で、連番IDによる推測攻撃を防止。
+
+### Userモデルの追加フィールド
+
+初期設計から以下のフィールドを追加し、実際の運用に対応：
+
+| フィールド         | 型      | 用途                                  |
+| ------------------ | ------- | ------------------------------------- |
+| `position`         | enum    | 職位（junior〜general_manager 6段階） |
+| `is_team_leader`   | boolean | チームリーダー表示フラグ              |
+| `hired_on`         | date    | 入社日                                |
+| `contract_ends_on` | date    | 契約終了日（Staffのみ）               |
+
+### ルーティング（内部テーブル名の隠蔽）
+
+| URL                                  | コントローラー    | 理由                     |
+| ------------------------------------ | ----------------- | ------------------------ |
+| `/zones/:id/animals/:id/health_logs` | `health_records`  | 内部DB名の隠蔽           |
+| `/sales`                             | `sales_records`   | URLを簡潔に              |
+| `/expenses`                          | `expense_records` | URLを簡潔に              |
+| `/admin/members`                     | `admin/users`     | ユーザー向けに自然な名称 |
 
 ---
 
 ## フォルダ構成
 
 ```
-zoo-keeper/
-├── .github/workflows/ci.yml           # RuboCop + Brakeman + RSpec 自動実行
+zoozoo-farm/
+├── .github/workflows/
+│   └── ci.yml                         # RuboCop + Brakeman + RSpec 自動実行（5 Job）
 ├── app/
 │   ├── controllers/
 │   │   ├── application_controller.rb  # 認証ヘルパー（require_login / require_admin）
-│   │   ├── sessions_controller.rb
+│   │   ├── sessions_controller.rb     # ログイン・ログアウト（セッション固定攻撃対策）
 │   │   ├── zones_controller.rb
 │   │   ├── animals_controller.rb
 │   │   ├── health_records_controller.rb
@@ -85,36 +103,46 @@ zoo-keeper/
 │   │   ├── notices_controller.rb
 │   │   ├── sales_records_controller.rb
 │   │   ├── expense_records_controller.rb
-│   │   └── admin/users_controller.rb
+│   │   ├── accounts_controller.rb     # マイページ
+│   │   └── admin/
+│   │       ├── users_controller.rb    # 職員管理（Admin専用）
+│   │       └── dashboard_controller.rb # 管理者メニューハブ
 │   ├── models/
-│   │   ├── user.rb             # has_secure_password, enum role
+│   │   ├── user.rb                    # has_secure_password, enum role / position
 │   │   ├── zone.rb
-│   │   ├── animal.rb           # enum gender, cites_grade
-│   │   ├── health_record.rb    # enum condition
+│   │   ├── animal.rb                  # enum gender, cites_grade
+│   │   ├── health_record.rb           # enum condition
 │   │   ├── feeding_record.rb
-│   │   ├── notice.rb           # enum category
-│   │   ├── sales_record.rb     # enum source
-│   │   └── expense_record.rb   # enum category
+│   │   ├── notice.rb                  # enum category（7種類）
+│   │   ├── sales_record.rb            # enum source（自販機4台 + 売店）
+│   │   └── expense_record.rb          # enum category（6種類）
 │   └── views/
-│       ├── layouts/application.html.erb  # 下部タブバー
-│       ├── sessions/
-│       ├── zones/
-│       ├── animals/
-│       ├── health_records/
-│       ├── feeding_records/
-│       ├── notices/
-│       ├── sales_records/
-│       ├── expense_records/
-│       └── admin/users/
+│       ├── layouts/
+│       │   ├── application.html.erb   # 共通レイアウト
+│       │   ├── _sidebar.html.erb      # デスクトップ用サイドナビ
+│       │   ├── _bottom_nav.html.erb   # モバイル用タブバー
+│       │   └── _flash.html.erb        # フラッシュメッセージ
+│       ├── sessions/                  # ログイン画面
+│       ├── zones/                     # 館一覧・詳細
+│       ├── animals/                   # 動物CRUD
+│       ├── health_records/            # 健康記録CRUD
+│       ├── feeding_records/           # 給餌記録CRUD
+│       ├── notices/                   # お知らせCRUD
+│       ├── sales_records/             # 売上記録（月別フィルター）
+│       ├── expense_records/           # 経費記録（月別フィルター）
+│       ├── accounts/                  # マイページ
+│       └── admin/
+│           ├── users/                 # 職員管理
+│           └── dashboard/             # 管理者メニュー
 ├── db/
-│   ├── migrate/                # マイグレーション（8テーブル）
-│   └── seeds.rb                # 展示館6件 + Admin初期アカウント
+│   ├── migrate/                       # マイグレーション（8テーブル + UUID v7）
+│   └── seeds.rb                       # 展示館6件 + Admin初期アカウント（環境変数）
 ├── spec/
-│   ├── models/                 # モデル単体テスト
-│   ├── requests/               # 権限テスト
-│   ├── system/                 # Capybara E2Eテスト
-│   ├── factories/              # FactoryBot
-│   └── support/
+│   ├── models/                        # モデル単体テスト（8ファイル）
+│   ├── requests/                      # 権限テスト（11ファイル）
+│   ├── factories/                     # FactoryBot（8ファイル）
+│   ├── support/                       # Shoulda-Matchers / RequestHelpers
+│   └── system/                        # E2Eテスト（未実装）
 └── config/routes.rb
 ```
 
@@ -126,20 +154,24 @@ zoo-keeper/
 # 1. 依存関係のインストール
 bundle install
 
-# 2. データベースの作成・マイグレーション
+# 2. 環境変数の設定（.envまたはシェル）
+export SEED_ADMIN_EMAIL=admin@zoo.local
+export SEED_ADMIN_PASSWORD=changeme
+
+# 3. データベースの作成・マイグレーション
 rails db:create
 rails db:migrate
 
-# 3. シードデータの投入（展示館6件 + Adminアカウント）
+# 4. シードデータの投入（展示館6件 + Adminアカウント）
 rails db:seed
 
-# 4. 開発サーバーの起動
+# 5. 開発サーバーの起動
 rails server
 # → http://localhost:3000
 
 # 初期ログイン情報
-# Email:    admin@zoo.local
-# Password: changeme
+# Email:    $SEED_ADMIN_EMAIL の値
+# Password: $SEED_ADMIN_PASSWORD の値
 ```
 
 ---
@@ -148,7 +180,7 @@ rails server
 
 ```bash
 # 全テスト
-bundle exec rspec
+bundle exec rspec spec
 
 # モデルテストのみ
 bundle exec rspec spec/models
@@ -156,46 +188,34 @@ bundle exec rspec spec/models
 # 権限（Request）テストのみ
 bundle exec rspec spec/requests
 
-# E2Eテストのみ
-bundle exec rspec spec/system
-
 # コードスタイル検査
 bundle exec rubocop
 
 # セキュリティ脆弱性検査
-bundle exec brakeman
+bundle exec brakeman --no-pager
 ```
 
 ---
 
-## 設計上の判断とその根拠
-
-| 判断 | 理由 |
-|------|------|
-| Devise不使用 | 学習目的でSession / Cookie / bcryptを直接実装 |
-| scaffold不使用 | MVCの流れを手で書いて習得するため |
-| 論理削除（`active = false`） | 退職ユーザー・死亡動物の記録を監査証跡として保持 |
-| `recorded_on`を分離 | 現場での観察日とシステム入力日が異なるケースに対応 |
-| zonesをシード固定 | 新館は数年に一度 → Admin UIは不要、誤削除防止 |
-| `amount`をinteger型 | 円単位は小数点なし → decimalより安全かつ高速 |
-| `created_by`カラム | Staff自身の記録のみ編集・削除できる権限チェック + 監査追跡 |
-| Fat Model / Skinny Controller | ビジネスロジックはModelに集約 |
-| Renderでデプロイ | Nginx / Docker不要でSSL・ドメインを自動処理 |
-
----
-
-## ブランチ戦略
+## ブランチ
 
 ```
-main              ← デプロイ可能な安定バージョン
+main                         ← デプロイ可能な安定バージョン
   └── develop
-        ├── setup/init
-        ├── feature/auth
-        ├── feature/animals
-        ├── feature/health
-        ├── feature/feeding
-        ├── feature/notices
-        ├── feature/sales
-        ├── feature/expenses
-        └── feature/admin
+        ├── setup/init             # RSpec・FactoryBot・CI初期設定
+        ├── feature/auth           # ログイン・ログアウト・セッション管理
+        ├── feature/animals        # 館・動物 CRUD
+        ├── feature/health         # 健康記録 CRUD
+        ├── feature/feeding        # 給餌記録 CRUD
+        ├── feature/notices        # お知らせ CRUD
+        ├── feature/sales          # 売上記録 CRUD（Admin専用）
+        ├── feature/expenses       # 経費記録 CRUD（Admin専用）
+        ├── feature/admin          # 職員管理・管理者ダッシュボード
+        ├── feature/my-page        # マイページ・下部タブバー再設計
+        ├── feature/user-position  # 職位・チームリーダー・入社日フィールド追加
+        ├── feature/js-enhancements # JavaScript UI機能強化
+        ├── style/zoozoofarm-theme # Zoo Zoo Farmテーマ・カラーパレット適用
+        ├── style/login-page       # ログインページデザイン改善
+        ├── style/ui-polish        # UI全体の仕上げ・レイアウト調整
+        └── deploy/production      # UUID v7・韓国ロケール・セッション固定対策
 ```

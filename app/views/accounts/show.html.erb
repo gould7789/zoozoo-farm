@@ -1,0 +1,82 @@
+<%# マイページ — ログインユーザーのプロフィール表示（読み取り専用） %>
+
+<% position_label = {
+  "junior"            => "사원",
+  "associate"         => "주임",
+  "assistant_manager" => "대리",
+  "manager"           => "과장",
+  "deputy_manager"    => "차장",
+  "general_manager"   => "부장"
+} %>
+
+<div class="max-w-lg mx-auto">
+
+  <div class="bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm mb-6">
+    <h1 class="text-xl font-bold text-gray-900">내 정보</h1>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+
+    <%# プロフィールヘッダー %>
+    <div class="px-6 py-5 border-b border-gray-100">
+      <div class="flex items-center gap-4">
+        <%# アバター（イニシャル表示） %>
+        <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+          <span class="text-xl font-bold text-gray-500"><%= @user.name.first %></span>
+        </div>
+        <div>
+          <p class="text-lg font-bold text-gray-900"><%= @user.name %></p>
+          <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full <%= @user.admin? ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600' %>">
+            <%= @user.admin? ? "관리자" : "스태프" %>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <%# 情報リスト %>
+    <dl class="divide-y divide-gray-100">
+
+      <div class="px-6 py-4 flex items-center gap-4">
+        <dt class="text-sm text-gray-500 w-24 shrink-0">이메일</dt>
+        <dd class="text-sm text-gray-900 min-w-0 truncate"><%= @user.email %></dd>
+      </div>
+
+      <% if @user.admin? %>
+        <%# Admin: 職位を表示 %>
+        <div class="px-6 py-4 flex items-center gap-4">
+          <dt class="text-sm text-gray-500 w-24 shrink-0">직급</dt>
+          <dd class="text-sm text-gray-900">
+            <% if @user.position.present? %>
+              <%= position_label[@user.position] || @user.position %>
+            <% else %>
+              <span class="text-gray-300">-</span>
+            <% end %>
+          </dd>
+        </div>
+      <% else %>
+        <%# Staff: 入社日・契約終了日を表示 %>
+        <div class="px-6 py-4 flex items-center gap-4">
+          <dt class="text-sm text-gray-500 w-24 shrink-0">입사일</dt>
+          <dd class="text-sm text-gray-900">
+            <%= @user.hired_on&.strftime("%Y년 %m월 %d일") || "미등록" %>
+          </dd>
+        </div>
+
+        <div class="px-6 py-4 flex items-center gap-4">
+          <dt class="text-sm text-gray-500 w-24 shrink-0">계약 종료일</dt>
+          <dd class="text-sm text-gray-900">
+            <%= @user.contract_ends_on&.strftime("%Y년 %m월 %d일") || "미등록" %>
+          </dd>
+        </div>
+      <% end %>
+
+    </dl>
+  </div>
+
+  <%# ログアウトボタン — モバイルのみ表示 %>
+  <div class="mt-6 md:hidden">
+    <%= button_to "로그아웃", logout_path, method: :delete,
+        class: "w-full flex items-center justify-center gap-2 h-12 rounded-xl text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm transition-colors" %>
+  </div>
+
+</div>

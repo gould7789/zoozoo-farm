@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Zoo Zoo Farm" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Zoo Zoo Farm">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+    <style>
+      .zoo-bg { background-image: url('/images/bg_mobile.svg'); }
+      @media (min-width: 1024px) {
+        .zoo-bg { background-image: url('/images/bg_desktop.svg'); }
+      }
+    </style>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <%# モバイル/デスクトップで背景画像を切り替え %>
+  <body class="min-h-screen bg-cover bg-top bg-no-repeat zoo-bg">
+
+    <%# フラッシュメッセージ %>
+    <%= render "layouts/flash" %>
+
+    <% if logged_in? %>
+      <%# デスクトップ用サイドバー — lg以上でのみ表示 %>
+      <div class="hidden md:flex md:fixed md:inset-y-0 md:w-64 md:flex-col md:bg-white md:border-r md:border-gray-200 md:z-30">
+        <%= render "layouts/sidebar" %>
+      </div>
+
+      <%# モバイル用上部ロゴヘッダー — lg未満でのみ表示 %>
+      <div class="md:hidden flex justify-center pt-2 pb-1">
+        <%= link_to zones_path, class: "inline-block" do %>
+          <%= image_tag "main_logo.png", alt: "Zoo Zoo Farm", class: "h-48 w-auto drop-shadow-md hover:opacity-90 transition-opacity" %>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# メインコンテンツ %>
+    <main class="<%= logged_in? ? 'md:ml-64 pb-20 md:pb-0 px-4 md:px-8 pt-2 md:pt-6' : '' %> min-h-screen">
+      <%= yield %>
+    </main>
+
+    <% if logged_in? %>
+      <%# モバイル用下部タブバー — lg以上では非表示 %>
+      <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-30">
+        <%= render "layouts/bottom_nav" %>
+      </nav>
+    <% end %>
+
+  </body>
+</html>

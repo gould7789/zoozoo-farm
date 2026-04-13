@@ -1,0 +1,71 @@
+<%# 支出記録フォーム（new/edit共用） %>
+<%= form_with model: expense_record, url: expense_record.new_record? ? expenses_path : expense_path(expense_record), data: { controller: "form", action: "submit->form#submit" } do |f| %>
+
+  <% if expense_record.errors.any? %>
+    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <p class="text-sm font-medium text-red-800 mb-2">입력 오류가 있습니다.</p>
+      <ul class="text-sm text-red-700 space-y-1 list-disc list-inside">
+        <% expense_record.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-4">
+
+    <%# data-controller="date-default" で空フィールドに今日の日付を自動セット %>
+    <div data-controller="date-default">
+      <%= f.label :spent_on, "지출 발생일", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.date_field :spent_on,
+          class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500",
+          data: { date_default_target: "field" } %>
+    </div>
+
+    <div>
+      <%= f.label :category, "지출 종류", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.select :category,
+          [
+            ["동물 구매비", "animal_purchase"],
+            ["먹이 구매비", "food"],
+            ["병원비", "medical"],
+            ["시체 처리비", "disposal"],
+            ["시설 유지보수", "maintenance"],
+            ["기타", "other"]
+          ],
+          {},
+          class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500 bg-white" %>
+    </div>
+
+    <%# data-controller="amount" で金額にリアルタイムカンマ表示 — 送信時は hidden で数値のみ送信 %>
+    <div data-controller="amount">
+      <%= f.label :amount, "지출액 (원)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <input type="text"
+             inputmode="numeric"
+             class="w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500"
+             placeholder="예: 30,000"
+             data-amount-target="display"
+             data-action="input->amount#input">
+      <%= f.hidden_field :amount, data: { amount_target: "hidden" } %>
+    </div>
+
+    <div>
+      <%= f.label :description, "지출 내용", class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= f.text_area :description,
+          rows: 4,
+          class: "w-full px-3 py-2.5 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500 resize-none overflow-hidden",
+          placeholder: "지출 내용을 자세하게 입력하세요",
+          data: { controller: "textarea", action: "input->textarea#resize" } %>
+    </div>
+
+  </div>
+
+  <div class="mt-4 flex flex-col gap-3">
+    <%= f.submit expense_record.persisted? ? "저장" : "등록",
+        class: "w-full h-11 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer",
+        data: { form_target: "submit" } %>
+    <%= link_to "취소", expenses_path,
+        class: "w-full h-11 inline-flex items-center justify-center bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors" %>
+  </div>
+
+<% end %>

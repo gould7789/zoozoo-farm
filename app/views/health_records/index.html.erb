@@ -1,0 +1,126 @@
+<%# 健康記録一覧ページ %>
+
+<div class="max-w-2xl md:max-w-4xl mx-auto">
+
+  <%# ヘッダー %>
+  <div class="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
+    <div class="flex items-center gap-3 min-w-0">
+      <%= link_to zone_animal_path(@zone, @animal), class: "text-gray-500 hover:text-gray-700 transition-colors shrink-0" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+      <% end %>
+      <div class="min-w-0">
+        <p class="text-xs text-gray-400 truncate"><%= @zone.name %> · <%= @animal.species %></p>
+        <h1 class="text-xl font-bold text-gray-900">건강 기록</h1>
+      </div>
+    </div>
+    <%= link_to new_zone_animal_health_log_path(@zone, @animal),
+        class: "shrink-0 ml-3 inline-flex items-center gap-1.5 h-9 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      추가
+    <% end %>
+  </div>
+
+  <% if @health_records.empty? %>
+    <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+      <p class="text-gray-400 text-sm">건강 기록이 없습니다.</p>
+    </div>
+  <% else %>
+
+    <%# モバイルカードリスト %>
+    <div class="space-y-3 md:hidden">
+      <% @health_records.each do |hr| %>
+        <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <p class="text-sm font-semibold text-gray-900"><%= hr.recorded_on %></p>
+              <% if hr.weight_kg.present? %>
+                <p class="text-xs text-gray-500 mt-0.5"><%= hr.weight_kg %> kg</p>
+              <% end %>
+            </div>
+            <%# コンディションバッジ %>
+            <% badge = case hr.condition
+               when "normal"  then ["정상", "bg-green-100 text-green-800"]
+               when "caution" then ["주의", "bg-yellow-100 text-yellow-800"]
+               when "danger"  then ["위험", "bg-red-100 text-red-800"]
+               else ["—", "bg-gray-100 text-gray-600"]
+               end %>
+            <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium <%= badge[1] %>">
+              <%= badge[0] %>
+            </span>
+          </div>
+          <p class="text-xs text-gray-400 mt-0.5">작성자: <%= hr.created_by&.name || "—" %></p>
+          <% if hr.note.present? %>
+            <p class="text-sm text-gray-600 line-clamp-2"><%= hr.note %></p>
+          <% end %>
+          <% if current_user.admin? || hr.created_by_id == current_user.id %>
+            <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+              <%= link_to "수정", edit_zone_animal_health_log_path(@zone, @animal, hr),
+                  class: "flex-1 inline-flex items-center justify-center h-9 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
+              <%= button_to "삭제", zone_animal_health_log_path(@zone, @animal, hr),
+                  method: :delete,
+                  data: { turbo_confirm: "정말 삭제하시겠습니까?" },
+                  form: { class: "flex-1" },
+                  class: "w-full inline-flex items-center justify-center h-9 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# デスクトップテーブル %>
+    <div class="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">관찰일</th>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">작성자</th>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">컨디션</th>
+            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">체중</th>
+            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">특이사항</th>
+            <th class="px-5 py-3 w-24"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <% @health_records.each do |hr| %>
+            <% badge = case hr.condition
+               when "normal"  then ["정상", "bg-green-100 text-green-800"]
+               when "caution" then ["주의", "bg-yellow-100 text-yellow-800"]
+               when "danger"  then ["위험", "bg-red-100 text-red-800"]
+               else ["—", "bg-gray-100 text-gray-600"]
+               end %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-5 py-3.5 text-center font-medium text-gray-900"><%= hr.recorded_on %></td>
+              <td class="px-5 py-3.5 text-center text-gray-500"><%= hr.created_by&.name || "—" %></td>
+              <td class="px-5 py-3.5 text-center">
+                <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium <%= badge[1] %>">
+                  <%= badge[0] %>
+                </span>
+              </td>
+              <td class="px-5 py-3.5 text-center text-gray-500"><%= hr.weight_kg.present? ? "#{hr.weight_kg} kg" : "—" %></td>
+              <td class="px-5 py-3.5 text-left text-gray-500 truncate"><%= hr.note.presence || "—" %></td>
+              <td class="px-5 py-3.5">
+                <% if current_user.admin? || hr.created_by_id == current_user.id %>
+                  <div class="flex items-center gap-2 justify-center">
+                    <%= link_to "수정", edit_zone_animal_health_log_path(@zone, @animal, hr),
+                        class: "text-xs text-blue-600 hover:underline" %>
+                    <%= button_to "삭제", zone_animal_health_log_path(@zone, @animal, hr),
+                        method: :delete,
+                        data: { turbo_confirm: "정말 삭제하시겠습니까?" },
+                        form: { class: "contents" },
+                        class: "text-xs text-red-500 hover:underline" %>
+                  </div>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+  <% end %>
+
+</div>

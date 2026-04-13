@@ -1,0 +1,17 @@
+<%# フラッシュメッセージ — notice（成功）と alert（エラー）を画面上部に固定表示 %>
+<%# data-controller="flash" で3秒後に自動フェードアウト %>
+<% if flash[:notice] %>
+  <div data-controller="flash" class="fixed top-4 left-0 <%= logged_in? ? 'md:left-64' : '' %> right-0 z-50 flex justify-center px-4 pointer-events-none">
+    <div class="bg-green-50 border border-green-200 text-green-800 text-sm rounded-lg px-4 py-3 shadow-md w-full max-w-sm">
+      <%= flash[:notice] %>
+    </div>
+  </div>
+<% end %>
+
+<% if flash[:alert] %>
+  <div data-controller="flash" class="fixed top-4 left-0 <%= logged_in? ? 'md:left-64' : '' %> right-0 z-50 flex justify-center px-4 pointer-events-none">
+    <div class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 shadow-md w-full max-w-sm">
+      <%= flash[:alert] %>
+    </div>
+  </div>
+<% end %>

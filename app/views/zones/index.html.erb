@@ -1,0 +1,27 @@
+<%# 館一覧ページ — ログイン後のホーム画面 %>
+<%# @zones: id順（シード登録順）で全館を表示 %>
+
+<div class="max-w-2xl md:max-w-4xl mx-auto">
+
+  <div class="mb-6 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
+    <h1 class="text-xl font-bold text-gray-800">관 목록</h1>
+    <p class="text-sm text-gray-600 mt-0.5">관리 중인 동물 구역</p>
+  </div>
+
+  <div class="grid grid-cols-2 gap-3 md:gap-4">
+    <% @zones.each do |zone| %>
+      <%= link_to zone_path(zone),
+          class: "bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm hover:shadow-md hover:border-gray-300 transition-all block min-h-[80px]" do %>
+        <div class="flex items-center justify-between h-full">
+          <div class="min-w-0 flex-1">
+            <h2 class="text-sm md:text-base font-semibold text-gray-900 break-keep"><%= zone.name %></h2>
+          </div>
+          <svg class="w-4 h-4 text-gray-400 shrink-0 ml-2 md:w-5 md:h-5 md:ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+</div>

@@ -200,18 +200,22 @@ bundle exec brakeman --no-pager
 ## ブランチ
 
 ```
-main                    ← デプロイ可能な安定バージョン
+main                         ← デプロイ可能な安定バージョン
   └── develop
-        ├── setup/init          # RSpec・FactoryBot・CI初期設定
-        ├── feature/auth        # ログイン・ログアウト・セッション管理
-        ├── feature/animals     # 館・動物 CRUD
-        ├── feature/health      # 健康記録 CRUD
-        ├── feature/feeding     # 給餌記録 CRUD
-        ├── feature/notices     # お知らせ CRUD
-        ├── feature/sales       # 売上記録 CRUD（Admin専用）
-        ├── feature/expenses    # 経費記録 CRUD（Admin専用）
-        ├── feature/admin       # 職員管理・管理者ダッシュボード
-        ├── feature/my-page     # マイページ・下部タブバー再設計
-        ├── style/mobile        # Tailwindモバイルファーストレイアウト
-        └── deploy/production   # UUID v7・韓国ロケール・セッション固定対策
+        ├── setup/init             # RSpec・FactoryBot・CI初期設定
+        ├── feature/auth           # ログイン・ログアウト・セッション管理
+        ├── feature/animals        # 館・動物 CRUD
+        ├── feature/health         # 健康記録 CRUD
+        ├── feature/feeding        # 給餌記録 CRUD
+        ├── feature/notices        # お知らせ CRUD
+        ├── feature/sales          # 売上記録 CRUD（Admin専用）
+        ├── feature/expenses       # 経費記録 CRUD（Admin専用）
+        ├── feature/admin          # 職員管理・管理者ダッシュボード
+        ├── feature/my-page        # マイページ・下部タブバー再設計
+        ├── feature/user-position  # 職位・チームリーダー・入社日フィールド追加
+        ├── feature/js-enhancements # JavaScript UI機能強化
+        ├── style/zoozoofarm-theme # Zoo Zoo Farmテーマ・カラーパレット適用
+        ├── style/login-page       # ログインページデザイン改善
+        ├── style/ui-polish        # UI全体の仕上げ・レイアウト調整
+        └── deploy/production      # UUID v7・韓国ロケール・セッション固定対策
 ```

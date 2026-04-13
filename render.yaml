@@ -8,6 +8,7 @@ services:
       bundle install
       bundle exec rails assets:precompile
       bundle exec rails db:migrate
+      bundle exec rails db:seed
     startCommand: bundle exec puma -C config/puma.rb
     envVars:
       - key: RAILS_ENV

@@ -1,28 +1,9 @@
 ko:
+  errors:
+    # 属性名を先頭に付けない — メッセージ自体に含めているため
+    format: "%{message}"
   activerecord:
-    attributes:
-      animal:
-        name: "개체명"
-        species: "종 이름"
-      feeding_record:
-        amount_g: "급여량"
-      health_record:
-        weight_kg: "체중"
-      notice:
-        category: "카테고리"
-      sales_record:
-        amount: "금액"
-        sold_on: "매출 발생일"
-        source: "판매처"
-      expense_record:
-        amount: "금액"
-        spent_on: "지출 발생일"
-        category: "지출 종류"
-        description: "지출 내용"
     errors:
-      # 属性名を先頭に付けない — メッセージ自体に含めているため
-      full_messages:
-        format: "%{message}"
       messages:
         taken: "이미 사용 중입니다."
         blank: "을(를) 입력해주세요."

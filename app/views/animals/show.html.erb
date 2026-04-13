@@ -34,7 +34,9 @@
 
       <div>
         <dt class="text-xs text-gray-400 mb-0.5">성별</dt>
-        <dd class="text-sm font-medium text-gray-900"><%= @animal.gender %></dd>
+        <dd class="text-sm font-medium text-gray-900">
+          <%= { "male" => "수컷", "female" => "암컷", "unknown" => "미확인" }[@animal.gender] %>
+        </dd>
       </div>
 
       <% if @animal.birth_date.present? %>
@@ -82,7 +84,7 @@
   </div>
 
   <%# 記録ナビゲーション — 健康記録・給餌記録 %>
-  <div class="grid grid-cols-2 gap-3 mb-6">
+  <div class="grid grid-cols-2 gap-3 mb-3">
     <%= link_to zone_animal_health_logs_path(@zone, @animal),
         class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all text-center block" do %>
       <p class="text-sm font-semibold text-gray-900">건강 기록</p>
@@ -97,13 +99,13 @@
 
   <%# 編集・削除はAdmin専用 — Staffには非表示 %>
   <% if current_user.admin? %>
-    <div class="flex gap-3">
+    <div class="grid grid-cols-2 gap-3 mb-6">
       <%= link_to "수정", edit_zone_animal_path(@zone, @animal),
-          class: "flex-1 inline-flex items-center justify-center h-11 px-4 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors" %>
+          class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all inline-flex items-center justify-center text-sm font-medium text-gray-700 hover:bg-gray-50" %>
       <%= button_to "삭제", zone_animal_path(@zone, @animal), method: :delete,
           data: { turbo_confirm: "정말 삭제하시겠습니까?" },
-          form: { class: "flex-1" },
-          class: "w-full inline-flex items-center justify-center h-11 px-4 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors" %>
+          form: { class: "contents" },
+          class: "w-full bg-red-500 hover:bg-red-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-all inline-flex items-center justify-center text-sm font-medium text-white" %>
     </div>
   <% end %>
 

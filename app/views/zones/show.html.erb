@@ -53,16 +53,33 @@
       <%# モバイルカードリスト %>
       <div class="space-y-3 md:hidden mt-4">
         <% @animals.each do |animal| %>
+          <% condition = animal.latest_condition %>
           <%= link_to zone_animal_path(@zone, animal),
               class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all flex items-center justify-between block",
               data: { search_target: "item", search_text: "#{animal.species} #{animal.name}" } do %>
-            <div>
+            <div class="min-w-0">
               <p class="text-sm font-semibold text-gray-900"><%= animal.species %></p>
               <% if animal.name.present? %>
                 <p class="text-xs text-gray-500 mt-0.5"><%= animal.name %></p>
               <% end %>
+              <div class="flex items-center gap-2 mt-1.5">
+                <span class="text-xs text-gray-400"><%= ({ "male" => "수컷", "female" => "암컷", "unknown" => "미확인" })[animal.gender] %></span>
+                <% if animal.age %>
+                  <span class="text-xs text-gray-400"><%= animal.age %>살</span>
+                <% end %>
+                <% if condition %>
+                  <%
+                    badge = case condition
+                    when "normal"  then { text: "정상", cls: "bg-green-100 text-green-700" }
+                    when "caution" then { text: "주의", cls: "bg-yellow-100 text-yellow-700" }
+                    when "danger"  then { text: "위험", cls: "bg-red-100 text-red-700" }
+                    end
+                  %>
+                  <span class="inline-block px-1.5 py-0.5 rounded text-xs font-medium <%= badge[:cls] %>"><%= badge[:text] %></span>
+                <% end %>
+              </div>
             </div>
-            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 text-gray-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
             </svg>
           <% end %>
@@ -75,28 +92,44 @@
         <table class="w-full text-sm table-fixed">
           <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th class="w-48 text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">종 이름</th>
-              <th class="w-36 text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">개체명</th>
-              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">성별</th>
-              <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">CITES</th>
+              <th class="w-1/5 text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">종 이름</th>
+              <th class="w-1/5 text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">개체명</th>
+              <th class="w-1/5 text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">성별</th>
+              <th class="w-1/5 text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">나이</th>
+              <th class="w-1/5 text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">건강 상태</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <% @animals.each do |animal| %>
+              <% condition = animal.latest_condition %>
               <tr class="hover:bg-gray-50 cursor-pointer"
                   data-controller="row-link"
                   data-row-link-url-value="<%= zone_animal_path(@zone, animal) %>"
                   data-action="click->row-link#navigate"
                   data-search-target="item"
                   data-search-text="<%= "#{animal.species} #{animal.name}" %>">
-                <td class="px-5 py-3.5 font-medium text-gray-900"><%= animal.species %></td>
-                <td class="px-5 py-3.5 text-gray-500 text-center"><%= animal.name.presence || "—" %></td>
-                <td class="px-5 py-3.5 text-gray-500 text-center"><%= ({ "male" => "수컷", "female" => "암컷", "unknown" => "미확인" })[animal.gender] %></td>
-                <td class="px-5 py-3.5 text-gray-500 text-center"><%= animal.cites_grade == "none" ? "—" : animal.cites_grade.upcase %></td>
+                <td class="px-4 py-3.5 font-medium text-gray-900 truncate"><%= animal.species %></td>
+                <td class="px-4 py-3.5 text-gray-500 text-center truncate"><%= animal.name.presence || "—" %></td>
+                <td class="px-4 py-3.5 text-gray-500 text-center"><%= ({ "male" => "수컷", "female" => "암컷", "unknown" => "미확인" })[animal.gender] %></td>
+                <td class="px-4 py-3.5 text-gray-500 text-center"><%= animal.age ? "#{animal.age}살" : "—" %></td>
+                <td class="px-4 py-3.5 text-center">
+                  <% if condition %>
+                    <%
+                      badge = case condition
+                      when "normal"  then { text: "정상", cls: "bg-green-100 text-green-700" }
+                      when "caution" then { text: "주의", cls: "bg-yellow-100 text-yellow-700" }
+                      when "danger"  then { text: "위험", cls: "bg-red-100 text-red-700" }
+                      end
+                    %>
+                    <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium <%= badge[:cls] %>"><%= badge[:text] %></span>
+                  <% else %>
+                    <span class="text-gray-400">—</span>
+                  <% end %>
+                </td>
               </tr>
             <% end %>
             <tr data-search-target="empty" class="hidden">
-              <td colspan="4" class="px-5 py-8 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
+              <td colspan="5" class="px-5 py-8 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
             </tr>
           </tbody>
         </table>

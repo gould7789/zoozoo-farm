@@ -45,6 +45,10 @@
           <dt class="text-xs text-gray-400 mb-0.5">생년월일</dt>
           <dd class="text-sm font-medium text-gray-900"><%= @animal.birth_date %></dd>
         </div>
+        <div>
+          <dt class="text-xs text-gray-400 mb-0.5">나이</dt>
+          <dd class="text-sm font-medium text-gray-900"><%= @animal.age %>살</dd>
+        </div>
       <% end %>
 
       <% if @animal.acquired_at.present? %>

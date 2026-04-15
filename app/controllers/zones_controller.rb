@@ -9,7 +9,7 @@ class ZonesController < ApplicationController
 
   def show
     @zone = Zone.find(params[:id])
-    # 館に所属するアクティブな動物を種名・個体名順で取得
-    @animals = @zone.animals.active.order(:species, :name)
+    # 館に所属するアクティブな動物を種名・個体名順で取得 — N+1防止のため健康記録を一括ロード
+    @animals = @zone.animals.active.includes(:health_records).order(:species, :name)
   end
 end

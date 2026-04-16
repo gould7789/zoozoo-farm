@@ -13,6 +13,8 @@ class AnimalsController < ApplicationController
   def new
     # 館に紐づいた新規動物インスタンスをビルド
     @animal = @zone.animals.build
+    # フォームのカテゴリドロップダウン用
+    @categories = @zone.animal_categories.order(:name)
   end
 
   def create
@@ -20,17 +22,21 @@ class AnimalsController < ApplicationController
     if @animal.save
       redirect_to zone_animal_path(@zone, @animal), notice: "동물을 등록했습니다."
     else
+      @categories = @zone.animal_categories.order(:name)
       render :new, status: :unprocessable_entity
     end
   end
 
   def edit
+    # 編集フォームのカテゴリドロップダウン用
+    @categories = @zone.animal_categories.order(:name)
   end
 
   def update
     if @animal.update(animal_params)
       redirect_to zone_animal_path(@zone, @animal), notice: "동물 정보를 수정했습니다."
     else
+      @categories = @zone.animal_categories.order(:name)
       render :edit, status: :unprocessable_entity
     end
   end
@@ -55,7 +61,8 @@ class AnimalsController < ApplicationController
     def animal_params
       params.require(:animal).permit(
         :name, :species, :gender, :birth_date,
-        :acquired_at, :acquisition_note, :cites_grade, :note
+        :acquired_at, :acquisition_note, :cites_grade, :note,
+        :animal_category_id, :individual_count
       )
     end
 end

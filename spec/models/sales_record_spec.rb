@@ -9,8 +9,8 @@ RSpec.describe SalesRecord, type: :model do
     it { should validate_presence_of(:source) }
     # 売上額は必須
     it { should validate_presence_of(:amount) }
-    # 売上額は0以上の整数
-    it { should validate_numericality_of(:amount).only_integer.is_greater_than_or_equal_to(0) }
+    # 売上額は0以上9999999以下の整数
+    it { should validate_numericality_of(:amount).only_integer.is_greater_than_or_equal_to(0).is_less_than_or_equal_to(9_999_999) }
 
     # 同じ日・同じ販売先の重複は不可（複合UNIQUE）
     it "同じsold_onとsourceの組み合わせは保存できない" do

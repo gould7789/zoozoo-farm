@@ -9,7 +9,7 @@ class FeedingRecord < ApplicationRecord
   validates :fed_at,    presence: true
   validates :food_type, presence: true
   # 給餌量は0以上の整数
-  validates :amount_g, numericality: { only_integer: true, greater_than_or_equal_to: 0 }, allow_nil: true
+  validates :amount_g, numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 99_999 }, allow_nil: true
 
   # 最新の給餌日時順に並べるスコープ
   scope :recent, -> { order(fed_at: :desc) }

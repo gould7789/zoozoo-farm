@@ -25,4 +25,15 @@ class Animal < ApplicationRecord
 
   # 削除されていない動物のみを返すスコープ
   scope :active, -> { where(active: true) }
+
+  # 韓国式年齢計算 — 生まれた年を1歳とし、元日に加算する
+  def age
+    return nil if birth_date.nil?
+    Date.today.year - birth_date.year + 1
+  end
+
+  # 最新の健康記録のconditionを返す — 記録がなければnilを返す
+  def latest_condition
+    health_records.recent.first&.condition
+  end
 end

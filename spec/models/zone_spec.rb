@@ -17,5 +17,7 @@ RSpec.describe Zone, type: :model do
   describe "アソシエーション" do
     # 動物が紐づいている館は削除できない（論理削除のみ許容する設計のため）
     it { should have_many(:animals).dependent(:restrict_with_error) }
+    # 館削除時はカテゴリも削除
+    it { should have_many(:animal_categories).dependent(:destroy) }
   end
 end

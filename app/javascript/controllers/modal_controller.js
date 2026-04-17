@@ -34,3 +34,20 @@ window.openModal = function (modalId) {
   el.querySelector("[data-modal-target='panel']").classList.remove("hidden")
   document.body.classList.add("overflow-hidden")
 }
+
+// カテゴリ行のインライン編集モード切替
+// サーバーラウンドトリップなし — DOMの表示・非表示のみ
+window.startEdit = function (categoryId) {
+  const row = document.getElementById(`category_row_${categoryId}`)
+  if (!row) return
+  row.querySelector("[data-view-mode]").classList.add("hidden")
+  row.querySelector("[data-edit-mode]").classList.remove("hidden")
+  row.querySelector("input[type='text']").focus()
+}
+
+window.cancelEdit = function (categoryId) {
+  const row = document.getElementById(`category_row_${categoryId}`)
+  if (!row) return
+  row.querySelector("[data-edit-mode]").classList.add("hidden")
+  row.querySelector("[data-view-mode]").classList.remove("hidden")
+}

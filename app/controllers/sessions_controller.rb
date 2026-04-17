@@ -18,7 +18,7 @@ class SessionsController < ApplicationController
       redirect_to root_path, notice: "로그인했습니다."
     else
       flash.now[:alert] = "이메일 또는 비밀번호가 올바르지 않습니다."
-      render :new, status: :unprocessable_content
+      render :new, status: :unprocessable_entity
     end
   end
 

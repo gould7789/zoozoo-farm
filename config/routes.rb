@@ -10,7 +10,7 @@ Rails.application.routes.draw do
   # 館（読み取り専用）→ 動物 → 記録（ネストルーティング）
   # health_records → health_logs に変更（内部テーブル名の隠蔽）
   resources :zones, only: [ :index, :show ] do
-    resources :animal_categories, only: [ :create, :edit, :update, :destroy ] do
+    resources :animal_categories, only: [ :create, :update, :destroy ] do
       member do
         patch :toggle
       end

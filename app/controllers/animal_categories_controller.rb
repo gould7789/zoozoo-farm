@@ -13,16 +13,18 @@ class AnimalCategoriesController < ApplicationController
     end
   end
 
-  def edit
-    @category = @zone.animal_categories.find(params[:id])
-  end
-
   def update
     @category = @zone.animal_categories.find(params[:id])
     if @category.update(category_params)
-      redirect_to zone_path(@zone), notice: "카테고리 이름을 수정했습니다."
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to zone_path(@zone), notice: "카테고리 이름을 수정했습니다." }
+      end
     else
-      render :edit, status: :unprocessable_entity
+      respond_to do |format|
+        format.turbo_stream { render turbo_stream: turbo_stream.update("category_row_#{@category.id}", partial: "animal_categories/category_row", locals: { category: @category, zone: @zone, editing: true }) }
+        format.html { redirect_to zone_path(@zone), alert: @category.errors.full_messages.to_sentence }
+      end
     end
   end
 

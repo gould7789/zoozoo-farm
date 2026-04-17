@@ -1,0 +1,20 @@
+<%# toggle後にアコーディオンとモーダルリストの両方をDOMで更新 %>
+
+<%# 1) アコーディオン全体を差し替え — hidden変更を即座に反映 %>
+<%= turbo_stream.update "category_accordion" do %>
+  <%= render "zones/accordion",
+      zone: @zone,
+      categories: @categories,
+      animals_by_category: @animals_by_category %>
+<% end %>
+
+<%# 2) モーダルのカテゴリ一覧を差し替え — チェックボックス状態と並び順を更新 %>
+<%= turbo_stream.update "modal_category_list" do %>
+  <% if @all_categories.empty? %>
+    <p class="px-6 py-8 text-center text-sm text-gray-400">등록된 카테고리가 없습니다.</p>
+  <% else %>
+    <% @all_categories.sort_by { |c| [c.hidden? ? 1 : 0, c.name] }.each do |category| %>
+      <%= render "animal_categories/category_row", category: category, zone: @zone %>
+    <% end %>
+  <% end %>
+<% end %>

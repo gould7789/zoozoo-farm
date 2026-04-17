@@ -1,0 +1,32 @@
+<%# カテゴリ管理モーダル内の1行 — turbo_streamで差し替えるためid必須 %>
+<div id="category_row_<%= category.id %>"
+     class="flex items-center justify-between px-6 py-3.5 hover:bg-gray-50 transition-colors">
+
+  <%# チェックボックス — クリックでhiddenトグル %>
+  <%= button_to toggle_zone_animal_category_path(zone, category),
+      method: :patch,
+      form: { class: "contents" },
+      class: "flex items-center gap-3 min-w-0 flex-1" do %>
+    <span class="inline-flex w-5 h-5 rounded border-2 items-center justify-center shrink-0 transition-colors <%= category.hidden? ? "border-gray-300 bg-white" : "border-green-500 bg-green-500" %>">
+      <% unless category.hidden? %>
+        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+        </svg>
+      <% end %>
+    </span>
+    <span class="text-sm font-medium truncate text-left <%= category.hidden? ? "text-gray-400 line-through" : "text-gray-800" %>">
+      <%= category.name %>
+    </span>
+  <% end %>
+
+  <%# 수정・삭제 %>
+  <div class="flex items-center gap-3 shrink-0 ml-3">
+    <%= link_to "수정", edit_zone_animal_category_path(zone, category),
+        class: "text-xs font-medium text-blue-500 hover:text-blue-700 transition-colors" %>
+    <%= button_to "삭제", zone_animal_category_path(zone, category),
+        method: :delete,
+        data: { turbo_confirm: "카테고리를 삭제하면 동물은 미분류로 이동됩니다. 계속하시겠습니까?" },
+        form: { class: "contents" },
+        class: "text-xs font-medium text-red-400 hover:text-red-600 transition-colors" %>
+  </div>
+</div>

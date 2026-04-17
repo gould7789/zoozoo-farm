@@ -60,5 +60,8 @@
       </nav>
     <% end %>
 
+    <%# モーダルはbody直下に配置 — fixedがビューポート基準で動作するように %>
+    <%= yield :modal %>
+
   </body>
 </html>

@@ -90,18 +90,21 @@
             </button>
           </div>
 
-          <%# カテゴリ追加フォーム %>
+          <%# カテゴリ追加フォーム — turbo_streamでリセットするためidを付与 %>
           <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">새 카테고리 추가</p>
-            <%= form_with model: [@zone, AnimalCategory.new] do |f| %>
-              <div class="flex gap-2">
-                <%= f.text_field :name,
-                    placeholder: "카테고리 이름",
-                    class: "flex-1 h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white" %>
-                <%= f.submit "추가",
-                    class: "h-10 px-5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer" %>
-              </div>
-            <% end %>
+            <div id="category_add_form">
+              <%= form_with model: [@zone, AnimalCategory.new] do |f| %>
+                <div class="flex gap-2">
+                  <%= f.text_field :name,
+                      placeholder: "카테고리 이름",
+                      class: "flex-1 h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white" %>
+                  <%= f.submit "추가",
+                      class: "h-10 px-5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer" %>
+                </div>
+                <p id="category_add_error" class="mt-1 text-xs text-red-500"></p>
+              <% end %>
+            </div>
           </div>
 
           <%# カテゴリ一覧 — turbo_streamで差し替えるためidを付与 %>

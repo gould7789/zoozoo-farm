@@ -7,9 +7,16 @@ class AnimalCategoriesController < ApplicationController
   def create
     @category = @zone.animal_categories.build(category_params)
     if @category.save
-      redirect_to zone_path(@zone), notice: "카테고리를 추가했습니다."
+      @all_categories = @zone.animal_categories.order(:name)
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to zone_path(@zone), notice: "카테고리를 추가했습니다." }
+      end
     else
-      redirect_to zone_path(@zone), alert: @category.errors.full_messages.to_sentence
+      respond_to do |format|
+        format.turbo_stream { render turbo_stream: turbo_stream.update("category_add_error", @category.errors.full_messages.to_sentence) }
+        format.html { redirect_to zone_path(@zone), alert: @category.errors.full_messages.to_sentence }
+      end
     end
   end
 

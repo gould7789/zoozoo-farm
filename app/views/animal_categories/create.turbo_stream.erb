@@ -1,0 +1,23 @@
+<%# 追加成功 — モーダルのカテゴリ一覧を全体差し替え + 入力フィールドをリセット %>
+
+<%# 1) カテゴリ一覧を最新状態に差し替え %>
+<%= turbo_stream.update "modal_category_list" do %>
+  <% @all_categories.sort_by { |c| [c.hidden? ? 1 : 0, c.name] }.each do |category| %>
+    <%= render "animal_categories/category_row", category: category, zone: @zone %>
+  <% end %>
+<% end %>
+
+<%# 2) 입력 필드 초기화 %>
+<%= turbo_stream.update "category_add_form" do %>
+  <%= form_with model: [@zone, AnimalCategory.new] do |f| %>
+    <div class="flex gap-2">
+      <%= f.text_field :name,
+          placeholder: "카테고리 이름",
+          autofocus: true,
+          class: "flex-1 h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white" %>
+      <%= f.submit "추가",
+          class: "h-10 px-5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer" %>
+    </div>
+    <p id="category_add_error" class="mt-1 text-xs text-red-500"></p>
+  <% end %>
+<% end %>

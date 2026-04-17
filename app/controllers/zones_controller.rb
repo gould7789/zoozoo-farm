@@ -11,8 +11,10 @@ class ZonesController < ApplicationController
 
   def show
     @zone = Zone.find(params[:id])
-    # カテゴリ一覧（名前順）
-    @categories = @zone.animal_categories.order(:name)
+    # アコーディオン表示用: hiddenでないカテゴリのみ
+    @categories = @zone.animal_categories.where(hidden: false).order(:name)
+    # モーダル用: 全カテゴリ（チェックボックス表示のため hidden含む）
+    @all_categories = @zone.animal_categories.order(:name)
     # アクティブ動物を一括ロードしてカテゴリIDでグループ化（N+1防止）
     # @animals_by_category[category.id] → そのカテゴリの動物
     # @animals_by_category[nil]         → 未分類の動物

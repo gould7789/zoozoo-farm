@@ -20,7 +20,5 @@ class ZonesController < ApplicationController
                                 .includes(:health_records)
                                 .order(:species, :name)
                                 .group_by(&:animal_category_id)
-    # Admin向けカテゴリ追加フォーム用の空インスタンス
-    @new_category = @zone.animal_categories.build
   end
 end

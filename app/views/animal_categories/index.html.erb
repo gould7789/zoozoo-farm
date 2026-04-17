@@ -1,0 +1,74 @@
+<%# カテゴリ管理ページ — Admin専用 %>
+<% content_for(:title, "카테고리 관리") %>
+
+<div class="max-w-2xl md:max-w-4xl mx-auto">
+
+  <%# ヘッダー %>
+  <div class="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
+    <div class="flex items-center gap-3 min-w-0">
+      <%= link_to zone_path(@zone), class: "text-gray-400 hover:text-gray-600 transition-colors shrink-0" do %>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
+      <% end %>
+      <div class="min-w-0">
+        <h1 class="text-xl font-bold text-gray-900 truncate">카테고리 관리</h1>
+        <p class="text-sm text-gray-500 mt-0.5"><%= @zone.name %></p>
+      </div>
+    </div>
+  </div>
+
+  <%# カテゴリ一覧 %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm mb-4 overflow-hidden">
+    <% if @categories.empty? %>
+      <div class="px-5 py-10 text-center">
+        <p class="text-gray-400 text-sm">등록된 카테고리가 없습니다.</p>
+      </div>
+    <% else %>
+      <ul class="divide-y divide-gray-100">
+        <% @categories.each do |category| %>
+          <li class="flex items-center justify-between px-5 py-4">
+            <span class="text-sm font-medium text-gray-900"><%= category.name %></span>
+            <div class="flex items-center gap-3">
+              <%= link_to edit_zone_animal_category_path(@zone, category),
+                  class: "text-sm text-blue-500 hover:text-blue-700 transition-colors" do %>
+                수정
+              <% end %>
+              <%= button_to zone_animal_category_path(@zone, category),
+                  method: :delete,
+                  data: { turbo_confirm: "카테고리를 삭제하면 동물은 미분류로 이동됩니다. 계속하시겠습니까?" },
+                  form: { class: "contents" },
+                  class: "text-sm text-red-400 hover:text-red-600 transition-colors" do %>
+                삭제
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </div>
+
+  <%# カテゴリ追加フォーム %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4">
+    <p class="text-sm font-medium text-gray-700 mb-3">새 카테고리 추가</p>
+    <%= form_with model: [ @zone, @new_category ] do |f| %>
+      <% if @new_category.errors.any? %>
+        <div class="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <ul class="text-sm text-red-700 space-y-1 list-disc list-inside">
+            <% @new_category.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+      <div class="flex gap-2">
+        <%= f.text_field :name,
+            placeholder: "카테고리 이름 (예: 알파카)",
+            class: "flex-1 h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500" %>
+        <%= f.submit "추가",
+            class: "h-10 px-4 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+
+</div>

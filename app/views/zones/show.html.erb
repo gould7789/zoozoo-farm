@@ -1,11 +1,10 @@
-<%# 館詳細ページ — 所属動物一覧を表示 %>
-<%# @animals: active=trueの動物を種名・個体名順で表示 %>
+<%# 館詳細ページ — カテゴリ別アコーディオン表示 %>
 <% content_for(:title) { @zone.name } %>
 
 <div class="max-w-2xl md:max-w-4xl mx-auto">
 
   <%# ヘッダー — 戻るリンク・タイトル・動物追加ボタン %>
-  <div class="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
+  <div class="flex items-center justify-between mb-4 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
     <div class="flex items-center gap-3 min-w-0">
       <%= link_to zones_path, class: "text-gray-400 hover:text-gray-600 transition-colors shrink-0" do %>
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -20,122 +19,105 @@
       </div>
     </div>
     <% if current_user.admin? %>
-      <%= link_to new_zone_animal_path(@zone),
-          class: "shrink-0 ml-3 inline-flex items-center gap-1.5 h-9 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-        추가
-      <% end %>
+      <div class="flex items-center gap-2 shrink-0 ml-3">
+        <button onclick="openModal('category-modal')"
+                class="inline-flex items-center h-9 px-3 bg-white border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
+          카테고리 관리
+        </button>
+        <%= link_to new_zone_animal_path(@zone),
+            class: "inline-flex items-center gap-1.5 h-9 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          추가
+        <% end %>
+      </div>
     <% end %>
   </div>
 
-  <%# 動物リスト — モバイル: カード / デスクトップ: テーブル %>
-  <% if @animals.empty? %>
-    <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
-      <p class="text-gray-400 text-sm">등록된 동물이 없습니다.</p>
+  <%# 検索フィールド + アコーディオン全体をsearchコントローラーで包む %>
+  <div data-controller="search">
+
+    <div class="relative mb-4">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+      </svg>
+      <input type="text"
+             placeholder="종 이름 또는 개체명으로 검색"
+             class="w-full h-10 pl-9 pr-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+             data-search-target="input"
+             data-action="input->search#filter">
     </div>
-  <% else %>
 
-    <%# 検索フィールド — data-controller="search" で動物リストをフィルタリング %>
-    <div data-controller="search" class="mb-4">
-      <div class="relative">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-        </svg>
-        <input type="text"
-               placeholder="종 이름 또는 개체명으로 검색"
-               class="w-full h-10 pl-9 pr-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
-               data-search-target="input"
-               data-action="input->search#filter">
-      </div>
+    <%# カテゴリ別アコーディオン — turbo_streamで差し替えるためidを付与 %>
+    <div id="category_accordion">
+      <%= render "zones/accordion",
+          zone: @zone,
+          categories: @categories,
+          animals_by_category: @animals_by_category %>
+    </div><%# / #category_accordion %>
 
-      <%# モバイルカードリスト %>
-      <div class="space-y-3 md:hidden mt-4">
-        <% @animals.each do |animal| %>
-          <% condition = animal.latest_condition %>
-          <%= link_to zone_animal_path(@zone, animal),
-              class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all flex items-center justify-between block",
-              data: { search_target: "item", search_text: "#{animal.species} #{animal.name}" } do %>
-            <div class="min-w-0">
-              <p class="text-sm font-semibold text-gray-900"><%= animal.species %></p>
-              <% if animal.name.present? %>
-                <p class="text-xs text-gray-500 mt-0.5"><%= animal.name %></p>
-              <% end %>
-              <div class="flex items-center gap-2 mt-1.5">
-                <span class="text-xs text-gray-400"><%= ({ "male" => "수컷", "female" => "암컷", "unknown" => "미확인" })[animal.gender] %></span>
-                <% if animal.age %>
-                  <span class="text-xs text-gray-400"><%= animal.age %>살</span>
-                <% end %>
-                <% if condition %>
-                  <%
-                    badge = case condition
-                    when "normal"  then { text: "정상", cls: "bg-green-100 text-green-700" }
-                    when "caution" then { text: "주의", cls: "bg-yellow-100 text-yellow-700" }
-                    when "danger"  then { text: "위험", cls: "bg-red-100 text-red-700" }
-                    end
-                  %>
-                  <span class="inline-block px-1.5 py-0.5 rounded text-xs font-medium <%= badge[:cls] %>"><%= badge[:text] %></span>
-                <% end %>
-              </div>
+    <p data-search-target="empty" class="hidden text-center text-gray-400 text-sm py-8">검색 결과가 없습니다.</p>
+
+  </div><%# / data-controller="search" %>
+
+  <%# カテゴリ管理モーダルをbody直下にレンダリング — fixedがビューポート基準になるように %>
+  <% if current_user.admin? %>
+    <% content_for :modal do %>
+      <div data-controller="modal" id="category-modal">
+
+        <%# オーバーレイ %>
+        <div data-modal-target="overlay"
+             data-action="click->modal#closeOnOverlay"
+             class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40">
+        </div>
+
+        <%# モーダルパネル — 画面中央 %>
+        <div data-modal-target="panel"
+             class="hidden fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+          <%# ヘッダー — 連한 초록으로 조정 %>
+          <div class="flex items-center justify-between px-6 py-5 bg-green-50 border-b border-green-200">
+            <div>
+              <h2 class="text-base font-bold text-green-900">카테고리 관리</h2>
+              <p class="text-xs text-green-600 mt-0.5"><%= @zone.name %></p>
             </div>
-            <svg class="w-4 h-4 text-gray-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-            </svg>
-          <% end %>
-        <% end %>
-        <p data-search-target="empty" class="hidden text-center text-gray-400 text-sm py-8">검색 결과가 없습니다.</p>
-      </div>
+            <button data-action="click->modal#close"
+                    class="text-green-600 hover:text-green-900 transition-colors p-1">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-      <%# デスクトップテーブル %>
-      <div class="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mt-4">
-        <table class="w-full text-sm table-fixed">
-          <thead class="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th class="w-1/5 text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">종 이름</th>
-              <th class="w-1/5 text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">개체명</th>
-              <th class="w-1/5 text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">성별</th>
-              <th class="w-1/5 text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">나이</th>
-              <th class="w-1/5 text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">건강 상태</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100">
-            <% @animals.each do |animal| %>
-              <% condition = animal.latest_condition %>
-              <tr class="hover:bg-gray-50 cursor-pointer"
-                  data-controller="row-link"
-                  data-row-link-url-value="<%= zone_animal_path(@zone, animal) %>"
-                  data-action="click->row-link#navigate"
-                  data-search-target="item"
-                  data-search-text="<%= "#{animal.species} #{animal.name}" %>">
-                <td class="px-4 py-3.5 font-medium text-gray-900 truncate"><%= animal.species %></td>
-                <td class="px-4 py-3.5 text-gray-500 text-center truncate"><%= animal.name.presence || "—" %></td>
-                <td class="px-4 py-3.5 text-gray-500 text-center"><%= ({ "male" => "수컷", "female" => "암컷", "unknown" => "미확인" })[animal.gender] %></td>
-                <td class="px-4 py-3.5 text-gray-500 text-center"><%= animal.age ? "#{animal.age}살" : "—" %></td>
-                <td class="px-4 py-3.5 text-center">
-                  <% if condition %>
-                    <%
-                      badge = case condition
-                      when "normal"  then { text: "정상", cls: "bg-green-100 text-green-700" }
-                      when "caution" then { text: "주의", cls: "bg-yellow-100 text-yellow-700" }
-                      when "danger"  then { text: "위험", cls: "bg-red-100 text-red-700" }
-                      end
-                    %>
-                    <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium <%= badge[:cls] %>"><%= badge[:text] %></span>
-                  <% else %>
-                    <span class="text-gray-400">—</span>
-                  <% end %>
-                </td>
-              </tr>
+          <%# カテゴリ追加フォーム %>
+          <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">새 카테고리 추가</p>
+            <%= form_with model: [@zone, AnimalCategory.new] do |f| %>
+              <div class="flex gap-2">
+                <%= f.text_field :name,
+                    placeholder: "카테고리 이름",
+                    class: "flex-1 h-10 px-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white" %>
+                <%= f.submit "추가",
+                    class: "h-10 px-5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer" %>
+              </div>
             <% end %>
-            <tr data-search-target="empty" class="hidden">
-              <td colspan="5" class="px-5 py-8 text-center text-gray-400 text-sm">검색 결과가 없습니다.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+          </div>
 
+          <%# カテゴリ一覧 — turbo_streamで差し替えるためidを付与 %>
+          <div id="modal_category_list" class="max-h-80 overflow-y-auto divide-y divide-gray-100">
+            <% if @all_categories.empty? %>
+              <p class="px-6 py-8 text-center text-sm text-gray-400">등록된 카테고리가 없습니다.</p>
+            <% else %>
+              <% @all_categories.sort_by { |c| [c.hidden? ? 1 : 0, c.name] }.each do |category| %>
+                <%= render "animal_categories/category_row", category: category, zone: @zone %>
+              <% end %>
+            <% end %>
+          </div>
+
+        </div>
+      </div>
+    <% end %>
   <% end %>
 
 </div>

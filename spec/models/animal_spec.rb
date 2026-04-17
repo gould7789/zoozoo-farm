@@ -12,6 +12,8 @@ RSpec.describe Animal, type: :model do
   describe "アソシエーション" do
     # 動物は必ずどこかの館に所属する
     it { should belong_to(:zone) }
+    # カテゴリは任意
+    it { should belong_to(:animal_category).optional }
   end
 
   describe "Enum" do
@@ -19,6 +21,11 @@ RSpec.describe Animal, type: :model do
     it { should define_enum_for(:gender).with_values(male: 0, female: 1, unknown: 2) }
     # cites_grade: 0=none, 1=I, 2=II, 3=III — prefixでARのnone?メソッドとの衝突を回避
     it { should define_enum_for(:cites_grade).with_values(none: 0, grade_i: 1, grade_ii: 2, grade_iii: 3).with_prefix(:cites) }
+  end
+
+  describe "バリデーション — individual_count" do
+    # 個体数は1以上の整数
+    it { should validate_numericality_of(:individual_count).only_integer.is_greater_than_or_equal_to(1) }
   end
 
   describe "デフォルト値" do
@@ -37,6 +44,11 @@ RSpec.describe Animal, type: :model do
     # 新規登録時は必ず有効状態
     it "activeのデフォルトはtrue" do
       expect(animal.active).to be true
+    end
+
+    # 個体数のデフォルトは1
+    it "individual_countのデフォルトは1" do
+      expect(animal.individual_count).to eq(1)
     end
   end
 

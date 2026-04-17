@@ -10,26 +10,40 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_13_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_17_050723) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
+
+  create_table "animal_categories", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "hidden", default: false, null: false
+    t.string "name", limit: 100, null: false
+    t.datetime "updated_at", null: false
+    t.uuid "zone_id", null: false
+    t.index ["zone_id", "name"], name: "idx_animal_categories_zone_name", unique: true
+    t.index ["zone_id"], name: "index_animal_categories_on_zone_id"
+  end
 
   create_table "animals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.date "acquired_at"
     t.text "acquisition_note"
     t.boolean "active", default: true, null: false
+    t.uuid "animal_category_id"
     t.date "birth_date"
     t.integer "cites_grade", limit: 2, default: 0, null: false
     t.datetime "created_at", null: false
     t.integer "gender", limit: 2, default: 2, null: false
+    t.integer "individual_count", default: 1, null: false
     t.string "name", limit: 100
     t.text "note"
     t.string "species", limit: 100, null: false
     t.datetime "updated_at", null: false
     t.uuid "zone_id", null: false
+    t.index ["animal_category_id"], name: "index_animals_on_animal_category_id"
     t.index ["zone_id"], name: "idx_animals_zone_id"
     t.index ["zone_id"], name: "index_animals_on_zone_id"
+    t.check_constraint "individual_count >= 1", name: "chk_animals_individual_count"
   end
 
   create_table "expense_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -120,6 +134,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_13_000001) do
     t.index ["name"], name: "index_zones_on_name", unique: true
   end
 
+  add_foreign_key "animal_categories", "zones"
+  add_foreign_key "animals", "animal_categories", on_delete: :nullify
   add_foreign_key "animals", "zones"
   add_foreign_key "expense_records", "users", column: "created_by_id"
   add_foreign_key "feeding_records", "animals"

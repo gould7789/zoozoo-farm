@@ -1,0 +1,4 @@
+<%# 수정 성공 — 해당 행을 보기 모드로 교체 %>
+<%= turbo_stream.update "category_row_#{@category.id}" do %>
+  <%= render "animal_categories/category_row", category: @category, zone: @zone, editing: false %>
+<% end %>

@@ -52,9 +52,9 @@
 
 ---
 
-## ER図
+## ERD
 
-<img width="2790" height="762" alt="データベースERD" src="https://github.com/user-attachments/assets/17e31f2e-30af-4380-84f6-83f2ce6ee1c6" />
+<img width="2000" height="762" alt="ERD" src="https://github.com/user-attachments/assets/ac81983b-91a7-4f3c-b844-508fddf8f7b8" />
 
 ---
 

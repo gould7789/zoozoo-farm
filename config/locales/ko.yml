@@ -86,3 +86,35 @@ ko:
               less_than_or_equal_to: "금액은 9,999,999원 이하로 입력해주세요."
             description:
               blank: "지출 내용을 입력해주세요."
+  # CSVエクスポート用 enum の韓国語ラベル
+  enums:
+    health_record:
+      condition:
+        normal: "정상"
+        caution: "주의"
+        danger: "위험"
+    animal:
+      gender:
+        male: "수컷"
+        female: "암컷"
+        unknown: "미상"
+      cites_grade:
+        none: "해당없음"
+        grade_i: "1급"
+        grade_ii: "2급"
+        grade_iii: "3급"
+    sales_record:
+      source:
+        vending_1: "자판기 1"
+        vending_2: "자판기 2"
+        vending_3: "자판기 3"
+        vending_4: "자판기 4"
+        stall: "가판"
+    expense_record:
+      category:
+        animal_purchase: "동물 구매비"
+        food: "먹이 구매비"
+        medical: "병원비"
+        disposal: "시체 처리비"
+        maintenance: "시설 유지보수"
+        other: "기타"

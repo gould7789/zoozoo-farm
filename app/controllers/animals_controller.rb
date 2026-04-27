@@ -85,7 +85,7 @@ class AnimalsController < ApplicationController
 
     def animals_csv(animals)
       "\xEF\xBB\xBF" + CSV.generate(encoding: "UTF-8") do |csv|
-        csv << [ "분류", "이름", "종", "성별", "생년월일", "입수일", "CITES 등급", "특이사항" ]
+        csv << [ "분류", "이름", "종", "개체수", "성별", "생년월일", "입수일", "CITES 등급", "특이사항" ]
         last_category = nil
         animals.each do |a|
           current_category = a.animal_category&.name || "미분류"
@@ -96,6 +96,7 @@ class AnimalsController < ApplicationController
             category_cell,
             a.name,
             a.species,
+            a.individual_count,
             I18n.t("enums.animal.gender.#{a.gender}"),
             a.birth_date,
             a.acquired_at,

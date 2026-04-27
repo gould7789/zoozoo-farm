@@ -24,6 +24,21 @@ class SalesRecordsController < ApplicationController
     @sales_records = all_records.select { |sr|
       sr.sold_on.year == @selected_year && sr.sold_on.month == @selected_month
     }
+
+    respond_to do |format|
+      format.html
+      format.csv do
+        filename = if @selected_year && @selected_month
+          "매출기록_#{@selected_year}년#{ "%02d" % @selected_month }월.csv"
+        else
+          "매출기록_#{Date.today}.csv"
+        end
+        send_data sales_records_csv(@sales_records),
+                  filename: filename,
+                  type: "text/csv; charset=utf-8",
+                  disposition: "attachment"
+      end
+    end
   end
 
   def new
@@ -66,5 +81,20 @@ class SalesRecordsController < ApplicationController
     # ストロングパラメータ — created_byはコントローラーで強制設定するので除外
     def sales_record_params
       params.require(:sales_record).permit(:sold_on, :source, :amount, :note)
+    end
+
+    def sales_records_csv(records)
+      "\xEF\xBB\xBF" + CSV.generate(encoding: "UTF-8") do |csv|
+        csv << [ "매출일", "판매처", "금액(원)", "특이사항", "작성자" ]
+        records.each do |r|
+          csv << [
+            r.sold_on.strftime("%Y-%m-%d"),
+            I18n.t("enums.sales_record.source.#{r.source}"),
+            r.amount,
+            r.note,
+            r.created_by&.name
+          ]
+        end
+      end
     end
 end

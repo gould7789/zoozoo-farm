@@ -24,6 +24,21 @@ class ExpenseRecordsController < ApplicationController
     @expense_records = all_records.select { |er|
       er.spent_on.year == @selected_year && er.spent_on.month == @selected_month
     }
+
+    respond_to do |format|
+      format.html
+      format.csv do
+        filename = if @selected_year && @selected_month
+          "지출기록_#{@selected_year}년#{ "%02d" % @selected_month }월.csv"
+        else
+          "지출기록_#{Date.today}.csv"
+        end
+        send_data expense_records_csv(@expense_records),
+                  filename: filename,
+                  type: "text/csv; charset=utf-8",
+                  disposition: "attachment"
+      end
+    end
   end
 
   def new
@@ -66,5 +81,20 @@ class ExpenseRecordsController < ApplicationController
     # ストロングパラメータ — created_byはコントローラーで強制設定するので除外
     def expense_record_params
       params.require(:expense_record).permit(:spent_on, :category, :amount, :description)
+    end
+
+    def expense_records_csv(records)
+      "\xEF\xBB\xBF" + CSV.generate(encoding: "UTF-8") do |csv|
+        csv << [ "지출일", "카테고리", "금액(원)", "상세내용", "작성자" ]
+        records.each do |r|
+          csv << [
+            r.spent_on.strftime("%Y-%m-%d"),
+            I18n.t("enums.expense_record.category.#{r.category}"),
+            r.amount,
+            r.description,
+            r.created_by&.name
+          ]
+        end
+      end
     end
 end

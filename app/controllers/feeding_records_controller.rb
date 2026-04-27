@@ -9,6 +9,15 @@ class FeedingRecordsController < ApplicationController
   def index
     # 最新の給餌日時順に表示
     @feeding_records = @animal.feeding_records.recent
+    respond_to do |format|
+      format.html
+      format.csv do
+        send_data feeding_records_csv(@feeding_records),
+                  filename: "먹이기록_#{@animal.name.presence || @animal.species}_#{Date.today}.csv",
+                  type: "text/csv; charset=utf-8",
+                  disposition: "attachment"
+      end
+    end
   end
 
   def new
@@ -67,5 +76,21 @@ class FeedingRecordsController < ApplicationController
     # ストロングパラメータ — created_byはコントローラーで強制設定するので除外
     def feeding_record_params
       params.require(:feeding_record).permit(:fed_at, :food_type, :amount_g, :note)
+    end
+
+    def feeding_records_csv(records)
+      CSV.generate(encoding: "UTF-8") do |csv|
+        csv << [ "급여 일시", "먹이 종류", "급여량(g)", "특이사항", "작성자", "입력일" ]
+        records.each do |r|
+          csv << [
+            r.fed_at.strftime("%Y-%m-%d %H:%M"),
+            r.food_type,
+            r.amount_g,
+            r.note,
+            r.created_by&.name,
+            r.created_at.strftime("%Y-%m-%d %H:%M")
+          ]
+        end
+      end
     end
 end

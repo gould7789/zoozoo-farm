@@ -17,12 +17,14 @@
       </div>
     </div>
     <div class="flex items-center gap-2 shrink-0 ml-3">
-      <%= link_to zone_animal_health_logs_path(@zone, @animal, format: :csv),
-          class: "inline-flex items-center gap-1.5 h-9 px-3 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium rounded-lg transition-colors" do %>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-        </svg>
-        CSV
+      <% if current_user.admin? %>
+        <%= link_to zone_animal_health_logs_path(@zone, @animal, format: :csv),
+            class: "inline-flex items-center gap-1.5 h-9 px-3 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium rounded-lg transition-colors" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+          </svg>
+          CSV
+        <% end %>
       <% end %>
       <%= link_to new_zone_animal_health_log_path(@zone, @animal),
           class: "inline-flex items-center gap-1.5 h-9 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors" do %>

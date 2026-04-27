@@ -81,7 +81,7 @@ class AnimalsController < ApplicationController
     end
 
     def animals_csv(animals)
-      CSV.generate(encoding: "UTF-8") do |csv|
+      "\xEF\xBB\xBF" + CSV.generate(encoding: "UTF-8") do |csv|
         csv << [ "이름", "종", "분류", "성별", "생년월일", "입수일", "CITES 등급", "특이사항" ]
         animals.each do |a|
           csv << [

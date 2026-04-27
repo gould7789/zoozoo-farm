@@ -29,7 +29,7 @@ class ExpenseRecordsController < ApplicationController
       format.html
       format.csv do
         filename = if @selected_year && @selected_month
-          "지출기록_#{@selected_year}년#{format("%02d", @selected_month)}월.csv"
+          "지출기록_#{@selected_year}년#{ "%02d" % @selected_month }월.csv"
         else
           "지출기록_#{Date.today}.csv"
         end
@@ -84,7 +84,7 @@ class ExpenseRecordsController < ApplicationController
     end
 
     def expense_records_csv(records)
-      CSV.generate(encoding: "UTF-8") do |csv|
+      "\xEF\xBB\xBF" + CSV.generate(encoding: "UTF-8") do |csv|
         csv << [ "지출일", "카테고리", "금액(원)", "상세내용", "작성자" ]
         records.each do |r|
           csv << [

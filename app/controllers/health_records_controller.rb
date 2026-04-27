@@ -79,7 +79,7 @@ class HealthRecordsController < ApplicationController
     end
 
     def health_records_csv(records)
-      CSV.generate(encoding: "UTF-8") do |csv|
+      "\xEF\xBB\xBF" + CSV.generate(encoding: "UTF-8") do |csv|
         csv << [ "관찰일", "체중(kg)", "상태", "특이사항", "작성자", "입력일" ]
         records.each do |r|
           csv << [

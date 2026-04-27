@@ -9,6 +9,15 @@ class HealthRecordsController < ApplicationController
   def index
     # 最新の観察日順に表示
     @health_records = @animal.health_records.recent
+    respond_to do |format|
+      format.html
+      format.csv do
+        send_data health_records_csv(@health_records),
+                  filename: "건강기록_#{@animal.name.presence || @animal.species}_#{Date.today}.csv",
+                  type: "text/csv; charset=utf-8",
+                  disposition: "attachment"
+      end
+    end
   end
 
   def new
@@ -67,5 +76,21 @@ class HealthRecordsController < ApplicationController
     # ストロングパラメータ — created_byはコントローラーで強制設定するので除外
     def health_record_params
       params.require(:health_record).permit(:recorded_on, :weight_kg, :condition, :note)
+    end
+
+    def health_records_csv(records)
+      CSV.generate(encoding: "UTF-8") do |csv|
+        csv << [ "관찰일", "체중(kg)", "상태", "특이사항", "작성자", "입력일" ]
+        records.each do |r|
+          csv << [
+            r.recorded_on,
+            r.weight_kg,
+            I18n.t("enums.health_record.condition.#{r.condition}"),
+            r.note,
+            r.created_by&.name,
+            r.created_at.strftime("%Y-%m-%d %H:%M")
+          ]
+        end
+      end
     end
 end

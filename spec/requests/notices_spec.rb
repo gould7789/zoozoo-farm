@@ -4,63 +4,41 @@ require "rails_helper"
 
 RSpec.describe "Notices", type: :request do
   let(:admin) { create(:user, :admin) }
-  let(:staff) { create(:user) }           # デフォルトはstaffロール
-  let(:other) { create(:user) }           # 別のStaffユーザー
+  let(:staff) { create(:user) }
+  let(:other) { create(:user) }
 
   describe "GET /notices" do
-    # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
-      it "ログインページにリダイレクトする" do
-        get notices_path
-        expect(response).to redirect_to(login_path)
-      end
+      before { get notices_path }
+      it_behaves_like "ログインが必要"
     end
 
-    # Staff/Admin共に一覧閲覧可能
     context "ログイン済み" do
-      before { sign_in(staff) }
-
-      it "200を返す" do
-        get notices_path
-        expect(response).to have_http_status(:ok)
-      end
+      before { sign_in(staff); get notices_path }
+      it { expect(response).to have_http_status(:ok) }
     end
   end
 
   describe "GET /notices/new" do
-    # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
-      it "ログインページにリダイレクトする" do
-        get new_notice_path
-        expect(response).to redirect_to(login_path)
-      end
+      before { get new_notice_path }
+      it_behaves_like "ログインが必要"
     end
 
-    # Staff/Admin共に新規作成フォームにアクセス可能
     context "ログイン済み" do
-      before { sign_in(staff) }
-
-      it "200を返す" do
-        get new_notice_path
-        expect(response).to have_http_status(:ok)
-      end
+      before { sign_in(staff); get new_notice_path }
+      it { expect(response).to have_http_status(:ok) }
     end
   end
 
   describe "POST /notices" do
-    let(:valid_params) do
-      { notice: { category: "general", body: "テストお知らせ" } }
-    end
+    let(:valid_params) { { notice: { category: "general", body: "テストお知らせ" } } }
 
-    # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
-      it "ログインページにリダイレクトする" do
-        post notices_path, params: valid_params
-        expect(response).to redirect_to(login_path)
-      end
+      before { post notices_path, params: valid_params }
+      it_behaves_like "ログインが必要"
     end
 
-    # Staffが作成すると自分のcreated_byで保存される
     context "Staffが作成" do
       before { sign_in(staff) }
 
@@ -73,44 +51,28 @@ RSpec.describe "Notices", type: :request do
   end
 
   describe "GET /notices/:id/edit" do
-    # 自分のお知らせはedit可能
     context "本人のお知らせ" do
       let(:notice) { create(:notice, created_by: staff) }
-      before { sign_in(staff) }
-
-      it "200を返す" do
-        get edit_notice_path(notice)
-        expect(response).to have_http_status(:ok)
-      end
+      before { sign_in(staff); get edit_notice_path(notice) }
+      it { expect(response).to have_http_status(:ok) }
     end
 
-    # 他人のお知らせはedit不可 — ルートへリダイレクト
     context "他人のお知らせ" do
       let(:notice) { create(:notice, created_by: other) }
-      before { sign_in(staff) }
-
-      it "ルートにリダイレクトする" do
-        get edit_notice_path(notice)
-        expect(response).to redirect_to(root_path)
-      end
+      before { sign_in(staff); get edit_notice_path(notice) }
+      it_behaves_like "アクセス拒否"
     end
 
-    # Adminは他人のお知らせもedit可能
     context "Adminが他人のお知らせにアクセス" do
       let(:notice) { create(:notice, created_by: staff) }
-      before { sign_in(admin) }
-
-      it "200を返す" do
-        get edit_notice_path(notice)
-        expect(response).to have_http_status(:ok)
-      end
+      before { sign_in(admin); get edit_notice_path(notice) }
+      it { expect(response).to have_http_status(:ok) }
     end
   end
 
   describe "PATCH /notices/:id" do
     let(:valid_params) { { notice: { body: "更新されたお知らせ" } } }
 
-    # 自分のお知らせは更新可能
     context "本人が更新" do
       let(:notice) { create(:notice, created_by: staff) }
       before { sign_in(staff) }
@@ -122,20 +84,14 @@ RSpec.describe "Notices", type: :request do
       end
     end
 
-    # 他人のお知らせは更新不可
     context "他人のお知らせを更新しようとする" do
       let(:notice) { create(:notice, created_by: other) }
-      before { sign_in(staff) }
-
-      it "ルートにリダイレクトする" do
-        patch notice_path(notice), params: valid_params
-        expect(response).to redirect_to(root_path)
-      end
+      before { sign_in(staff); patch notice_path(notice), params: valid_params }
+      it_behaves_like "アクセス拒否"
     end
   end
 
   describe "DELETE /notices/:id" do
-    # 自分のお知らせは削除可能
     context "本人が削除" do
       let(:notice) { create(:notice, created_by: staff) }
       before { sign_in(staff) }
@@ -147,18 +103,12 @@ RSpec.describe "Notices", type: :request do
       end
     end
 
-    # 他人のお知らせは削除不可
     context "他人のお知らせを削除しようとする" do
       let(:notice) { create(:notice, created_by: other) }
-      before { sign_in(staff) }
-
-      it "ルートにリダイレクトする" do
-        delete notice_path(notice)
-        expect(response).to redirect_to(root_path)
-      end
+      before { sign_in(staff); delete notice_path(notice) }
+      it_behaves_like "アクセス拒否"
     end
 
-    # Adminは他人のお知らせも削除可能
     context "Adminが他人のお知らせを削除" do
       let(:notice) { create(:notice, created_by: staff) }
       before { sign_in(admin) }

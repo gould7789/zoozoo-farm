@@ -1,31 +1,27 @@
 require "rails_helper"
 
 RSpec.describe User, type: :model do
-  # バリデーションのテスト
-  describe "validations" do
+  describe "バリデーション" do
     subject { build(:user) }
 
-    # メールアドレス
     it { is_expected.to validate_presence_of(:email) }
     it { is_expected.to validate_uniqueness_of(:email).case_insensitive }
-
-    # 名前
     it { is_expected.to validate_presence_of(:name) }
-
-    # パスワード（has_secure_passwordが自動追加）
     it { is_expected.to validate_presence_of(:password) }
   end
 
-  # enumのテスト
   describe "enum" do
     it { is_expected.to define_enum_for(:role).with_values(admin: 0, staff: 1) }
   end
 
-  # アソシエーションのテスト（Phase3以降で追加予定）
-  # it { is_expected.to have_many(:health_records) }
-  # it { is_expected.to have_many(:feeding_records) }
+  describe "アソシエーション" do
+    it { is_expected.to have_many(:health_records).with_foreign_key(:created_by_id).dependent(:nullify) }
+    it { is_expected.to have_many(:feeding_records).with_foreign_key(:created_by_id).dependent(:nullify) }
+    it { is_expected.to have_many(:notices).with_foreign_key(:created_by_id).dependent(:nullify) }
+    it { is_expected.to have_many(:sales_records).with_foreign_key(:created_by_id).dependent(:nullify) }
+    it { is_expected.to have_many(:expense_records).with_foreign_key(:created_by_id).dependent(:nullify) }
+  end
 
-  # スコープのテスト
   describe ".active" do
     it "アクティブなユーザーのみ返す" do
       active_user   = create(:user)
@@ -36,25 +32,20 @@ RSpec.describe User, type: :model do
     end
   end
 
-  # ロールのテスト
   describe "role" do
     it "デフォルトはstaffである" do
-      user = build(:user)
-      expect(user.role).to eq("staff")
+      expect(build(:user).role).to eq("staff")
     end
 
     it "adminロールを持てる" do
-      admin = build(:user, :admin)
-      expect(admin.admin?).to be true
+      expect(build(:user, :admin)).to be_admin
     end
 
     it "staffロールを持てる" do
-      staff = build(:user)
-      expect(staff.staff?).to be true
+      expect(build(:user)).to be_staff
     end
   end
 
-  # has_secure_passwordのテスト
   describe "password authentication" do
     it "正しいパスワードで認証できる" do
       user = create(:user, password: "secret123")

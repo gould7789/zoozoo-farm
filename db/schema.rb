@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_17_050723) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_12_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -41,7 +41,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_17_050723) do
     t.datetime "updated_at", null: false
     t.uuid "zone_id", null: false
     t.index ["animal_category_id"], name: "index_animals_on_animal_category_id"
-    t.index ["zone_id"], name: "idx_animals_zone_id"
     t.index ["zone_id"], name: "index_animals_on_zone_id"
     t.check_constraint "individual_count >= 1", name: "chk_animals_individual_count"
   end

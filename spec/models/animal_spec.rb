@@ -47,5 +47,59 @@ RSpec.describe Animal, type: :model do
       expect(Animal.active).to include(active_animal)
       expect(Animal.active).not_to include(inactive_animal)
     end
+
+    describe ".with_alert_condition" do
+      let(:user) { create(:user) }
+
+      it "最新の健康記録がcautionの動物を返す" do
+        animal = create(:animal)
+        create(:health_record, animal: animal, created_by: user, condition: :caution, recorded_on: Date.today)
+
+        expect(Animal.with_alert_condition).to include(animal)
+      end
+
+      it "最新の健康記録がdangerの動物を返す" do
+        animal = create(:animal)
+        create(:health_record, animal: animal, created_by: user, condition: :danger, recorded_on: Date.today)
+
+        expect(Animal.with_alert_condition).to include(animal)
+      end
+
+      it "最新の健康記録がnormalの動物は返さない" do
+        animal = create(:animal)
+        create(:health_record, animal: animal, created_by: user, condition: :normal, recorded_on: Date.today)
+
+        expect(Animal.with_alert_condition).not_to include(animal)
+      end
+
+      it "健康記録がない動物は返さない" do
+        animal = create(:animal)
+
+        expect(Animal.with_alert_condition).not_to include(animal)
+      end
+
+      it "古い記録がcautionでも最新記録がnormalなら返さない" do
+        animal = create(:animal)
+        create(:health_record, animal: animal, created_by: user, condition: :caution, recorded_on: 3.days.ago)
+        create(:health_record, animal: animal, created_by: user, condition: :normal,  recorded_on: Date.today)
+
+        expect(Animal.with_alert_condition).not_to include(animal)
+      end
+
+      it "古い記録がnormalでも最新記録がdangerなら返す" do
+        animal = create(:animal)
+        create(:health_record, animal: animal, created_by: user, condition: :normal, recorded_on: 3.days.ago)
+        create(:health_record, animal: animal, created_by: user, condition: :danger, recorded_on: Date.today)
+
+        expect(Animal.with_alert_condition).to include(animal)
+      end
+
+      it "active=falseの動物は返さない" do
+        animal = create(:animal, active: false)
+        create(:health_record, animal: animal, created_by: user, condition: :danger, recorded_on: Date.today)
+
+        expect(Animal.with_alert_condition).not_to include(animal)
+      end
+    end
   end
 end

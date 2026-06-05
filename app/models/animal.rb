@@ -50,7 +50,12 @@ class Animal < ApplicationRecord
   end
 
   # 最新の健康記録のconditionを返す — 記録がなければnilを返す
+  # includesで先読み済みの場合はRubyでソートしてN+1を回避する
   def latest_condition
-    health_records.recent.first&.condition
+    if health_records.loaded?
+      health_records.max_by { |hr| [ hr.recorded_on, hr.id ] }&.condition
+    else
+      health_records.recent.first&.condition
+    end
   end
 end

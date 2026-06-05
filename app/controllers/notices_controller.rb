@@ -7,7 +7,7 @@ class NoticesController < ApplicationController
   before_action -> { require_owner(@notice) },  only: [ :edit, :update, :destroy ]
 
   def index
-    @notices = Notice.recent
+    @notices = Notice.recent.includes(:created_by)
   end
 
   def new

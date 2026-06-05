@@ -9,7 +9,7 @@ class FeedingRecordsController < ApplicationController
 
   def index
     # 最新の給餌日時順に表示
-    @feeding_records = @animal.feeding_records.recent
+    @feeding_records = @animal.feeding_records.recent.includes(:created_by)
     respond_to do |format|
       format.html
       format.csv do

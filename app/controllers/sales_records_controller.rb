@@ -4,7 +4,7 @@ class SalesRecordsController < ApplicationController
   before_action :set_sales_record, only: [ :edit, :update, :destroy ]
 
   def index
-    all_records = SalesRecord.recent
+    all_records = SalesRecord.recent.includes(:created_by)
 
     # 年リスト（新しい順）
     @all_years = all_records.map { |sr| sr.sold_on.year }.uniq

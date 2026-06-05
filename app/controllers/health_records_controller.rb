@@ -9,7 +9,7 @@ class HealthRecordsController < ApplicationController
 
   def index
     # 最新の観察日順に表示
-    @health_records = @animal.health_records.recent
+    @health_records = @animal.health_records.recent.includes(:created_by)
     respond_to do |format|
       format.html
       format.csv do

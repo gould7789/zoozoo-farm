@@ -4,7 +4,7 @@ class ExpenseRecordsController < ApplicationController
   before_action :set_expense_record, only: [ :edit, :update, :destroy ]
 
   def index
-    all_records = ExpenseRecord.recent
+    all_records = ExpenseRecord.recent.includes(:created_by)
 
     # 年リスト（新しい順）
     @all_years = all_records.map { |er| er.spent_on.year }.uniq

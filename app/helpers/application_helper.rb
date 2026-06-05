@@ -17,4 +17,17 @@ module ApplicationHelper
     color = active ? "bg-green-50 text-green-700" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
     "#{base} #{color}"
   end
+
+  # お知らせカテゴリのラベルと色クラスを返す — [ラベル文字列, Tailwindクラス]
+  def notice_category_label(category)
+    {
+      "general"      => [ "전체",          "bg-blue-100 text-blue-700" ],
+      "lovebird"     => [ "사랑새관",       "bg-pink-100 text-pink-700" ],
+      "parrot"       => [ "앵무새관",       "bg-green-100 text-green-700" ],
+      "reptile"      => [ "파충류관",       "bg-yellow-100 text-yellow-700" ],
+      "small_animal" => [ "미니동물관",     "bg-orange-100 text-orange-700" ],
+      "outdoor"      => [ "야외동물체험관", "bg-teal-100 text-teal-700" ],
+      "isolation"    => [ "격리실",         "bg-red-100 text-red-700" ]
+    }[category] || [ category, "bg-gray-100 text-gray-600" ]
+  end
 end

@@ -28,4 +28,66 @@
     <% end %>
   </div>
 
+  <%# ダッシュボードパネル — 注意動物 + 最新お知らせ %>
+  <div class="mt-10 mb-4 flex items-center gap-3">
+    <span class="text-base font-bold text-gray-600">주요 현황</span>
+    <div class="flex-1 h-px bg-gray-300"></div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+
+    <%# 주의 동물 패널 %>
+    <div class="bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
+      <h2 class="text-sm font-bold text-gray-700 mb-3">주의 동물</h2>
+      <% if @alert_animals.any? %>
+        <ul class="space-y-1">
+          <% @alert_animals.each do |animal| %>
+            <%= link_to zone_animal_path(animal.zone, animal),
+                class: "flex items-center justify-between px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors" do %>
+              <div class="min-w-0">
+                <span class="text-sm font-medium text-gray-900">
+                  <%= animal.name.presence || animal.species %>
+                </span>
+                <span class="ml-1.5 text-xs text-gray-400"><%= animal.zone.name %></span>
+              </div>
+              <% condition = animal.latest_condition %>
+              <span class="ml-2 shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full <%= condition == 'danger' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700' %>">
+                <%= condition == 'danger' ? '위험' : '주의' %>
+              </span>
+            <% end %>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-sm text-gray-400">현재 주의가 필요한 동물이 없습니다.</p>
+      <% end %>
+    </div>
+
+    <%# 최신 공지 패널 %>
+    <div class="bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-bold text-gray-700">최신 공지</h2>
+        <%= link_to "전체 보기", notices_path, class: "text-xs text-blue-500 hover:underline" %>
+      </div>
+      <% if @recent_notices.any? %>
+        <ul class="space-y-2">
+          <% @recent_notices.each do |notice| %>
+            <% category_label = notice_category_label(notice.category) %>
+            <li class="border-b border-gray-100 pb-2 last:border-0 last:pb-0">
+              <div class="flex items-center gap-1.5 mb-0.5">
+                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium <%= category_label[1] %>">
+                  <%= category_label[0] %>
+                </span>
+                <span class="text-xs text-gray-400"><%= notice.created_at.strftime("%m/%d") %></span>
+              </div>
+              <p class="text-sm text-gray-600 line-clamp-1"><%= truncate(notice.body, length: 70) %></p>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-sm text-gray-400">등록된 공지가 없습니다.</p>
+      <% end %>
+    </div>
+
+  </div>
+
 </div>

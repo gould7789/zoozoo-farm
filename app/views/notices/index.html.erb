@@ -22,16 +22,7 @@
     <%# カード形式（本文が長いためモバイル・デスクトップ共通） %>
     <div class="space-y-3">
       <% @notices.each do |notice| %>
-        <%# カテゴリラベルの定義 %>
-        <% category_label = {
-          "general"      => ["전체", "bg-blue-100 text-blue-700"],
-          "lovebird"     => ["사랑새관", "bg-pink-100 text-pink-700"],
-          "parrot"       => ["앵무새관", "bg-green-100 text-green-700"],
-          "reptile"      => ["파충류관", "bg-yellow-100 text-yellow-700"],
-          "small_animal" => ["미니동물관", "bg-orange-100 text-orange-700"],
-          "outdoor"      => ["야외동물체험관", "bg-teal-100 text-teal-700"],
-          "isolation"    => ["격리실", "bg-red-100 text-red-700"]
-        }[notice.category] || [notice.category, "bg-gray-100 text-gray-600"] %>
+        <% category_label = notice_category_label(notice.category) %>
 
         <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
           <div class="flex items-start justify-between gap-3 mb-2">

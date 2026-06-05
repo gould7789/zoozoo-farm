@@ -7,6 +7,10 @@ class ZonesController < ApplicationController
     @zones = Zone.all.sort_by { |z| display_order.index(z.name) || 999 }
     # 各館のアクティブ動物のindividual_count合計を一括取得（N+1防止）
     @zone_counts = Animal.active.group(:zone_id).sum(:individual_count)
+    # ホーム画面アラート用 — 最新健康記録がcaution/dangerの動物（最大10件）
+    @alert_animals = Animal.with_alert_condition.limit(10)
+    # ホーム画面最新お知らせ用
+    @recent_notices = Notice.recent.limit(5).includes(:created_by)
   end
 
   def show

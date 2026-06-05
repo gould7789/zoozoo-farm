@@ -26,6 +26,23 @@ class Animal < ApplicationRecord
   # 削除されていない動物のみを返すスコープ
   scope :active, -> { where(active: true) }
 
+  # 最新の健康記録がcautionまたはdangerの動物を返すスコープ（ホーム画面アラート用）
+  scope :with_alert_condition, -> {
+    active
+      .joins(:health_records)
+      .where(
+        "health_records.id = (
+          SELECT id FROM health_records hr
+          WHERE hr.animal_id = animals.id
+          ORDER BY hr.recorded_on DESC, hr.id DESC
+          LIMIT 1
+        )"
+      )
+      .where.not(health_records: { condition: :normal })
+      .includes(:zone, :health_records)
+      .order("health_records.condition DESC, animals.species ASC")
+  }
+
   # 韓国式年齢計算 — 生まれた年を1歳とし、元日に加算する
   def age
     return nil if birth_date.nil?

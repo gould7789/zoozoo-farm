@@ -27,15 +27,15 @@ class SalesRecordsController < ApplicationController
 
     respond_to do |format|
       format.html
-      format.csv do
+      format.xlsx do
         filename = if @selected_year && @selected_month
-          "매출기록_#{@selected_year}년#{ "%02d" % @selected_month }월.csv"
+          "매출기록_#{@selected_year}년#{ "%02d" % @selected_month }월.xlsx"
         else
-          "매출기록_#{Date.today}.csv"
+          "매출기록_#{Date.today}.xlsx"
         end
-        send_data sales_records_csv(@sales_records),
+        send_data sales_records_xlsx(@sales_records),
                   filename: filename,
-                  type: "text/csv; charset=utf-8",
+                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                   disposition: "attachment"
       end
     end
@@ -83,18 +83,31 @@ class SalesRecordsController < ApplicationController
       params.require(:sales_record).permit(:sold_on, :source, :amount, :note)
     end
 
-    def sales_records_csv(records)
-      "\xEF\xBB\xBF" + CSV.generate(encoding: "UTF-8") do |csv|
-        csv << [ "매출일", "판매처", "금액(원)", "특이사항", "작성자" ]
+    def sales_records_xlsx(records)
+      package = Axlsx::Package.new
+      wb = package.workbook
+      s = xlsx_styles(wb)
+      row_styles = [ s[:date], s[:text], s[:money], s[:left], s[:text] ]
+      wb.add_worksheet(name: "매출기록") do |sheet|
+        sheet.add_row [ "매출일", "판매처", "금액(원)", "특이사항", "작성자" ], style: s[:header]
         records.each do |r|
-          csv << [
-            r.sold_on.strftime("%Y-%m-%d"),
+          sheet.add_row [
+            r.sold_on,
             I18n.t("enums.sales_record.source.#{r.source}"),
             r.amount,
             r.note,
             r.created_by&.name
-          ]
+          ], style: row_styles
+        end
+        # 列幅を明示してExcelの####表示を防ぎ、ヘッダー行を固定・フィルタを付与
+        sheet.column_widths 13, 14, 14, 36, 14
+        sheet.auto_filter = "A1:E1"
+        sheet.sheet_view.pane do |pane|
+          pane.state = :frozen
+          pane.y_split = 1
+          pane.active_pane = :bottom_left
         end
       end
+      package.to_stream.read
     end
 end

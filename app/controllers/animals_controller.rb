@@ -7,17 +7,17 @@ class AnimalsController < ApplicationController
   before_action :require_admin, only: [ :index, :new, :create, :edit, :update, :destroy ]
   before_action :set_animal,    only: [ :show, :edit, :update, :destroy ]
 
-  # CSV専用 — HTMLはゾーン詳細ページにリダイレクト
+  # xlsxエクスポート専用 — HTMLはゾーン詳細ページにリダイレクト
   def index
     respond_to do |format|
-      format.csv do
+      format.xlsx do
         animals = @zone.animals.active
                                .includes(:animal_category)
                                .joins("LEFT JOIN animal_categories ON animal_categories.id = animals.animal_category_id")
                                .order("animal_categories.name ASC NULLS LAST, animals.species ASC, animals.name ASC NULLS LAST")
-        send_data animals_csv(animals),
-                  filename: "동물목록_#{@zone.name}_#{Date.today}.csv",
-                  type: "text/csv; charset=utf-8",
+        send_data animals_xlsx(animals),
+                  filename: "동물목록_#{@zone.name}_#{Date.today}.xlsx",
+                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                   disposition: "attachment"
       end
       format.html { redirect_to zone_path(@zone) }
@@ -83,16 +83,21 @@ class AnimalsController < ApplicationController
       )
     end
 
-    def animals_csv(animals)
-      "\xEF\xBB\xBF" + CSV.generate(encoding: "UTF-8") do |csv|
-        csv << [ "분류", "이름", "종", "개체수", "성별", "생년월일", "입수일", "CITES 등급", "특이사항" ]
+    def animals_xlsx(animals)
+      package = Axlsx::Package.new
+      wb = package.workbook
+      s = xlsx_styles(wb)
+      # 列ごとの型に応じてスタイルを割り当てる（数値は右寄せ、日付は中央寄せ等）
+      row_styles = [ s[:text], s[:text], s[:text], s[:number], s[:text], s[:date], s[:date], s[:text], s[:left] ]
+      wb.add_worksheet(name: "동물목록") do |sheet|
+        sheet.add_row [ "분류", "이름", "종", "개체수", "성별", "생년월일", "입수일", "CITES 등급", "특이사항" ], style: s[:header]
         last_category = nil
         animals.each do |a|
           current_category = a.animal_category&.name || "미분류"
           # カテゴリが変わった行のみ分類名を出力、同一カテゴリ内は空白
           category_cell = current_category == last_category ? nil : current_category
           last_category = current_category
-          csv << [
+          sheet.add_row [
             category_cell,
             a.name,
             a.species,
@@ -102,8 +107,17 @@ class AnimalsController < ApplicationController
             a.acquired_at,
             I18n.t("enums.animal.cites_grade.#{a.cites_grade}"),
             a.note
-          ]
+          ], style: row_styles
+        end
+        # 列幅を明示してExcelの####表示を防ぎ、ヘッダー行を固定・フィルタを付与
+        sheet.column_widths 12, 12, 16, 8, 8, 13, 13, 12, 30
+        sheet.auto_filter = "A1:I1"
+        sheet.sheet_view.pane do |pane|
+          pane.state = :frozen
+          pane.y_split = 1
+          pane.active_pane = :bottom_left
         end
       end
+      package.to_stream.read
     end
 end

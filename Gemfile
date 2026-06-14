@@ -23,8 +23,9 @@ gem "jbuilder"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
-# CSV generation — Ruby 3.4+ では標準ライブラリから分離されたため明示的に追加
-gem "csv"
+# Excel(.xlsx)生成 — 列幅・整列・書式を制御し、CSVの####・整列・可読性問題を解消する
+gem "caxlsx"
+gem "caxlsx_rails" # xlsx MIMEタイプを自動登録し、send_dataでの配信を可能にする
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]

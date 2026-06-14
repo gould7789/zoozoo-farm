@@ -44,4 +44,19 @@ class ApplicationController < ActionController::Base
     def require_admin
       redirect_to root_path, alert: "권한이 없습니다." unless current_user&.admin?
     end
+
+    # 全xlsxエクスポートで共有するセルスタイル群を返す
+    # 自由記述列（特異事項・詳細内容）以外は中央寄せで揃え、可読性を高める
+    # 日付・金額は書式コードを付与してExcelの####・整列バラつきを防ぐ
+    def xlsx_styles(workbook)
+      {
+        header:   workbook.styles.add_style(b: true, bg_color: "F3F4F6", border: { style: :thin, color: "D1D5DB" }, alignment: { horizontal: :center, vertical: :center }),
+        text:     workbook.styles.add_style(alignment: { horizontal: :center, vertical: :center }),
+        left:     workbook.styles.add_style(alignment: { horizontal: :left, vertical: :center }),
+        date:     workbook.styles.add_style(format_code: "yyyy-mm-dd", alignment: { horizontal: :center, vertical: :center }),
+        datetime: workbook.styles.add_style(format_code: "yyyy-mm-dd hh:mm", alignment: { horizontal: :center, vertical: :center }),
+        money:    workbook.styles.add_style(format_code: "#,##0", alignment: { horizontal: :right, vertical: :center }),
+        number:   workbook.styles.add_style(alignment: { horizontal: :center, vertical: :center })
+      }
+    end
 end

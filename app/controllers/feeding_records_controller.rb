@@ -12,11 +12,11 @@ class FeedingRecordsController < ApplicationController
     @feeding_records = @animal.feeding_records.recent.includes(:created_by)
     respond_to do |format|
       format.html
-      format.csv do
+      format.xlsx do
         return redirect_to root_path, alert: "권한이 없습니다." unless current_user.admin?
-        send_data feeding_records_csv(@feeding_records),
-                  filename: "먹이기록_#{@animal.name.presence || @animal.species}_#{Date.today}.csv",
-                  type: "text/csv; charset=utf-8",
+        send_data feeding_records_xlsx(@feeding_records),
+                  filename: "먹이기록_#{@animal.name.presence || @animal.species}_#{Date.today}.xlsx",
+                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                   disposition: "attachment"
       end
     end
@@ -62,19 +62,32 @@ class FeedingRecordsController < ApplicationController
       params.require(:feeding_record).permit(:fed_at, :food_type, :amount_g, :note)
     end
 
-    def feeding_records_csv(records)
-      "\xEF\xBB\xBF" + CSV.generate(encoding: "UTF-8") do |csv|
-        csv << [ "급여 일시", "먹이 종류", "급여량(g)", "특이사항", "작성자", "입력일" ]
+    def feeding_records_xlsx(records)
+      package = Axlsx::Package.new
+      wb = package.workbook
+      s = xlsx_styles(wb)
+      row_styles = [ s[:datetime], s[:text], s[:number], s[:left], s[:text], s[:datetime] ]
+      wb.add_worksheet(name: "먹이기록") do |sheet|
+        sheet.add_row [ "급여 일시", "먹이 종류", "급여량(g)", "특이사항", "작성자", "입력일" ], style: s[:header]
         records.each do |r|
-          csv << [
-            r.fed_at.strftime("%Y-%m-%d %H:%M"),
+          sheet.add_row [
+            r.fed_at,
             r.food_type,
             r.amount_g,
             r.note,
             r.created_by&.name,
-            r.created_at.strftime("%Y-%m-%d %H:%M")
-          ]
+            r.created_at
+          ], style: row_styles
+        end
+        # 列幅を明示してExcelの####表示を防ぎ、ヘッダー行を固定・フィルタを付与
+        sheet.column_widths 18, 16, 10, 36, 14, 18
+        sheet.auto_filter = "A1:F1"
+        sheet.sheet_view.pane do |pane|
+          pane.state = :frozen
+          pane.y_split = 1
+          pane.active_pane = :bottom_left
         end
       end
+      package.to_stream.read
     end
 end

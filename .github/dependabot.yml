@@ -1,12 +1,30 @@
 version: 2
 updates:
+# セキュリティ更新は Dependabot alerts 側で処理するため、
+# ここではバージョン更新の頻度と範囲のみを制御する
 - package-ecosystem: bundler
   directory: "/"
   schedule:
-    interval: weekly
-  open-pull-requests-limit: 10
+    interval: monthly
+  open-pull-requests-limit: 5
+  groups:
+    # gem ごとに PR が乱立するのを防ぐため一つにまとめる
+    bundler:
+      patterns:
+        - "*"
+  ignore:
+    # メジャー更新は互換性の検証が必要なため自動 PR の対象外とする
+    - dependency-name: "*"
+      update-types: ["version-update:semver-major"]
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
-    interval: weekly
-  open-pull-requests-limit: 10
+    interval: monthly
+  open-pull-requests-limit: 5
+  groups:
+    github-actions:
+      patterns:
+        - "*"
+  ignore:
+    - dependency-name: "*"
+      update-types: ["version-update:semver-major"]

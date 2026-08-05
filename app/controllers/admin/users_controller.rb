@@ -69,6 +69,12 @@ class Admin::UsersController < ApplicationController
     def user_update_params
       permitted = params.require(:user).permit(:name, :email, :password, :role, :active,
                                                :position, :is_team_leader, :hired_on, :contract_ends_on)
+      # 自分自身の役割・在職状態は変更させない
+      # 最後の管理者が権限を失うと復旧手段がなくなるため（seedsでも復旧できない）
+      if @user == current_user
+        permitted.delete(:role)
+        permitted.delete(:active)
+      end
       # パスワードが空欄の場合は更新しない
       permitted.delete(:password) if permitted[:password].blank?
       # positionが空文字の場合はnilに変換

@@ -166,6 +166,26 @@ RSpec.describe "Admin::Users", type: :request do
         expect(target_user.reload.active).to be false
       end
     end
+
+    # ロックアウト防止 — 自分自身の役割は変更させない
+    context "Adminが自分自身のroleを変更しようとした場合" do
+      before { sign_in(admin) }
+
+      it "roleがadminのまま変わらない" do
+        patch admin_member_path(admin), params: { user: { role: "staff" } }
+        expect(admin.reload.role).to eq("admin")
+      end
+    end
+
+    # ロックアウト防止 — 自分自身を退職扱いにすると再ログインできなくなる
+    context "Adminが自分自身をactive=falseにしようとした場合" do
+      before { sign_in(admin) }
+
+      it "activeがtrueのまま変わらない" do
+        patch admin_member_path(admin), params: { user: { active: false } }
+        expect(admin.reload.active).to be true
+      end
+    end
   end
 
   describe "DELETE /admin/members/:id" do

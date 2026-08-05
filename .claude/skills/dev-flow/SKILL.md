@@ -1,0 +1,226 @@
+---
+name: dev-flow
+description: Zoo Zoo Farm의 표준 작업 흐름 — 이슈 작성부터 develop·main PR까지. 새 작업을 시작할 때, 버그를 고칠 때, 이슈나 PR 본문을 요청받을 때, 브랜치를 파거나 커밋·머지를 진행할 때 사용한다. "작업 시작", "이슈 뽑아줘", "PR 출력해줘", "브랜치 만들었어" 같은 요청이 트리거다.
+---
+
+# Zoo Zoo Farm 작업 흐름
+
+## 전체 단계
+
+```
+① 조사·검증  → ② 이슈 출력  → ③ 브랜치 (사용자)  → ④ 구현 (TDD)
+→ ⑤ 검증  → ⑥ 커밋 명령어 출력 (사용자 실행)  → ⑦ PR 출력 ×2
+```
+
+⑦은 두 번이다. `feature → develop` 머지 후 `develop → main`을 다시 뽑는다.
+
+---
+
+## 절대 규칙
+
+**git 상태 변경 명령은 실행하지 않는다.** 커밋·브랜치 생성/이동·머지·푸시는 전부 사용자가 직접 한다. 복붙 가능한 명령어 블록만 출력하고 기다린다.
+
+읽기 전용(`git status`, `git log`, `git diff`, `git fetch`, `git merge-tree`)은 직접 실행해도 된다.
+
+실수로 커밋했다면 `git reset HEAD~1`로 되돌리고(변경분은 working tree에 남는다) 명령어를 다시 출력한다.
+
+**주장은 실측으로 검증한다.** "이런 문제가 있다"는 지적을 받으면 그대로 받아쓰지 말고 재현한다. 코드를 읽고, 값을 찍어보고, 근거를 제시한다. 지적이 틀렸으면 어디가 틀렸는지 말한다.
+
+**되돌릴 수 없는 작업 전에는 백업한다.** 파일을 지우거나 덮어쓰기 전에 스크래치패드에 복사해둔다. `git`에 들어간 적 없는 untracked 파일은 지우면 복구 수단이 없다.
+
+---
+
+## ① 조사·검증
+
+작업 대상을 실제로 확인한다. 파일을 읽고, 필요하면 `bin/rails runner`로 값을 찍어 문제를 재현한다.
+
+원격 상태는 추측하지 말고 확인한다. 매번 아래 4가지를 본다.
+
+```bash
+git fetch --quiet origin
+git branch --show-current                       # ① 지금 어느 브랜치인가
+git log --oneline origin/develop..origin/main   # ② develop이 뒤쳐진 커밋
+git status --short                              # ③ 미커밋 변경
+grep -n "claude\|<대상>" .gitignore              # ④ 대상이 커밋되는 파일인가
+```
+
+| 확인 | 왜 |
+| --- | --- |
+| ① 현재 브랜치 | `main`이면 절대 거기서 작업하지 않는다. develop에서 분기하도록 안내 |
+| ② develop 뒤쳐짐 | **0이 아니면 브랜치를 파기 전에 동기화**시킨다 |
+| ③ 미커밋 변경 | 이전 작업 잔여물이 섞여 들어가지 않게 확인 |
+| ④ gitignore | `CLAUDE.md`는 제외 대상이라 고쳐도 커밋에 안 들어간다 |
+
+②는 3회 반복해서 겪은 문제다. 뒤쳐진 상태에서 분기하면 나중에 `Gemfile.lock` 충돌이 나거나 이전 수정이 되돌아간다.
+
+## ② 이슈 출력
+
+**복붙 가능한 마크다운 코드블록으로 출력한다.** 안에 코드블록이 있으면 바깥 펜스를 백틱 4~5개로 감싼다.
+
+구조는 이렇다.
+
+```
+## 개요
+왜 이 작업이 필요한지. 근거 수치나 재현 결과를 포함한다.
+
+## 추가
+새로 만드는 것 (파일, 마이그레이션, 스펙). 각 항목에 판단 근거를 붙인다.
+
+## 수정
+기존 것을 바꾸는 것. 변경 전/후 표를 쓴다.
+
+## 변경하지 않는 것
+건드릴 만해 보이지만 일부러 두는 것과 그 이유. (선택)
+
+## 완료 조건
+체크박스 목록.
+```
+
+제목은 커밋 컨벤션 접두사를 쓴다 (`fix:`, `feat:`, `chore:`, `db:` 등).
+
+**해당 없는 섹션은 지우지 말고 "없음"이라고 적는다.** 신규 파일만 추가하는 작업이면 `## 수정`에 "없음. 신규 파일 1개만 추가한다"라고 쓴다. 섹션을 통째로 빼면 읽는 쪽에서 빠뜨린 건지 없는 건지 알 수 없다.
+
+## ③ 브랜치
+
+사용자가 만든다. 명령어를 출력하고 기다린다.
+
+```bash
+git checkout develop && git pull origin develop && git checkout -b <타입>/<이름>
+```
+
+## ④ 구현 (TDD)
+
+CLAUDE.md의 TDD 규칙을 지킨다.
+
+```
+spec 작성 → 실행해서 Red 확인 → 구현 → 실행해서 Green 확인
+```
+
+버그 수정이면 **재현 스펙을 먼저 쓴다.** Red를 실제로 보여준 뒤 고친다.
+
+환경에 의존하는 버그는 그 환경을 재현해서 Red를 만든다. 예를 들어 타임존 문제는 `TZ=UTC bundle exec rspec`으로 서버 환경을 흉내낸다. 로컬에서만 통과하는 테스트는 의미가 없다.
+
+언어 규칙 (CLAUDE.md).
+
+| 대상 | 언어 |
+| --- | --- |
+| 코드 | 영어 |
+| 코드 주석 | 일본어 |
+| 화면 표시 텍스트 | 한국어 |
+| 테스트 코드 내 문자열 | 일본어 |
+| 커밋 메시지 | 한국어 (접두사는 영어) |
+| 이슈·PR 본문 | 한국어 |
+
+기존 코드 스타일을 따른다. 들여쓰기, 네이밍, 주석 밀도를 주변에 맞춘다.
+
+## ⑤ 검증
+
+CI의 각 job과 **동일한 명령**으로 돌린다. 로컬 편의 명령으로 대체하지 않는다.
+
+```bash
+bin/rails db:test:prepare
+bundle exec rspec spec --exclude-pattern "spec/system/**/*_spec.rb"   # test job
+bundle exec rspec spec/system                                          # system-test job
+bundle exec rubocop                                                    # lint job
+bundle exec brakeman -q --no-pager                                     # scan_ruby job
+bundle exec bundler-audit check --update                               # scan_ruby job
+```
+
+결과를 표로 정리해 보고한다. 실패하면 숨기지 말고 그대로 적는다.
+
+RuboCop offense가 **커밋되지 않은 파일**(`script/*.rb` 등)에서 나오면 CI와 무관하다는 점을 명시한다. 0건이라고 뭉뚱그리지 않는다.
+
+## ⑥ 커밋 명령어 출력
+
+**작은 단위로 나눈다.** 성격이 다른 변경은 커밋을 분리한다.
+
+**각 커밋이 개별적으로 green이어야 한다.** 순서가 중요하면 그 이유를 함께 적는다. 예를 들어 "설정 변경 → 락파일" 순서여야 하는 이유는, 반대로 하면 그 커밋 시점에 앱 부팅이 깨지기 때문이다.
+
+형식은 이렇다.
+
+```bash
+git add <파일> && git commit -m "$(cat <<'EOF'
+<접두사>: <한 줄 요약>
+
+<왜 이렇게 했는지. 배경과 판단 근거.>
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
+EOF
+)"
+```
+
+커밋 접두사는 CLAUDE.md 표를 따른다 — `init:` `feat:` `fix:` `db:` `model:` `style:` `seed:` `chore:` `deploy:`.
+
+푸시 명령도 함께 출력한다.
+
+```bash
+git push -u origin <브랜치명>
+```
+
+## ⑦ PR 출력
+
+`.github/PULL_REQUEST_TEMPLATE.md` 구조를 따른다 — 개요 / 변경 내용(신규·수정) / 스크린샷 / 테스트.
+
+**두 번 뽑는다.**
+
+### 1차: `feature → develop`
+
+머지 전에 충돌을 미리 확인한다.
+
+```bash
+git merge-tree --write-tree --name-only origin/develop origin/<브랜치>
+```
+
+### 2차: `develop → main`
+
+1차가 머지된 뒤에 뽑는다. 머지되기 전에 요청받으면 **아직 만들 수 없다고 말한다.** develop과 main이 같은 커밋을 가리키면 빈 PR이 된다.
+
+```bash
+git log --oneline origin/main..origin/develop     # 비어 있으면 아직 머지 전
+git merge-tree --write-tree --name-only origin/main origin/develop
+```
+
+`main`에 다른 변경(dependabot 머지 등)이 들어와 있으면 그것들이 되돌아가지 않는지 확인하고, 결과를 PR 본문의 「비고 → 머지 안전성」에 적는다.
+
+### PR 본문에 꼭 넣을 것
+
+- **테스트 결과 표** — job별 명령과 결과
+- **판단 근거** — 왜 A가 아니라 B를 골랐는지. 검토했다 버린 대안도 적는다
+- **변경하지 않은 것** — 건드릴 만해 보이는데 일부러 둔 것
+- **비고** — 머지 안전성, 배포 시 주의사항, 롤백 방법, 후속 작업
+
+DB 마이그레이션이 포함되면 **배포 시 운영 DB에 실행된다는 점**과 확인 쿼리를 반드시 적는다.
+
+---
+
+## 이 저장소의 함정
+
+**CI 트리거가 제한적이다.**
+
+```yaml
+on:
+  pull_request:          # 모든 브랜치
+  push:
+    branches: [ main ]   # main만
+```
+
+`git push origin develop`으로는 **CI가 돌지 않는다.** 검증하려면 PR을 열어야 한다. "develop에 직접 머지하고 푸시"를 제안하지 말 것.
+
+**CI가 검사하지 않는 파일이 있다.** `dependabot.yml` 같은 설정 파일은 CI에 검사 job이 없다. 통과해도 설정이 맞다는 증거가 아니다. 그럴 땐 로컬에서 파싱 검증을 하고 그 사실을 PR에 적는다.
+
+**`dependabot.yml`은 기본 브랜치의 것만 읽힌다.** main 머지 전까지 적용되지 않는다.
+
+**로컬 macOS는 KST, 서버는 UTC다.** 시간·날짜 관련 작업은 `TZ=UTC`로도 테스트를 돌린다.
+
+**CLAUDE.md는 `.gitignore` 대상이다.** 자유롭게 수정해도 커밋에 안 들어간다.
+
+---
+
+## 참고 파일
+
+| 파일 | 내용 |
+| --- | --- |
+| `CLAUDE.md` | 설계 결정, 커밋 컨벤션, 언어 규칙, TDD 규칙 |
+| `.github/PULL_REQUEST_TEMPLATE.md` | PR 본문 구조 |
+| `.github/workflows/ci.yml` | CI job 구성과 실행 명령 |
+| `.github/dependabot.yml` | 의존성 갱신 정책 |

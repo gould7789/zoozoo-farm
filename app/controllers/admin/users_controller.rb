@@ -32,8 +32,15 @@ class Admin::UsersController < ApplicationController
       redirect_to admin_members_path, alert: "자기 자신은 삭제할 수 없습니다."
       return
     end
-    @user.destroy
-    redirect_to admin_members_path, notice: "계정을 삭제했습니다."
+
+    # 記録を持つユーザーはrestrict_with_errorで削除が拒否され、例外なくfalseが返る
+    # 画面上は一覧のボタン出し分けで防いでいるが、直接リクエストや競合への最終防衛線として残す
+    if @user.destroy
+      redirect_to admin_members_path, notice: "계정을 삭제했습니다."
+    else
+      redirect_to admin_members_path,
+                  alert: "작성한 기록이 있어 삭제할 수 없습니다. 퇴사 처리를 이용해주세요."
+    end
   end
 
   def update

@@ -193,6 +193,31 @@ RSpec.describe "Admin::Users", type: :request do
       end
     end
 
+    # 記録を持つユーザーはrestrict_with_errorで物理削除が拒否される
+    context "記録を持つユーザーを削除しようとした場合" do
+      before { sign_in(admin) }
+
+      it "削除されずアラートを表示する" do
+        create(:notice, created_by: target_user)
+        delete admin_member_path(target_user)
+        expect(response).to redirect_to(admin_members_path)
+        expect(User.exists?(target_user.id)).to be true
+        expect(flash[:alert]).to be_present
+      end
+    end
+
+    # 記録が0件のユーザー（一日バイト・誤作成アカウント）は削除できる
+    context "記録を持たないユーザーを削除する場合" do
+      before { sign_in(admin) }
+
+      it "削除される" do
+        delete admin_member_path(target_user)
+        expect(response).to redirect_to(admin_members_path)
+        expect(User.exists?(target_user.id)).to be false
+        expect(flash[:notice]).to be_present
+      end
+    end
+
     # Staffがアクセスした場合
     context "Staffがアクセスした場合" do
       before { sign_in(staff) }

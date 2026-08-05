@@ -3,11 +3,13 @@ class User < ApplicationRecord
   has_secure_password
 
   # 作成した各種記録一覧
-  has_many :health_records,   foreign_key: :created_by_id, dependent: :nullify
-  has_many :feeding_records,  foreign_key: :created_by_id, dependent: :nullify
-  has_many :notices,          foreign_key: :created_by_id, dependent: :nullify
-  has_many :sales_records,    foreign_key: :created_by_id, dependent: :nullify
-  has_many :expense_records,  foreign_key: :created_by_id, dependent: :nullify
+  # 記録を持つユーザーは物理削除を禁止する — 監査証跡（作成者情報）を保持するため
+  # 削除が必要な場合は退職処理（active = false）を使う
+  has_many :health_records,   foreign_key: :created_by_id, dependent: :restrict_with_error
+  has_many :feeding_records,  foreign_key: :created_by_id, dependent: :restrict_with_error
+  has_many :notices,          foreign_key: :created_by_id, dependent: :restrict_with_error
+  has_many :sales_records,    foreign_key: :created_by_id, dependent: :restrict_with_error
+  has_many :expense_records,  foreign_key: :created_by_id, dependent: :restrict_with_error
 
   enum :role, { admin: 0, staff: 1 }
   # 직급 enum — adminのみ使用、staffはnil固定

@@ -14,12 +14,13 @@ RSpec.describe User, type: :model do
     it { is_expected.to define_enum_for(:role).with_values(admin: 0, staff: 1) }
   end
 
+  # 記録を持つユーザーは物理削除を禁止する — 監査証跡（作成者情報）を保持するため
   describe "アソシエーション" do
-    it { is_expected.to have_many(:health_records).with_foreign_key(:created_by_id).dependent(:nullify) }
-    it { is_expected.to have_many(:feeding_records).with_foreign_key(:created_by_id).dependent(:nullify) }
-    it { is_expected.to have_many(:notices).with_foreign_key(:created_by_id).dependent(:nullify) }
-    it { is_expected.to have_many(:sales_records).with_foreign_key(:created_by_id).dependent(:nullify) }
-    it { is_expected.to have_many(:expense_records).with_foreign_key(:created_by_id).dependent(:nullify) }
+    it { is_expected.to have_many(:health_records).with_foreign_key(:created_by_id).dependent(:restrict_with_error) }
+    it { is_expected.to have_many(:feeding_records).with_foreign_key(:created_by_id).dependent(:restrict_with_error) }
+    it { is_expected.to have_many(:notices).with_foreign_key(:created_by_id).dependent(:restrict_with_error) }
+    it { is_expected.to have_many(:sales_records).with_foreign_key(:created_by_id).dependent(:restrict_with_error) }
+    it { is_expected.to have_many(:expense_records).with_foreign_key(:created_by_id).dependent(:restrict_with_error) }
   end
 
   describe ".active" do

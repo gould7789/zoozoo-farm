@@ -33,6 +33,17 @@ RSpec.describe "Admin::Users", type: :request do
         expect(response).to have_http_status(:ok)
       end
     end
+
+    # 削除ボタンの出し分けに使う記録保有者IDの事前集計クエリを通す
+    context "記録を持つユーザーがいる場合" do
+      before { sign_in(admin) }
+
+      it "200を返す" do
+        create(:notice, created_by: staff)
+        get admin_members_path
+        expect(response).to have_http_status(:ok)
+      end
+    end
   end
 
   describe "GET /admin/users/new" do
@@ -166,6 +177,26 @@ RSpec.describe "Admin::Users", type: :request do
         expect(target_user.reload.active).to be false
       end
     end
+
+    # ロックアウト防止 — 自分自身の役割は変更させない
+    context "Adminが自分自身のroleを変更しようとした場合" do
+      before { sign_in(admin) }
+
+      it "roleがadminのまま変わらない" do
+        patch admin_member_path(admin), params: { user: { role: "staff" } }
+        expect(admin.reload.role).to eq("admin")
+      end
+    end
+
+    # ロックアウト防止 — 自分自身を退職扱いにすると再ログインできなくなる
+    context "Adminが自分自身をactive=falseにしようとした場合" do
+      before { sign_in(admin) }
+
+      it "activeがtrueのまま変わらない" do
+        patch admin_member_path(admin), params: { user: { active: false } }
+        expect(admin.reload.active).to be true
+      end
+    end
   end
 
   describe "DELETE /admin/members/:id" do
@@ -190,6 +221,31 @@ RSpec.describe "Admin::Users", type: :request do
         delete admin_member_path(admin)
         expect(response).to redirect_to(admin_members_path)
         expect(User.exists?(admin.id)).to be true
+      end
+    end
+
+    # 記録を持つユーザーはrestrict_with_errorで物理削除が拒否される
+    context "記録を持つユーザーを削除しようとした場合" do
+      before { sign_in(admin) }
+
+      it "削除されずアラートを表示する" do
+        create(:notice, created_by: target_user)
+        delete admin_member_path(target_user)
+        expect(response).to redirect_to(admin_members_path)
+        expect(User.exists?(target_user.id)).to be true
+        expect(flash[:alert]).to be_present
+      end
+    end
+
+    # 記録が0件のユーザー（一日バイト・誤作成アカウント）は削除できる
+    context "記録を持たないユーザーを削除する場合" do
+      before { sign_in(admin) }
+
+      it "削除される" do
+        delete admin_member_path(target_user)
+        expect(response).to redirect_to(admin_members_path)
+        expect(User.exists?(target_user.id)).to be false
+        expect(flash[:notice]).to be_present
       end
     end
 

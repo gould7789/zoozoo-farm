@@ -31,7 +31,7 @@ class SalesRecordsController < ApplicationController
         filename = if @selected_year && @selected_month
           "매출기록_#{@selected_year}년#{ "%02d" % @selected_month }월.xlsx"
         else
-          "매출기록_#{Date.today}.xlsx"
+          "매출기록_#{Date.current}.xlsx"
         end
         send_data sales_records_xlsx(@sales_records),
                   filename: filename,

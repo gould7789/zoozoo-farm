@@ -15,7 +15,7 @@ class HealthRecordsController < ApplicationController
       format.xlsx do
         return redirect_to root_path, alert: "권한이 없습니다." unless current_user.admin?
         send_data health_records_xlsx(@health_records),
-                  filename: "건강기록_#{@animal.name.presence || @animal.species}_#{Date.today}.xlsx",
+                  filename: "건강기록_#{@animal.name.presence || @animal.species}_#{Date.current}.xlsx",
                   type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                   disposition: "attachment"
       end

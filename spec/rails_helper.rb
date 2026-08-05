@@ -71,6 +71,9 @@ RSpec.configure do |config|
   # リクエストスペック用ヘルパー（sign_inメソッド）
   config.include RequestHelpers, type: :request
 
+  # travel_to等の時刻操作ヘルパー — タイムゾーン境界のテストで使用する
+  config.include ActiveSupport::Testing::TimeHelpers
+
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:

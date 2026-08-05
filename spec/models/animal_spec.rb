@@ -38,6 +38,37 @@ RSpec.describe Animal, type: :model do
     end
   end
 
+  describe "#age" do
+    it "生年月日がnilならnilを返す" do
+      expect(build(:animal, birth_date: nil).age).to be_nil
+    end
+
+    it "韓国式年齢 — 生まれた年を1歳と数える" do
+      travel_to Time.utc(2026, 6, 1) do
+        expect(build(:animal, birth_date: Date.new(2026, 5, 1)).age).to eq(1)
+        expect(build(:animal, birth_date: Date.new(2020, 5, 1)).age).to eq(7)
+      end
+    end
+
+    # KST の 1/1 00:00〜09:00 は UTC ではまだ前年のため、
+    # UTC 基準で年を判定すると年齢が1歳ずれる
+    context "年末年始の境界" do
+      let(:birth_date) { Date.new(2020, 5, 1) }
+
+      it "元日未明(KST)では加算後の年齢を返す" do
+        travel_to Time.utc(2026, 12, 31, 23, 30) do # = 2027-01-01 08:30 KST
+          expect(build(:animal, birth_date: birth_date).age).to eq(8)
+        end
+      end
+
+      it "大晦日の夜(KST)ではまだ加算前の年齢を返す" do
+        travel_to Time.utc(2026, 12, 31, 14, 30) do # = 2026-12-31 23:30 KST
+          expect(build(:animal, birth_date: birth_date).age).to eq(7)
+        end
+      end
+    end
+  end
+
   describe "スコープ" do
     it ".activeは論理削除されていない動物のみ返す" do
       zone = Zone.create!(name: "テスト館")

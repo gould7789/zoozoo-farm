@@ -22,8 +22,9 @@ module ZooKeeper
     # デフォルトロケールを韓国語に設定
     config.i18n.default_locale = :ko
 
-    # UUID v7をプライマリキーのデフォルトとして設定
+    # UUID v4をプライマリキーのデフォルトとして設定
     # 順次整数IDのURL露出によるIDOR攻撃を防ぐため採用
+    # 実際の生成はDB側のgen_random_uuid()（= v4）が担当する
     config.generators do |g|
       g.orm :active_record, primary_key_type: :uuid
     end
@@ -33,7 +34,10 @@ module ZooKeeper
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # config.time_zone = "Central Time (US & Canada)"
+    # 利用者・運用拠点が韓国のためKSTに固定する
+    # 未設定だとUTCで動作し、created_atの表示やDate.currentが9時間ずれる
+    config.time_zone = "Asia/Seoul"
+
     # config.eager_load_paths << Rails.root.join("extras")
   end
 end

@@ -16,7 +16,7 @@ class AnimalsController < ApplicationController
                                .joins("LEFT JOIN animal_categories ON animal_categories.id = animals.animal_category_id")
                                .order("animal_categories.name ASC NULLS LAST, animals.species ASC, animals.name ASC NULLS LAST")
         send_data animals_xlsx(animals),
-                  filename: "동물목록_#{@zone.name}_#{Date.today}.xlsx",
+                  filename: "동물목록_#{@zone.name}_#{Date.current}.xlsx",
                   type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                   disposition: "attachment"
       end

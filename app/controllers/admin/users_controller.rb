@@ -8,6 +8,9 @@ class Admin::UsersController < ApplicationController
     @admins         = User.admin.where(active: true).order(:name)
     @staffs         = User.staff.where(active: true).order(:name)
     @inactive_users = User.where(active: false).order(:name)
+
+    # 記録を持つユーザーのIDを事前に集計する — 削除ボタンの出し分けに使う
+    @user_ids_with_records = collect_user_ids_with_records(@admins + @staffs + @inactive_users)
   end
 
   def new
@@ -32,8 +35,15 @@ class Admin::UsersController < ApplicationController
       redirect_to admin_members_path, alert: "자기 자신은 삭제할 수 없습니다."
       return
     end
-    @user.destroy
-    redirect_to admin_members_path, notice: "계정을 삭제했습니다."
+
+    # 記録を持つユーザーはrestrict_with_errorで削除が拒否され、例外なくfalseが返る
+    # 画面上は一覧のボタン出し分けで防いでいるが、直接リクエストや競合への最終防衛線として残す
+    if @user.destroy
+      redirect_to admin_members_path, notice: "계정을 삭제했습니다."
+    else
+      redirect_to admin_members_path,
+                  alert: "작성한 기록이 있어 삭제할 수 없습니다. 퇴사 처리를 이용해주세요."
+    end
   end
 
   def update
@@ -50,6 +60,15 @@ class Admin::UsersController < ApplicationController
       @user = User.find(params[:id])
     end
 
+    # 記録を1件以上持つユーザーのIDをSetで返す
+    # ユーザーごとに数えるとN+1になるため、テーブルごとに1クエリ（計5クエリ）でまとめて取得する
+    def collect_user_ids_with_records(users)
+      ids = users.map(&:id)
+      [ HealthRecord, FeedingRecord, Notice, SalesRecord, ExpenseRecord ]
+        .flat_map { |klass| klass.where(created_by_id: ids).distinct.pluck(:created_by_id) }
+        .to_set
+    end
+
     # 新規作成用パラメータ — パスワード必須
     def user_params
       permitted = params.require(:user).permit(:name, :email, :password, :role, :position, :is_team_leader, :hired_on, :contract_ends_on)
@@ -62,6 +81,12 @@ class Admin::UsersController < ApplicationController
     def user_update_params
       permitted = params.require(:user).permit(:name, :email, :password, :role, :active,
                                                :position, :is_team_leader, :hired_on, :contract_ends_on)
+      # 自分自身の役割・在職状態は変更させない
+      # 最後の管理者が権限を失うと復旧手段がなくなるため（seedsでも復旧できない）
+      if @user == current_user
+        permitted.delete(:role)
+        permitted.delete(:active)
+      end
       # パスワードが空欄の場合は更新しない
       permitted.delete(:password) if permitted[:password].blank?
       # positionが空文字の場合はnilに変換

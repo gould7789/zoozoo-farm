@@ -8,6 +8,9 @@ class Admin::UsersController < ApplicationController
     @admins         = User.admin.where(active: true).order(:name)
     @staffs         = User.staff.where(active: true).order(:name)
     @inactive_users = User.where(active: false).order(:name)
+
+    # 記録を持つユーザーのIDを事前に集計する — 削除ボタンの出し分けに使う
+    @user_ids_with_records = collect_user_ids_with_records(@admins + @staffs + @inactive_users)
   end
 
   def new
@@ -55,6 +58,15 @@ class Admin::UsersController < ApplicationController
 
     def set_user
       @user = User.find(params[:id])
+    end
+
+    # 記録を1件以上持つユーザーのIDをSetで返す
+    # ユーザーごとに数えるとN+1になるため、テーブルごとに1クエリ（計5クエリ）でまとめて取得する
+    def collect_user_ids_with_records(users)
+      ids = users.map(&:id)
+      [ HealthRecord, FeedingRecord, Notice, SalesRecord, ExpenseRecord ]
+        .flat_map { |klass| klass.where(created_by_id: ids).distinct.pluck(:created_by_id) }
+        .to_set
     end
 
     # 新規作成用パラメータ — パスワード必須

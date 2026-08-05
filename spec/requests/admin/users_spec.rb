@@ -33,6 +33,17 @@ RSpec.describe "Admin::Users", type: :request do
         expect(response).to have_http_status(:ok)
       end
     end
+
+    # 削除ボタンの出し分けに使う記録保有者IDの事前集計クエリを通す
+    context "記録を持つユーザーがいる場合" do
+      before { sign_in(admin) }
+
+      it "200を返す" do
+        create(:notice, created_by: staff)
+        get admin_members_path
+        expect(response).to have_http_status(:ok)
+      end
+    end
   end
 
   describe "GET /admin/users/new" do

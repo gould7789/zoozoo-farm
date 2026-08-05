@@ -59,13 +59,8 @@
             <div class="flex gap-2 shrink-0 ml-3">
               <%= link_to "수정", edit_admin_member_path(user),
                   class: "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
-              <% if user != current_user %>
-                <%= button_to "삭제", admin_member_path(user),
-                    method: :delete,
-                    data: { turbo_confirm: "이 계정을 삭제하면 작성한 기록의 작성자 정보가 사라집니다. 계속하시겠습니까?" },
-                    form: { class: "contents" },
-                    class: "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" %>
-              <% end %>
+              <%= render "delete_button", user: user,
+                  has_records: @user_ids_with_records.include?(user.id), variant: :card %>
             </div>
           </div>
         </div>
@@ -107,13 +102,8 @@
               <td class="px-5 py-3.5 text-center">
                 <div class="flex items-center gap-2 justify-center">
                   <%= link_to "수정", edit_admin_member_path(user), class: "text-xs text-blue-600 hover:underline" %>
-                  <% if user != current_user %>
-                    <%= button_to "삭제", admin_member_path(user),
-                        method: :delete,
-                        data: { turbo_confirm: "이 계정을 삭제하면 작성한 기록의 작성자 정보가 사라집니다. 계속하시겠습니까?" },
-                        form: { class: "inline" },
-                        class: "text-xs text-red-500 hover:underline" %>
-                  <% end %>
+                  <%= render "delete_button", user: user,
+                      has_records: @user_ids_with_records.include?(user.id), variant: :table %>
                 </div>
               </td>
             </tr>
@@ -151,11 +141,8 @@
             <div class="flex gap-2 shrink-0 ml-3">
               <%= link_to "수정", edit_admin_member_path(user),
                   class: "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
-              <%= button_to "삭제", admin_member_path(user),
-                  method: :delete,
-                  data: { turbo_confirm: "이 계정을 삭제하면 작성한 기록의 작성자 정보가 사라집니다. 계속하시겠습니까?" },
-                  form: { class: "contents" },
-                  class: "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" %>
+              <%= render "delete_button", user: user,
+                  has_records: @user_ids_with_records.include?(user.id), variant: :card %>
             </div>
           </div>
         </div>
@@ -188,11 +175,8 @@
                 <td class="px-5 py-3.5 text-center">
                   <div class="flex items-center gap-2 justify-center">
                     <%= link_to "수정", edit_admin_member_path(user), class: "text-xs text-blue-600 hover:underline" %>
-                    <%= button_to "삭제", admin_member_path(user),
-                        method: :delete,
-                        data: { turbo_confirm: "이 계정을 삭제하면 작성한 기록의 작성자 정보가 사라집니다. 계속하시겠습니까?" },
-                        form: { class: "inline" },
-                        class: "text-xs text-red-500 hover:underline" %>
+                    <%= render "delete_button", user: user,
+                        has_records: @user_ids_with_records.include?(user.id), variant: :table %>
                   </div>
                 </td>
               </tr>
@@ -230,11 +214,8 @@
             <div class="flex gap-2 shrink-0 ml-3">
               <%= link_to "수정", edit_admin_member_path(user),
                   class: "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-gray-500 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
-              <%= button_to "삭제", admin_member_path(user),
-                  method: :delete,
-                  data: { turbo_confirm: "이 계정을 삭제하면 작성한 기록의 작성자 정보가 사라집니다. 계속하시겠습니까?" },
-                  form: { class: "contents" },
-                  class: "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" %>
+              <%= render "delete_button", user: user,
+                  has_records: @user_ids_with_records.include?(user.id), variant: :card %>
             </div>
           </div>
         </div>
@@ -267,11 +248,8 @@
                 <td class="px-5 py-3.5 text-center">
                   <div class="flex items-center gap-2 justify-center">
                     <%= link_to "수정", edit_admin_member_path(user), class: "text-xs text-blue-600 hover:underline" %>
-                    <%= button_to "삭제", admin_member_path(user),
-                        method: :delete,
-                        data: { turbo_confirm: "이 계정을 삭제하면 작성한 기록의 작성자 정보가 사라집니다. 계속하시겠습니까?" },
-                        form: { class: "inline" },
-                        class: "text-xs text-red-500 hover:underline" %>
+                    <%= render "delete_button", user: user,
+                        has_records: @user_ids_with_records.include?(user.id), variant: :table %>
                   </div>
                 </td>
               </tr>

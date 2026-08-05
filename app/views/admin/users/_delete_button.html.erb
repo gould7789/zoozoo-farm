@@ -1,0 +1,28 @@
+<%# 削除ボタン — ユーザーの状況で3分岐する %>
+<%# ① 自分自身 → 表示しない  ② 記録あり → 案内アラートのみ（送信しない）  ③ 記録なし → 削除フォーム %>
+<%# variant: :card = モバイルカードリスト用 / :table = デスクトップテーブル用 %>
+<% btn_class = variant == :card ?
+     "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" :
+     "text-xs text-red-500 hover:underline" %>
+
+<% if user == current_user %>
+<% elsif has_records %>
+  <%= tag.button "삭제", type: "button", class: btn_class,
+      data: {
+        controller: "blocked-delete",
+        action: "click->blocked-delete#notify",
+        blocked_delete_message_value:
+          "이 계정은 작성한 기록이 있어 삭제할 수 없습니다.\n\n" \
+          "퇴사한 직원은 [수정] → '재직 중' 체크를 해제해주세요.\n" \
+          "반드시 삭제가 필요하면 시스템 관리자에게 문의해주세요."
+      } %>
+<% else %>
+  <%# formはdisplay:contents — buttonを直接flexアイテムにして修正リンクと縦位置を揃える %>
+  <%# inlineだとform内に行ボックスができ、inline-blockのbuttonがベースラインに載って
+      ディセンダ分だけ背が高くなり、隣の修正リンクと数px縦にずれる %>
+  <%= button_to "삭제", admin_member_path(user),
+      method: :delete,
+      data: { turbo_confirm: "이 계정을 삭제하시겠습니까?" },
+      form: { class: "contents" },
+      class: btn_class %>
+<% end %>

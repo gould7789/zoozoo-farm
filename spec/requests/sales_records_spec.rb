@@ -20,6 +20,35 @@ RSpec.describe "SalesRecords", type: :request do
       before { sign_in(admin); get sales_path }
       it { expect(response).to have_http_status(:ok) }
     end
+
+    # 年月フィルタ — パラメータをそのまま信用せず、存在する年月かを検証している
+    # month=99がDate.newに渡るとArgumentErrorになるため、フォールバックが必須
+    context "存在しない年・月を指定した場合" do
+      before { sign_in(admin) }
+
+      it "500にならず最新月にフォールバックする" do
+        create(:sales_record, created_by: admin, sold_on: Date.new(2026, 4, 15), source: :vending_1)
+
+        get sales_path(year: 1999, month: 99)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("2026년 04월")
+      end
+    end
+
+    context "年月を指定した場合" do
+      before { sign_in(admin) }
+
+      it "選択した月のレコードだけを表示する" do
+        create(:sales_record, created_by: admin, sold_on: Date.new(2026, 4, 15), source: :vending_1, amount: 12_345)
+        create(:sales_record, created_by: admin, sold_on: Date.new(2026, 5, 15), source: :vending_2, amount: 98_765)
+
+        get sales_path(year: 2026, month: 4)
+
+        expect(response.body).to include("12,345")
+        expect(response.body).not_to include("98,765")
+      end
+    end
   end
 
   describe "GET /sales_records/new" do

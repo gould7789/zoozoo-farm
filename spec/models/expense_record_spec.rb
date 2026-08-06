@@ -36,4 +36,50 @@ RSpec.describe ExpenseRecord, type: :model do
       expect(ExpenseRecord.recent.last).to eq(older)
     end
   end
+
+  describe ".in_month" do
+    let(:user) { create(:user) }
+
+    it "指定した年月のレコードだけを返す" do
+      target = create(:expense_record, created_by: user, spent_on: Date.new(2026, 4, 15))
+      create(:expense_record, created_by: user, spent_on: Date.new(2026, 5, 15))
+
+      expect(ExpenseRecord.in_month(2026, 4)).to contain_exactly(target)
+    end
+
+    it "前月末日・翌月初日のレコードは含まない" do
+      # 月境界 — 範囲条件の端が正しいかを確認する
+      create(:expense_record, created_by: user, spent_on: Date.new(2026, 3, 31))
+      create(:expense_record, created_by: user, spent_on: Date.new(2026, 5, 1))
+      first_day = create(:expense_record, created_by: user, spent_on: Date.new(2026, 4, 1))
+      last_day  = create(:expense_record, created_by: user, spent_on: Date.new(2026, 4, 30))
+
+      expect(ExpenseRecord.in_month(2026, 4)).to contain_exactly(first_day, last_day)
+    end
+  end
+
+  describe ".available_year_months" do
+    let(:user) { create(:user) }
+
+    it "記録が存在する年月を新しい順で返す" do
+      create(:expense_record, created_by: user, spent_on: Date.new(2025, 12, 3))
+      create(:expense_record, created_by: user, spent_on: Date.new(2026, 4, 15))
+      create(:expense_record, created_by: user, spent_on: Date.new(2026, 1, 20))
+
+      expect(ExpenseRecord.available_year_months).to eq([ [ 2026, 4 ], [ 2026, 1 ], [ 2025, 12 ] ])
+    end
+
+    it "同じ月の複数レコードは1件にまとめる" do
+      # 支出はUNIQUE制約がないため同じ日・同じ種類でも複数件登録できる
+      create(:expense_record, created_by: user, spent_on: Date.new(2026, 4, 1),  category: :food)
+      create(:expense_record, created_by: user, spent_on: Date.new(2026, 4, 1),  category: :food)
+      create(:expense_record, created_by: user, spent_on: Date.new(2026, 4, 30), category: :medical)
+
+      expect(ExpenseRecord.available_year_months).to eq([ [ 2026, 4 ] ])
+    end
+
+    it "レコードがない場合は空配列を返す" do
+      expect(ExpenseRecord.available_year_months).to eq([])
+    end
+  end
 end

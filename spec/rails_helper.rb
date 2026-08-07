@@ -74,6 +74,12 @@ RSpec.configure do |config|
   # travel_to等の時刻操作ヘルパー — タイムゾーン境界のテストで使用する
   config.include ActiveSupport::Testing::TimeHelpers
 
+  # memory_storeはDBと違いトランザクションのロールバックで戻らずプロセス全体で保持される
+  # 例ごとにクリアしないとレート制限のカウンタが後続の例に漏れ、実行順で結果が変わる
+  config.before do
+    Rails.cache.clear
+  end
+
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
   # arbitrary gems may also be filtered via:

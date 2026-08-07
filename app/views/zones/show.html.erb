@@ -27,7 +27,11 @@
           </svg>
           Excel
         <% end %>
-        <button onclick="openModal('category-modal')"
+        <%# モーダルはbody直下にあるためOutletで参照する %>
+        <button type="button"
+                data-controller="modal-opener"
+                data-modal-opener-modal-outlet="#category-modal"
+                data-action="click->modal-opener#open"
                 class="inline-flex items-center h-9 px-3 bg-white border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
           카테고리 관리
         </button>

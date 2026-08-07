@@ -3,6 +3,18 @@ class SessionsController < ApplicationController
   # ログインページは認証不要
   skip_before_action :require_login, only: [ :new, :create ]
 
+  # ブルートフォース攻撃対策 — 同一メールアドレスへのログイン試行を制限する
+  # IPではなくメールアドレスを基準にする理由:
+  #   現場は同一Wi-Fi（NAT）配下から複数人が接続するため、IP基準だと
+  #   誰か一人の入力ミスで全員が締め出される
+  # 大文字小文字・前後の空白で制限をすり抜けられないよう正規化する
+  rate_limit to: 10, within: 3.minutes, only: :create,
+             by: -> { params[:email].to_s.downcase.strip },
+             with: -> {
+               redirect_to login_path,
+                           alert: "로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요."
+             }
+
   def new
     # ログイン済みならルートへリダイレクト
     redirect_to root_path if logged_in?
@@ -23,7 +35,9 @@ class SessionsController < ApplicationController
   end
 
   def destroy
-    session.delete(:user_id)
+    # セッションIDごと破棄する — ログイン時のreset_sessionと対称にし、値の消し忘れを防ぐ
+    # reset_sessionを先に呼ぶこと（後にするとflashがセッションごと消えて通知が出ない）
+    reset_session
     redirect_to login_path, notice: "로그아웃했습니다."
   end
 end

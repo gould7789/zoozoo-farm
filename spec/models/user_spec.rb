@@ -47,6 +47,30 @@ RSpec.describe User, type: :model do
     end
   end
 
+  # フォームのプレースホルダー「8자 이상」とko.ymlのtoo_shortメッセージに
+  # モデル側の検証を一致させる
+  describe "パスワードの長さ" do
+    it "8文字未満は無効" do
+      user = build(:user, password: "pass123")
+      expect(user).to be_invalid
+      expect(user.errors[:password]).to include("비밀번호는 8자 이상이어야 합니다.")
+    end
+
+    it "8文字以上は有効" do
+      expect(build(:user, password: "pass1234")).to be_valid
+    end
+
+    # 編集画面でパスワード欄を空にした場合、コントローラーが:passwordをparamsから
+    # 除外するためpasswordはnilになる — そのケースで長さ検証に引っかからないこと
+    it "更新時にパスワードが空なら長さ検証をスキップする" do
+      user_id = create(:user, password: "password123").id
+      user    = User.find(user_id)
+
+      expect(user.password).to be_nil
+      expect(user.update(name: "山田太郎")).to be true
+    end
+  end
+
   describe "password authentication" do
     it "正しいパスワードで認証できる" do
       user = create(:user, password: "secret123")

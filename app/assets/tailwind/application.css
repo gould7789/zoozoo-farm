@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+/* モバイル/デスクトップで背景画像を切り替える */
+/* CSPはインラインの<style>を拒否するため、レイアウトからここへ移した */
+.zoo-bg { background-image: url("/images/bg_mobile.svg"); }
+
+@media (min-width: 1024px) {
+  .zoo-bg { background-image: url("/images/bg_desktop.svg"); }
+}

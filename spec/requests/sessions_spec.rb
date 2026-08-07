@@ -60,6 +60,52 @@ RSpec.describe "Sessions", type: :request do
       delete logout_path
       expect(session[:user_id]).to be_nil
     end
+
+    # user_idを消すだけではセッションIDが再利用される
+    # ログイン時のreset_sessionと対称にして、値の消し忘れが起きない構造にする
+    it "セッションを完全に破棄する" do
+      # session.idはRack::Session::SessionIdオブジェクトを返す
+      # このクラスは==を定義しておらずオブジェクト同一性で比較されるため、
+      # 値を比べるには必ず文字列化する（そのまま比較すると常にパスする無意味なテストになる）
+      session_id_before = session.id.to_s
+
+      delete logout_path
+
+      expect(session_id_before).to be_present
+      expect(session.id.to_s).not_to eq(session_id_before)
+    end
+  end
+
+  # ブルートフォース攻撃対策 — 同一メールアドレスへの試行を10回/3分に制限する
+  describe "ログイン試行の制限" do
+    let(:user) { create(:user, password: "password123") }
+
+    it "同一メールアドレスへの試行が上限を超えるとブロックされる" do
+      10.times do
+        post login_path, params: { email: user.email, password: "wrongpassword" }
+      end
+
+      # 11回目は正しいパスワードでもブロックされる
+      post login_path, params: { email: user.email, password: "password123" }
+
+      expect(response).to redirect_to(login_path)
+      expect(flash[:alert]).to eq("로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.")
+      expect(session[:user_id]).to be_nil
+    end
+
+    # by: がIPではなくメールアドレス基準であることの確認
+    # 同一Wi-Fi（NAT）配下の他の職員が巻き込まれないことを保証する
+    it "別のメールアドレスは影響を受けない" do
+      11.times do
+        post login_path, params: { email: user.email, password: "wrongpassword" }
+      end
+
+      other_user = create(:user, password: "password123")
+      post login_path, params: { email: other_user.email, password: "password123" }
+
+      expect(response).to redirect_to(root_path)
+      expect(session[:user_id]).to eq(other_user.id)
+    end
   end
 
   describe "未ログインのアクセス制限" do

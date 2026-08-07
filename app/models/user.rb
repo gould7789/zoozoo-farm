@@ -29,4 +29,8 @@ class User < ApplicationRecord
                     uniqueness: { case_sensitive: false },
                     format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :name, presence: true
+  # パスワードは8文字以上 — フォームのプレースホルダーとko.ymlのメッセージに合わせる
+  # allow_nil: 編集時にパスワード欄が空ならパスワード変更なしとして扱うため
+  # （nilを渡すとpassword_digestもnilになるので、新規作成時はpresence検証が別途効く）
+  validates :password, length: { minimum: 8 }, allow_nil: true
 end

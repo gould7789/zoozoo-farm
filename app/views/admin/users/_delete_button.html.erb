@@ -10,6 +10,7 @@
   <%= tag.button "삭제", type: "button", class: btn_class,
       data: {
         controller: "blocked-delete",
+        blocked_delete_confirm_dialog_outlet: "#confirm-dialog",
         action: "click->blocked-delete#notify",
         blocked_delete_message_value:
           "이 계정은 작성한 기록이 있어 삭제할 수 없습니다.\n\n" \

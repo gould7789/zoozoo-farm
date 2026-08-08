@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_05_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_08_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -107,7 +107,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_05_000001) do
     t.datetime "updated_at", null: false
     t.index ["created_by_id"], name: "index_sales_records_on_created_by_id"
     t.index ["sold_on", "source"], name: "index_sales_records_on_sold_on_and_source", unique: true
-    t.index ["sold_on"], name: "index_sales_records_on_sold_on"
   end
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

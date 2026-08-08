@@ -37,6 +37,16 @@ RSpec.describe "AnimalCategories", type: :request do
         expect(response).to redirect_to(zone_path(zone))
         expect(AnimalCategory.count).to eq(0)
       end
+
+      # 追加したカテゴリがアコーディオンにも現れるようにする
+      it "アコーディオンも同時に更新する" do
+        post zone_animal_categories_path(zone),
+             headers: { "Accept" => "text/vnd.turbo-stream.html" },
+             params: { animal_category: { name: "アルパカ" } }
+
+        expect(response.body).to include('target="category_accordion"')
+        expect(response.body).to include("アルパカ")
+      end
     end
   end
 
@@ -67,6 +77,39 @@ RSpec.describe "AnimalCategories", type: :request do
               params: { animal_category: { name: "" } }
         expect(response).to have_http_status(:ok)
         expect(response.content_type).to include("text/vnd.turbo-stream.html")
+      end
+
+      # updateはinnerHTMLだけを差し替えるため、partialのルートdivが二重になる
+      # px-6とpy-3.5が重なって行がインデントされ、縦にも厚くなる
+      it "行を入れ子にせずreplaceで差し替える" do
+        patch zone_animal_category_path(zone, category),
+              headers: { "Accept" => "text/vnd.turbo-stream.html" },
+              params: { animal_category: { name: "ラクダ" } }
+
+        row_stream = response.body[/<turbo-stream[^>]*target="category_row_#{category.id}"[^>]*>/]
+        expect(row_stream).to be_present
+        expect(row_stream).to include('action="replace"')
+      end
+
+      # バリデーションエラー時も同じ入れ子が起きるため両方の経路を検証する
+      it "名前が空の場合もreplaceで差し替える" do
+        patch zone_animal_category_path(zone, category),
+              headers: { "Accept" => "text/vnd.turbo-stream.html" },
+              params: { animal_category: { name: "" } }
+
+        row_stream = response.body[/<turbo-stream[^>]*target="category_row_#{category.id}"[^>]*>/]
+        expect(row_stream).to be_present
+        expect(row_stream).to include('action="replace"')
+      end
+
+      # モーダルの裏のアコーディオンにも新しい名前を反映させる
+      it "アコーディオンも同時に更新する" do
+        patch zone_animal_category_path(zone, category),
+              headers: { "Accept" => "text/vnd.turbo-stream.html" },
+              params: { animal_category: { name: "ラクダ" } }
+
+        expect(response.body).to include('target="category_accordion"')
+        expect(response.body).to include("ラクダ")
       end
     end
   end

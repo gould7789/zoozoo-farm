@@ -8,7 +8,8 @@ Rails.application.routes.draw do
   delete "/logout", to: "sessions#destroy", as: :logout
 
   # 館（読み取り専用）→ 動物 → 記録（ネストルーティング）
-  # health_records → health_logs に変更（内部テーブル名の隠蔽）
+  # health_records → health_logs / feeding_records → feeding_logs に変更
+  # 内部テーブル名を隠し、URLをドメインの言葉で読めるようにする（コントローラー名は据え置き）
   resources :zones, only: [ :index, :show ] do
     resources :animal_categories, only: [ :create, :update, :destroy ] do
       member do
@@ -16,8 +17,8 @@ Rails.application.routes.draw do
       end
     end
     resources :animals do
-      resources :health_logs,     except: [ :show ], controller: "health_records"
-      resources :feeding_records, except: [ :show ]
+      resources :health_logs,  except: [ :show ], controller: "health_records"
+      resources :feeding_logs, except: [ :show ], controller: "feeding_records"
     end
   end
 

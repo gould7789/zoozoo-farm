@@ -1,5 +1,6 @@
 <%# 給餌記録フォーム（new/edit共用） %>
-<%= form_with model: [@zone, @animal, feeding_record], data: { controller: "form", action: "submit->form#submit" } do |f| %>
+<%# URLはモデルから推論させず明示する — ルート名がfeeding_logsでモデル名と一致しないため %>
+<%= form_with model: feeding_record, url: feeding_record.new_record? ? zone_animal_feeding_logs_path(@zone, @animal) : zone_animal_feeding_log_path(@zone, @animal, feeding_record), data: { controller: "form", action: "submit->form#submit" } do |f| %>
 
   <% if feeding_record.errors.any? %>
     <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -52,7 +53,7 @@
     <%= f.submit feeding_record.persisted? ? "저장" : "등록",
         class: "w-full h-11 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors cursor-pointer",
         data: { form_target: "submit" } %>
-    <%= link_to "취소", zone_animal_feeding_records_path(@zone, @animal),
+    <%= link_to "취소", zone_animal_feeding_logs_path(@zone, @animal),
         class: "w-full h-11 inline-flex items-center justify-center bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors" %>
   </div>
 

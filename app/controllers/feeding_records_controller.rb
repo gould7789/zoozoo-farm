@@ -30,7 +30,7 @@ class FeedingRecordsController < ApplicationController
     @feeding_record = @animal.feeding_records.build(feeding_record_params)
     @feeding_record.created_by = current_user
     if @feeding_record.save
-      redirect_to zone_animal_feeding_records_path(@zone, @animal), notice: "먹이 기록을 저장했습니다."
+      redirect_to zone_animal_feeding_logs_path(@zone, @animal), notice: "먹이 기록을 저장했습니다."
     else
       render :new, status: :unprocessable_entity
     end
@@ -41,7 +41,7 @@ class FeedingRecordsController < ApplicationController
 
   def update
     if @feeding_record.update(feeding_record_params)
-      redirect_to zone_animal_feeding_records_path(@zone, @animal), notice: "먹이 기록을 수정했습니다."
+      redirect_to zone_animal_feeding_logs_path(@zone, @animal), notice: "먹이 기록을 수정했습니다."
     else
       render :edit, status: :unprocessable_entity
     end
@@ -49,7 +49,7 @@ class FeedingRecordsController < ApplicationController
 
   def destroy
     @feeding_record.destroy
-    redirect_to zone_animal_feeding_records_path(@zone, @animal), notice: "먹이 기록을 삭제했습니다."
+    redirect_to zone_animal_feeding_logs_path(@zone, @animal), notice: "먹이 기록을 삭제했습니다."
   end
 
   private

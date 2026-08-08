@@ -28,6 +28,9 @@
     <%# フラッシュメッセージ %>
     <%= render "layouts/flash" %>
 
+    <%# turbo_confirmの確認ダイアログ — body直下に1つだけ置く %>
+    <%= render "layouts/confirm_dialog" %>
+
     <% if logged_in? %>
       <%# デスクトップ用サイドバー — lg以上でのみ表示 %>
       <div class="hidden md:flex md:fixed md:inset-y-0 md:w-64 md:flex-col md:bg-white md:border-r md:border-gray-200 md:z-30">

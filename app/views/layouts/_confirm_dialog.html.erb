@@ -2,14 +2,17 @@
 <%# ブラウザ標準の<dialog>を使う — フォーカストラップ・ESC・バックドロップが標準で入っている %>
 <%# form method="dialog" はクリックしたbuttonのvalueをreturnValueに入れて閉じる %>
 <%# paddingは内側のformに寄せる — dialog自身に付けるとバックドロップ判定が誤作動する %>
+<%# m-auto は必須 — ブラウザ標準のdialog:modalは inset:0 + margin:auto で中央に来るが、 %>
+<%# Tailwindのpreflightが * { margin: 0 } で上書きするため左上に張り付いてしまう %>
 <dialog id="confirm-dialog"
         data-controller="confirm-dialog"
         data-action="click->confirm-dialog#closeOnBackdrop"
-        class="p-0 rounded-2xl border-0 shadow-xl w-[20rem] max-w-[calc(100%-2rem)] backdrop:bg-black/40">
-  <form method="dialog" class="p-5">
+        class="m-auto p-0 rounded-2xl border-0 shadow-xl w-[24rem] max-w-[calc(100%-2rem)] backdrop:bg-black/40">
+  <form method="dialog" class="p-6">
     <%# whitespace-pre-line — 案内文の改行を活かす %>
+    <%# 左寄せ — 3行になる案内文（記録ありユーザーの削除）でも崩れないため %>
     <p data-confirm-dialog-target="message"
-       class="text-sm text-gray-700 whitespace-pre-line mb-5"></p>
+       class="text-sm leading-relaxed text-gray-700 whitespace-pre-line mb-6"></p>
     <div class="flex gap-2">
       <%# 案内モードでは非表示にする %>
       <button value="cancel"

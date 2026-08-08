@@ -1,4 +1,4 @@
-<%# 追加成功 — モーダルのカテゴリ一覧を全体差し替え + 入力フィールドをリセット %>
+<%# 追加成功 — モーダルのカテゴリ一覧とアコーディオンを差し替え + 入力フィールドをリセット %>
 
 <%# 1) カテゴリ一覧を最新状態に差し替え %>
 <%= turbo_stream.update "modal_category_list" do %>
@@ -7,7 +7,15 @@
   <% end %>
 <% end %>
 
-<%# 2) 입력 필드 초기화 %>
+<%# 2) モーダルの裏のアコーディオンを差し替え — 追加したカテゴリを即座に反映 %>
+<%= turbo_stream.update "category_accordion" do %>
+  <%= render "zones/accordion",
+      zone: @zone,
+      categories: @categories,
+      animals_by_category: @animals_by_category %>
+<% end %>
+
+<%# 3) 입력 필드 초기화 %>
 <%= turbo_stream.update "category_add_form" do %>
   <%= form_with model: [@zone, AnimalCategory.new] do |f| %>
     <div class="flex gap-2">

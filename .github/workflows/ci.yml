@@ -70,7 +70,8 @@ jobs:
 
     services:
       postgres:
-        image: postgres
+        # メジャーバージョンを固定 — latestが上がってCIだけ壊れるのを防ぐ
+        image: postgres:17
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -109,7 +110,8 @@ jobs:
 
     services:
       postgres:
-        image: postgres
+        # メジャーバージョンを固定 — latestが上がってCIだけ壊れるのを防ぐ
+        image: postgres:17
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres

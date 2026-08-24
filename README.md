@@ -49,6 +49,7 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
 ![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)
 
 ---
 
@@ -157,7 +158,7 @@ spec/
 
 ## ERD
 
-<img width="2000" height="762" alt="ERD" src="https://github.com/user-attachments/assets/ac81983b-91a7-4f3c-b844-508fddf8f7b8" />
+<img width="2000" alt="ERD" src="docs/erd.png" />
 
 ---
 

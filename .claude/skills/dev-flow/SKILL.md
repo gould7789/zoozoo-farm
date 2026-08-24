@@ -123,13 +123,19 @@ spec 작성 → 실행해서 Red 확인 → 구현 → 실행해서 Green 확인
 CI의 각 job과 **동일한 명령**으로 돌린다. 로컬 편의 명령으로 대체하지 않는다.
 
 ```bash
-bin/rails db:test:prepare
-bundle exec rspec spec --exclude-pattern "spec/system/**/*_spec.rb"   # test job
-bundle exec rspec spec/system                                          # system-test job
-bundle exec rubocop                                                    # lint job
-bundle exec brakeman -q --no-pager                                     # scan_ruby job
-bundle exec bundler-audit check --update                               # scan_ruby job
+bin/rails db:test:prepare && bundle exec rspec spec --exclude-pattern "spec/system/**/*_spec.rb"   # test job
+bin/rails db:test:prepare && bundle exec rspec spec/system                                          # system-test job
+bin/rubocop -f github                                                                               # lint job
+bin/brakeman --no-pager                                                                             # scan_ruby job
+bin/bundler-audit                                                                                   # scan_ruby job
+bin/importmap audit                                                                                 # scan_js job
 ```
+
+**`bundle exec`로 바꿔 돌리지 말 것.** `bin/` 래퍼가 플래그를 주입한다. 예를 들어 `bin/brakeman`은 안에서 `ARGV.unshift("--ensure-latest")`를 하기 때문에, rubygems에 새 버전이 올라오면 코드가 뭐든 `exit 5`로 떨어진다. `bundle exec brakeman`에는 그 플래그가 없어서 로컬만 초록으로 보인다. **"같은 도구를 돌렸다"는 "같은 명령을 돌렸다"가 아니다.**
+
+`scan_ruby`는 brakeman → bundler-audit 순서라 앞에서 끊기면 뒤는 실행조차 되지 않는다. 앞이 떨어졌다면 고친 뒤 **다시 전부** 돌린다. 하나만 보고 끝내면 다음 실행에서 뒤엣것이 나온다.
+
+명령이 위 목록과 어긋난다고 느껴지면 `.github/workflows/ci.yml`에서 문자열을 그대로 복사해 온다. 이 목록도 드리프트한다.
 
 결과를 표로 정리해 보고한다. 실패하면 숨기지 말고 그대로 적는다.
 

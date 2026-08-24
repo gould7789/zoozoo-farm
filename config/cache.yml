@@ -11,6 +11,8 @@ development:
 test:
   <<: *default
 
+# database:を指定しないのでprimaryの接続をそのまま使う
+# Render free + SupabaseはDBが1つで、DATABASE_URLがdatabase.ymlのdatabase:を
+# 上書きするため、cache接続を分けても同じDBに解決されるだけだった
 production:
-  database: cache
   <<: *default

@@ -106,6 +106,23 @@ RSpec.describe "Sessions", type: :request do
       expect(response).to redirect_to(root_path)
       expect(session[:user_id]).to eq(other_user.id)
     end
+
+    # rate_limitは `count = store.increment(...)` / `if count && count > to` で判定するため、
+    # ストアが数えられないと例外も警告もなく全リクエストを通してしまう。
+    # 上の2つはmemory_store前提で通るので、ストア側が壊れたことを検知できない。
+    # ここが先に落ちれば原因がストアだと即座に分かる。
+    describe "バッキングストア" do
+      it "レート制限用のテーブルがスキーマに存在する" do
+        # 本番はsolid_cache_store。このテーブルが無いとincrementがUndefinedTableで落ちる
+        expect(ActiveRecord::Base.connection).to be_table_exists("solid_cache_entries")
+      end
+
+      it "incrementが加算後の値を返す" do
+        # null_storeのincrementは空メソッドでnilを返し、判定が丸ごとスキップされる
+        store = ActionController::Base.cache_store
+        expect(store.increment("spec:rate-limit-probe", 1, expires_in: 1.minute)).to eq(1)
+      end
+    end
   end
 
   describe "未ログインのアクセス制限" do

@@ -8,10 +8,7 @@ development:
 test:
   adapter: test
 
+# Action Cableの使用箇所が0件（チャンネル・broadcast・turbo_stream_from いずれも無し）。
+# solid_cableを外したのでasyncのままにする。実際に必要になった時点で見直す。
 production:
-  adapter: solid_cable
-  connects_to:
-    database:
-      writing: cable
-  polling_interval: 0.1.seconds
-  message_retention: 1.day
+  adapter: async

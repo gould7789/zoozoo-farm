@@ -66,16 +66,39 @@
   `Cache::Store#increment` 기본 구현은 `NotImplementedError`를 던지므로 "갱신된 값을 반환한다"가 원래 계약인데, null_store만 조용히 계약을 벗어난다.
   가드는 v7.2.0(기능 최초 도입) 시점부터 존재하며 v8.0.0 / v8.0.2 / v8.1.0에서도 동일하다.
   캐시 장애 시 전원이 잠기는 것을 피하려는 **의도적 fail-open**으로 보인다.
-- **상류 이슈 검색 결과**:
-  - PR #50781 (merged) — Kredis에서 `AS::Cache`로 옮긴 PR. DHH 본인이
-    *"Problem with this in testing is that we default to `null_store`. So the value doesn't persist. So you can't test it."* 라고 지적했고,
-    같은 스레드에서 "rate_limit 문서에 적어두자"는 제안까지 나왔으나 반영되지 않음
+- **상류 이슈 검색 결과** (GitHub API로 코멘트 11개 전문 대조):
+  - PR #50781 (merged) — Kredis에서 `AS::Cache`로 옮긴 PR. `count &&` 가드는 이 PR의 커밋
+    `d839ddb`(2024-01-17)에서 들어왔고, **일주일 뒤 같은 스레드에서 결과가 드러났다.**
+
+    | 시각 | 발언 |
+    | --- | --- |
+    | dhh 01-24 | *"Problem with this in testing is that we default to `null_store`. So the value doesn't persist. So you can't test it."* |
+    | byroot 01-24 | *"we could detect when it's `NullStore` and fallback to a `MemoryStore`, but that sounds a bit too brittle."* |
+    | dhh 01-25 | *"I think we should default to MemoryStore, but make it a dedicated test instance, and then also ensure #clear is called by default."* |
+
+    **코어 두 명이 해결책에 합의했으나 2년 반이 지나도록 미구현이다.**
+    `railties/.../templates/config/environments/test.rb.tt:27`은 지금도 `:null_store`다.
   - Issue #53172 (closed, `more-information-needed`) — memory_store로 바꿨을 때 카운터가 예제 간 누수되는 짝 문제
   - Issue #52823 — `ActionController::API`에 `cache_store`가 없어 rate limit이 동작하지 않는 별건
-  - **edge `main`의 rdoc 확인 — 여전히 언급 없음**
+  - `60d92e4`(2026-01-02, zzak) — rdoc 말미에 테스트용 조언이 **이미 있다.**
+    *"For directly testing the behavior of `rate_limit`, you may need to switch the cache store to
+    `ActiveSupport::Cache::MemoryStore` for the duration of your test."*
+    이 커밋은 그 이전 문구에서 `config.cache_store = :memory_store`를 **일부러 뺐다**
+    (제목: "to avoid global cache_store change"). 즉 전역 설정 변경 권고는 폐기된 방향이다.
 - **적용한 우회**: `7204b89` — test 환경 `cache_store`를 `:memory_store`로 교체 + `spec/rails_helper.rb`에 `Rails.cache.clear` before 훅 (#53172 대응)
-- **판정**: **상류 버그 아님.** 상류가 인지했으나 미해결로 남은 문서 공백. fail-open 자체는 의도된 설계라 코드 변경 제안은 채택 가능성이 낮다
-- **다음 액션**: `rate_limiting.rb` rdoc에 한 문단을 더하는 문서 PR. 초안은 `docs/upstream-pr-rate-limit-docs.md`
+- **판정**: **상류 버그 아님.** fail-open은 의도된 설계이고, 테스트 조언도 이미 문서에 있다.
+  빠진 것은 **이유** — 기본 스토어가 세지 않아 제한이 "미검증"이 아니라 "꺼져 있다"는 사실과,
+  같은 일이 프로덕션의 fail-open에서도 일어난다는 것
+- **다음 액션**: **완료.** [rails/rails#58558](https://github.com/rails/rails/pull/58558) 제출 (2026-08-25).
+  `rate_limiting.rb` rdoc에 한 문단 추가. 제출본은 `docs/upstream-pr-rate-limit-docs.md`
+
+**교훈 ①**: 검색 결과 요약을 인용으로 쓰지 말 것. 처음 이 항목에는 *"같은 스레드에서 문서화 제안이
+나왔다"* 고 적혀 있었는데 **그런 코멘트는 존재하지 않았다.** 웹 검색 요약이 만들어낸 문장을 검증 없이
+옮긴 것이다. 공개 PR 직전에 API로 원문을 대조해서 걸렀다. 상류에 인용할 문구는 반드시 원문에서 가져온다.
+
+**교훈 ②**: 문서를 고치기 전에 **그 문서 전체를 읽을 것.** rdoc 상단만 보고 "테스트 관련 언급이 없다"고
+판단해 문단을 넣었는데, Examples 아래에 이미 조언이 있었고 심지어 8개월 전 `60d92e4`가 의도적으로
+좁혀놓은 문구와 정면으로 충돌했다. 빌드된 문서 프리뷰를 눈으로 확인해서 잡았다.
 
 **파생 발견 — 같은 가드가 프로덕션에서도 문다 (이쪽은 상류가 아니라 내 설정 실수)**
 
@@ -105,5 +128,27 @@ Supabase 무료 플랜이 유휴로 내려간 순간 `increment`가 nil을 돌�
 **교훈**: fail-open하는 보안 기능은 "동작한다"를 테스트가 증명해주지 않는다.
 제한이 걸리는 것만 검증하면, 스토어가 죽었을 때 통과하는 스펙과 구분되지 않는다.
 스토어가 실제로 세는지를 별도로 못 박아야 한다.
+
+---
+
+### [2026-08-25] Supabase(PostgREST) — Data API를 끄면 로그가 32초마다 에러로 채워짐
+
+> 우회 코드를 쓴 건 아니라 기록 의무는 없다. **다음에 이 로그를 보고 또 시간을 쓰지 않으려고** 남긴다.
+
+- **증상**: Supabase 로그에 `schema "pg_pgrst_no_exposed_schemas" does not exist` (`3F000`)가 약 32초 간격으로 계속 쌓임
+- **재현 절차**:
+  1. Supabase 프로젝트에서 Data API를 비활성화 (또는 신규 프로젝트 기본 상태)
+  2. Logs 확인
+- **원인 추정**: Data API가 꺼지면 PostgREST의 `db-schemas`에 `pg_pgrst_no_exposed_schemas`라는 실재하지 않는 센티넬 스키마가 들어간다. PostgREST가 주기적으로 스키마 캐시를 다시 만들려다 매번 실패하고 로그를 남긴다
+- **상류 이슈 검색 결과**: Supabase 공식 트러블슈팅 문서에 명시 — *"should not adversely affect the project, although it may result in additional entries in your logs."* 이슈 supabase/supabase#40617 open
+- **적용한 우회**: 없음
+- **판정**: **우리 영향 없음.** 이 앱은 `DATABASE_URL`로 Postgres 프로토콜에 직접 붙고 PostgREST를 경유하지 않는다. Data API가 꺼져 있는 편이 맞다 — 쓰지 않는 REST 엔드포인트를 여는 건 공격 표면만 늘린다
+- **다음 액션**: 없음. **Data API를 켜서 노이즈를 없애려 하지 말 것.** 로그를 볼 때 필터를 건다
+
+  ```
+  event_message NOT LIKE '%pg_pgrst_no_exposed_schemas%'
+  ```
+
+**교훈**: 무해한 로그 노이즈도 장애 진단을 방해한다. `PG::UndefinedTable`을 찾아낸 게 로그인 장애 진단의 결정타였는데, 그때 이 빨간 줄들 사이에서 골라냈다. 노이즈는 그 자체로 비용이다.
 
 ---

@@ -30,10 +30,13 @@ gem "caxlsx_rails" # xlsx MIMEタイプを自動登録し、send_dataでの配�
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
+# Rails.cacheのDBバックエンド。rate_limitがincrementの戻り値で判定するため必須
 gem "solid_cache"
-gem "solid_queue"
-gem "solid_cable"
+# solid_queue / solid_cable は導入しない。
+# Active Jobの用途が無く（画像のvariantは転送前にブラウザ側で縮小して同期生成）、
+# Action Cableも使用箇所が0件。Render無料プランはworkerサービスを立てられず
+# ジョブがPuma内で動くため、バックグラウンド化してもメモリ問題は解決しない。
+# 必要になった時点でgemとマイグレーションを追加する。
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false

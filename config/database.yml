@@ -84,15 +84,10 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
+# Solid Cache / Queue / Cable は接続を分けずprimaryに載せる。
+# DATABASE_URLがあるとURL側のDB名がdatabase:キーを上書きするため、
+# 別名を書いても結局同じDBに解決されていた（Render free + Supabaseは1DB）。
 production:
-  primary: &primary_production
+  primary:
     <<: *default
     url: <%= ENV["DATABASE_URL"] %>
-  queue:
-    <<: *primary_production
-    database: zoozoo_farm_production_queue
-    migrations_paths: db/queue_migrate
-  cable:
-    <<: *primary_production
-    database: zoozoo_farm_production_cable
-    migrations_paths: db/cable_migrate

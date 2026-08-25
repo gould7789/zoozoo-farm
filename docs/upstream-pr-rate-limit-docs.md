@@ -1,95 +1,98 @@
-# rails/rails 문서 PR 초안 — rate_limit의 fail-open 명시
+# rails/rails 문서 PR — 제출 완료
 
-`docs/oss-candidates.md`의 「[2026-08-07] actionpack 8.1.3.1」 항목의 **다음 액션**을 실행하기 위한 초안.
-제출은 수동으로 한다.
+**[rails/rails#58558](https://github.com/rails/rails/pull/58558)** — 2026-08-25 제출, 리뷰 대기.
+
+`docs/oss-candidates.md`의 「[2026-08-07] actionpack 8.1.3.1」 항목의 **다음 액션**을 실행한 결과.
+이 저장소의 첫 오픈소스 기여다.
 
 ---
 
-## 왜 코드가 아니라 문서인가
+## 최종 제출 내용
 
-`count && count > to`의 nil 스킵은 v7.2.0(기능 최초 도입)부터 지금까지 그대로다.
-캐시가 죽었을 때 전원이 잠기는 것보다 통과시키는 쪽을 고른, 의도된 fail-open으로 읽는 게 타당하다.
-따라서 "nil이면 예외를 던지자" 류의 동작 변경 제안은 **채택되지 않을 가능성이 높고, 제안하지 않는다.**
-
-반면 그 동작이 문서에 한 줄도 없다는 것은 명백한 공백이다.
-게다가 상류가 이미 이 문제를 인지하고 문서화까지 제안했는데 반영되지 않은 상태다 — 근거를 인용할 수 있다.
-
-## 대상
-
-`actionpack/lib/action_controller/metal/rate_limiting.rb` 의 `rate_limit` rdoc.
-"Rate limiting relies on a backing `ActiveSupport::Cache` store..." 문단 바로 뒤에 한 문단을 넣는다.
-
-## 제안 diff
+`actionpack/lib/action_controller/metal/rate_limiting.rb`, 주석 5줄 추가 (`+6 -0`).
 
 ```diff
-       # Rate limiting relies on a backing `ActiveSupport::Cache` store and defaults to
-       # `config.action_controller.cache_store`, which itself defaults to the global
-       # `config.cache_store`. If you don't want to store rate limits in the same
        # datastore as your general caches, you can pass a custom store in the `store`
        # parameter.
        #
 +      # The limit is only enforced when the store's `increment` returns the updated
-+      # count. A store that does not count -- most notably `:null_store`, which is the
-+      # default in the test environment -- silently turns `rate_limit` into a no-op, and
-+      # so does a store that fails open while its backend is unavailable. To exercise
-+      # rate limits in tests, set `config.cache_store = :memory_store` in
-+      # `config/environments/test.rb` and clear it between examples.
++      # count. Stores that don't count return `nil` instead, which silently turns
++      # `rate_limit` into a no-op. That includes `ActiveSupport::Cache::NullStore`,
++      # the default in the generated test environment, and any store that fails open
++      # while its backend is unavailable.
 +      #
        # If you want to use multiple rate limits per controller, you need to give each of
        # them an explicit name via the `name:` option.
 ```
 
-## PR 제목
+- 커밋: `dd9c91cde8` — `Document that rate_limit needs a counting store`
+- PR 제목에 `[ci skip]` (기여 가이드 142행 — 커밋 메시지가 아니라 **PR 제목**에 넣는다)
+- CHANGELOG 미작성 (가이드 618행 — 문서 변경은 대상 아님)
+- Rails는 CLA·DCO 서명을 요구하지 않는다
 
-```
-Document that rate_limit is a no-op when the store cannot count
-```
+## 왜 코드가 아니라 문서인가
 
-## PR 본문
+`count && count > to`의 nil 스킵은 `d839ddb`(2024-01-17) 이후 한 번도 바뀌지 않았다.
+캐시 장애 시 전원이 잠기는 것보다 통과시키는 쪽을 고른, 의도된 fail-open으로 읽는 게 타당하다.
 
-````markdown
-### Summary
+게다가 상류는 이미 대안을 검토하고 기각했다 — byroot가 `NullStore` 감지를 *"too brittle"* 이라 했고,
+대신 test 환경 기본값을 `MemoryStore`로 바꾸자는 쪽으로 합의했다. 그 합의가 2년 반째 미구현이다.
 
-`rate_limit` only enforces the limit when the backing store's `increment` returns the
-updated count:
+따라서 **이미 논의되고 기각된 것을 다시 제안하지 않는다.** 대신 PR 본문 말미에 이렇게 남겼다.
 
-```ruby
-count = store.increment(cache_key, 1, expires_in: within)
-if count && count > to
-```
+> **If you'd rather have the default changed as described above, I'm happy to attempt that
+> instead and close this.**
 
-The `count &&` guard means a store that returns `nil` disables rate limiting entirely --
-no exception, no warning, no log line. `ActiveSupport::Cache::NullStore#increment` is an
-empty method, so `rate_limit` is a no-op under the cache store that `rails new` generates
-for the test environment.
+메인테이너가 "문서 말고 기본값을 고쳐라"라고 하면 자연스럽게 더 큰 기여로 이어진다.
 
-This is not a new observation. In #50781, which introduced the current
-`ActiveSupport::Cache`-backed implementation, @dhh noted:
+## 초안에서 실제 제출본으로 가며 바뀐 것
 
-> Problem with this in testing is that we default to `null_store`. So the value doesn't
-> persist. So you can't test it.
+### ① 없는 인용을 걸러냈다
 
-and the thread suggested mentioning it in the `rate_limit` docs. That never landed, and
-the rdoc still doesn't say it. #53172 is the mirror problem people hit right after
-switching to `:memory_store`.
+초안에는 *"같은 스레드에서 문서화 제안이 나왔다"* 고 적혀 있었다. **그런 코멘트는 존재하지 않았다.**
+웹 검색 요약이 만들어낸 문장이었고, GitHub API로 코멘트 11개를 전부 대조해서 걸러냈다.
 
-The failure mode is easy to hit and hard to notice, because the natural test -- "the 11th
-request is blocked" -- passes trivially when the limiter is off in the opposite direction:
-it never blocks anything, so a suite that only asserts on *unlimited* requests stays green
-while the protection is gone.
+대신 실제 발언 3개를 문자 단위로 검증해 인용했다(dhh ×2, byroot ×1).
 
-### What this changes
+### ② 기존 문서와 충돌하는 문장을 뺐다
 
-Documentation only -- one paragraph in the `rate_limit` rdoc. No behavior change.
+초안의 마지막 문장이 이랬다.
 
-The fail-open itself looks deliberate (a cache outage locking every user out is worse than
-letting requests through), so this PR does not propose changing it -- only writing it down,
-along with the one-line fix for testing.
-````
+> To exercise rate limits in tests, set `config.cache_store = :memory_store` in
+> `config/environments/test.rb` and clear it between tests.
 
-## 제출 전 확인
+그런데 rdoc 말미에는 **이미 테스트 조언이 있었고**, `60d92e4`(2026-01-02, zzak)가
+바로 그 전역 설정 권고를 **의도적으로 제거**한 상태였다(커밋 제목: "to avoid global cache_store change").
+즉 8개월 전 결정을 되돌리는 문장이었다.
 
-- [ ] `main` 최신 기준으로 해당 rdoc 문단이 아직 그대로인지 재확인
-- [ ] 인용한 #50781 코멘트 문구가 원문과 정확히 일치하는지 대조
-- [ ] rails/rails의 `CONTRIBUTING.md` — 문서 전용 PR은 `[ci skip]`을 커밋 메시지에 넣는 관례가 있는지 확인
-- [ ] guides(`guides/source/`)에도 같은 내용을 넣을지 판단. 우선 rdoc만으로 제출하고 리뷰어 요청이 있으면 추가
+rdoc 상단만 읽고 Examples 아래를 보지 않아서 생긴 일이고, **빌드된 문서 프리뷰를 눈으로 확인해서 잡았다.**
+그 문장을 들어내니 오히려 남은 문단이 기존 조언의 **이유를 설명하는 위치**가 됐다.
+
+## 확인한 것
+
+| 주장 | 검증 방법 |
+| --- | --- |
+| `count &&` 가드가 `d839ddb`에서 도입 | `git log -S "count && count > to"` — 해당 커밋 단 하나 |
+| 그 이후 가드 미변경 | 위와 동일. `store.increment` 줄은 캐시 키 인자가 2회 변경됨 |
+| `NullStore#increment`가 빈 메서드 | `active_support/cache/null_store.rb` |
+| 생성 템플릿이 `:null_store` | `test.rb.tt:27` |
+| 인용문 3개 | GitHub API 응답과 문자 단위 대조 |
+| 렌더링 | `buildkite/docs-preview` 통과 후 육안 확인 |
+
+## 리뷰 대응 준비
+
+> "Stores that don't count return `nil` instead"
+
+엄밀히는 `ActiveSupport::Cache::Store#increment` 기본 구현이 `NotImplementedError`를 던진다
+(`activesupport/lib/active_support/cache.rb:741`). nil 경로는 `NullStore`와 fail-open하는 스토어다.
+문장이 바로 뒤에 `NullStore`를 명시하고 있어 오독 여지는 적지만, 지적이 오면 이렇게 답한다.
+
+> Good point -- the base `Store#increment` raises `NotImplementedError`, so the `nil`
+> path is specifically `NullStore` and stores that fail open. Happy to reword to
+> "Stores that return `nil` instead of a count -- `NullStore`, and any store failing
+> open -- silently turn `rate_limit` into a no-op."
+
+## 다음
+
+- 리뷰 대기. 코멘트 없이 추가 수정하지 않는다 — 볼 때마다 diff가 달라지면 리뷰어가 번거롭다
+- force-push는 리뷰가 붙기 전까지만. 붙은 뒤에는 커밋을 얹는다

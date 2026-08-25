@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_24_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_25_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -56,6 +56,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_000001) do
     t.index ["category"], name: "index_expense_records_on_category"
     t.index ["created_by_id"], name: "index_expense_records_on_created_by_id"
     t.index ["spent_on"], name: "index_expense_records_on_spent_on"
+    t.check_constraint "amount >= 0", name: "chk_expense_amount"
   end
 
   create_table "feeding_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -107,6 +108,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_24_000001) do
     t.datetime "updated_at", null: false
     t.index ["created_by_id"], name: "index_sales_records_on_created_by_id"
     t.index ["sold_on", "source"], name: "index_sales_records_on_sold_on_and_source", unique: true
+    t.check_constraint "amount >= 0", name: "chk_sales_amount"
   end
 
   create_table "solid_cache_entries", force: :cascade do |t|

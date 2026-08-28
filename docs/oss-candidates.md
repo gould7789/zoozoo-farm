@@ -152,3 +152,64 @@ Supabase 무료 플랜이 유휴로 내려간 순간 `increment`가 nil을 돌�
 **교훈**: 무해한 로그 노이즈도 장애 진단을 방해한다. `PG::UndefinedTable`을 찾아낸 게 로그인 장애 진단의 결정타였는데, 그때 이 빨간 줄들 사이에서 골라냈다. 노이즈는 그 자체로 비용이다.
 
 ---
+### [2026-08-26] activestorage 8.1.3.1 — 우회를 걷어낸 순간의 LoadError 실측
+
+> [2026-08-08경] 항목의 후속. 그때는 재현 로그를 남기지 않고 우회로 덮었다.
+> 이번에 `ruby-vips`를 넣기 직전, **재현이 가능한 마지막 시점에** 실물을 확보했다.
+
+- **증상**: `config.active_storage.variant_processor = :disabled`를 주석 처리하자 앱 초기화가 LoadError로 중단
+- **재현 절차**:
+  1. `config/application.rb`의 `variant_processor = :disabled`를 주석 처리
+  2. `bin/rails runner 'puts 1'` 실행
+
+  `bin/rails -v`는 **통과한다.** 버전 출력은 앱을 부팅하지 않기 때문이다.
+  [2026-08-08경] 항목에 "`bin/rails` 계열 명령이 전부 중단"이라고 적혀 있었으나 정확하지 않다.
+  초기화를 도는 명령만 죽는다.
+- **실측 스택트레이스** (상단 3프레임):
+
+  ```
+  image_processing-2.0.2/lib/image_processing/vips.rb:5:in '<compiled>':
+    ImageProcessing::Vips requires the ruby-vips gem.
+    Please add `gem "ruby-vips", "~> 2.0"` to your Gemfile. (LoadError)
+    from activestorage-8.1.3.1/lib/active_storage/transformers/vips.rb:10
+    from activestorage-8.1.3.1/lib/active_storage/engine.rb:101
+  ```
+
+- **원인 확인** (설치된 gem 소스를 직접 읽음):
+  - `activestorage-8.1.3.1/lib/active_storage/engine.rb:105-130` — `rescue LoadError`의 `case error.message`가 `/libvips/`와 `/image_processing/`만 매칭한다.
+    실제 메시지는 `ImageProcessing::Vips requires the ruby-vips gem...`이라 **둘 다 안 걸린다.**
+    `ImageProcessing`은 CamelCase라 `/image_processing/`에 매칭되지 않고, `ruby-vips`는 `/libvips/`를 포함하지 않는다. → `else`의 `raise`로 떨어진다
+  - `activestorage-8.1.3.1/lib/active_storage/transformers/vips.rb:7-8`의 주석은
+    *"requiring it here is what raises LoadError when the gem is missing, **which the engine reports as an actionable warning**"* 라고 적혀 있다.
+    **주석이 서술하는 의도와 실제 동작이 다르다** — 8장 8-1의 마지막 트리거에 정확히 해당한다
+- **상류 이슈 검색 결과**: **이미 수정 완료.** `main`과 `8-1-stable` 양쪽 `engine.rb`를 원문으로 확인했고
+  `when /ruby-vips/` · `when /mini_magick/` 분기가 들어가 있다 (#58414, 2026-08-10 머지).
+  우리가 밟은 8.1.3.1은 그 이전 릴리스라 아직 재현될 뿐이다.
+  - **[2026-08-08경] 항목의 기재를 정정한다.** 거기에 "main 대상 #58417은 아직 open"이라고 적혀 있으나,
+    GitHub API로 확인한 #58417의 base는 **`8-1-stable`**이다. 그리고 그 브랜치에는 이미 #58414가 머지돼 있어
+    #58417은 중복이다. main에도 같은 분기가 있다
+- **적용한 우회**: 없음. `ruby-vips`를 Gemfile에 추가하는 정공법으로 해결
+- **판정**: **상류 버그였으나 상류에서 이미 처리됨.** 기여 기회 없음
+- **다음 액션**: 없음. 8.1.4 릴리스에 수정이 포함될 것이므로 별도 대응 불필요
+
+**교훈**: "아직 안 고쳐졌다"는 기록도 유통기한이 있다. 인계 문서의 이슈 목록을 그대로 믿고 착수했다면
+이미 닫힌 문 앞에서 시간을 썼을 것이다. 착수 시점에 **번호별 현재 상태를 API로 다시 조회**하는 게 5분이다.
+
+---
+
+### [2026-08-26] activestorage 8.1.3.1 — `:disabled`가 이미지 분석기까지 끈다 (#58313 정적 확인)
+
+- **증상**: `variant_processor = :disabled`이면 첨부 이미지의 `width`/`height` 메타데이터가 기록되지 않는다
+- **원인 확인** (설치된 gem 소스):
+  - `analyzer/image_analyzer/vips.rb:10` — `def self.accept?(blob) = super && ActiveStorage.variant_processor == :vips`
+  - `analyzer/image_analyzer/image_magick.rb:17` — `super && ActiveStorage.variant_processor == :mini_magick`
+
+  `:disabled`면 **두 분석기 모두 수락하지 않는다.** `engine.rb:28`의 기본 analyzers 목록에는 들어 있지만
+  실제로 선택되는 것이 없어 이미지 분석 자체가 건너뛰어진다. 리사이즈를 끄려고 넣은 설정이
+  메타데이터 기록까지 함께 끄는 셈이다
+- **상류 이슈 검색 결과**: 이슈 #58313 open, 수정 PR #58314 open. **3주 넘게 코멘트 0건**
+- **적용한 우회**: 없음 (이번 작업에서 `:disabled` 자체를 제거)
+- **판정**: **상류 버그 후보. 아직 열려 있다**
+- **다음 액션**: 최소 재현 앱으로 실제 동작을 확인하고 #58313에 결과 코멘트.
+  위 정적 확인만으로는 근거가 약하다 — **실제로 첨부해서 `blob.metadata`가 비는 것을 봐야 한다**
+

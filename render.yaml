@@ -5,6 +5,9 @@ services:
     region: singapore
     plan: free
     buildCommand: |
+      # 一時的な確認用 — ネイティブruntimeにlibvipsが存在するかをビルドログで見る。
+      # 結果を確認したら次のコミットで削除する。
+      vips --version || echo "VIPS_MISSING"
       bundle install
       bundle exec rails assets:precompile
       bundle exec rails db:migrate

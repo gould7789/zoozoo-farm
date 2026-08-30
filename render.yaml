@@ -5,9 +5,10 @@ services:
     region: singapore
     plan: free
     buildCommand: |
-      # 一時的な確認用 — ネイティブruntimeにlibvipsが存在するかをビルドログで見る。
-      # 結果を確認したら次のコミットで削除する。
-      vips --version || echo "VIPS_MISSING"
+      # 一時的な確認用 — Renderのlibvips 8.15.3がHEICを読めるかをビルドログで見る。
+      # iPhoneの標準形式であり、動物写真の主要な入力経路になるため確認する。
+      # 結果を得たら次のPRで削除する。
+      if vips -l | grep -q heifload; then echo "VIPS_HEIF: yes"; else echo "VIPS_HEIF: no"; fi
       bundle install
       bundle exec rails assets:precompile
       bundle exec rails db:migrate
@@ -20,6 +21,13 @@ services:
         sync: false
       - key: RAILS_LOG_TO_STDOUT
         value: "true"
+      # Renderは既定でWEB_CONCURRENCY=1を注入する。Pumaはこの値が1以上だと
+      # クラスターモードで起動し、ワーカーが1つでもマスタープロセスが常駐して
+      # メモリだけを消費する（Puma自身が起動時に警告を出す）。
+      # 無料プランの512MB内で画像変換を行うため0を明示してシングルモードにする。
+      # 処理能力はスレッド3本のままで変わらない。
+      - key: WEB_CONCURRENCY
+        value: "0"
       - key: DATABASE_URL
         sync: false
       - key: SEED_ADMIN_EMAIL

@@ -6,6 +6,25 @@ local:
   service: Disk
   root: <%= Rails.root.join("storage") %>
 
+# 本番の保存先。Supabase StorageにS3プロトコルで接続する。
+# Renderの無料プランには永続ディスクが無く、再起動のたびにDiskサービスの
+# ファイルが消えるため外部ストレージに置く。
+#
+# force_path_style は必須。AWS S3はバケットをサブドメインに置くが
+# （bucket.s3.amazonaws.com）、Supabaseはパス方式にしか対応しない。
+# 欠けると原因の分かりにくい403になる。
+#
+# 秘密情報とプロジェクト識別子のみENVから読む。region・bucketは
+# 露出しても無意味なのでリテラルで置き、設定漏れの余地を減らす。
+supabase:
+  service: S3
+  access_key_id: <%= ENV["SUPABASE_S3_ACCESS_KEY_ID"] %>
+  secret_access_key: <%= ENV["SUPABASE_S3_SECRET_ACCESS_KEY"] %>
+  endpoint: <%= ENV["SUPABASE_S3_ENDPOINT"] %>
+  region: ap-southeast-1
+  bucket: zoozoo-farm-production
+  force_path_style: true
+
 # Use bin/rails credentials:edit to set the AWS secrets (as aws:access_key_id|secret_access_key)
 # amazon:
 #   service: S3

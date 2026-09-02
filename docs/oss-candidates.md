@@ -213,3 +213,34 @@ Supabase 무료 플랜이 유휴로 내려간 순간 `increment`가 nil을 돌�
 - **다음 액션**: 최소 재현 앱으로 실제 동작을 확인하고 #58313에 결과 코멘트.
   위 정적 확인만으로는 근거가 약하다 — **실제로 첨부해서 `blob.metadata`가 비는 것을 봐야 한다**
 
+
+### [2026-09-02] Rails 가이드 — S3 호환 서비스의 `force_path_style`이 문서화되어 있지 않다
+
+- **증상**: 가이드대로 `endpoint`만 지정해 Supabase Storage에 연결하면 업로드가 실패한다. **에러가 원인과 전혀 다른 곳을 가리킨다**
+- **재현 절차**:
+  1. `config/storage.yml`에 S3 서비스를 만들고 `endpoint`를 `https://<ref>.supabase.co/storage/v1/s3`로 지정
+  2. `force_path_style`은 **지정하지 않는다** (가이드에 언급이 없으므로)
+  3. `service.upload(key, io, checksum:)` 실행
+- **실측 결과**:
+
+  ```
+  Seahorse::Client::NetworkingError
+  SSL_connect returned=1 errno=0 peeraddr=172.64.155.33:443
+    state=error: ssl/tls alert handshake failure (SSL alert number 40)
+  ```
+
+  `force_path_style: true`를 넣으면 즉시 정상 동작한다(upload → download → delete 왕복 확인).
+- **원인 추정**: aws-sdk-s3는 기본적으로 가상 호스트 방식으로 URL을 만든다. 즉 `zoozoo-farm-production.<ref>.supabase.co`로 접속을 시도한다.
+  Supabase의 와일드카드 인증서 `*.supabase.co`는 **라벨 한 단계만** 커버하므로 이 3단계 서브도메인은 포함되지 않는다. 그래서 HTTP 응답을 받기 전에 TLS 핸드셰이크 단계에서 끊긴다
+- **왜 문제인가**: 흔히 "403이 난다"고 알려져 있으나 **실제로는 403조차 아니다.** TLS 에러라서 디버깅하는 사람은 프록시 설정, OpenSSL 버전, 인증서 체인을 의심하게 된다. 스토리지 설정 옵션 하나가 빠졌다는 곳으로는 도달하기 어렵다
+- **상류 문서 확인** (원문 대조):
+  - `guides/source/active_storage_overview.md` 1281행 부근 — *"You can also connect to an S3-compatible object storage API such as DigitalOcean Spaces by providing an `endpoint`"* 라고만 적혀 있고 예시에도 `endpoint`만 있다. **`force_path_style`은 가이드 전체에 한 번도 등장하지 않는다**
+  - DigitalOcean Spaces는 가상 호스트 방식을 지원하므로 그 예시만 보면 문제가 드러나지 않는다. 경로 방식만 지원하는 서비스(Supabase, MinIO 등)에서만 발생한다
+- **적용한 우회**: 없음. `force_path_style: true`는 우회가 아니라 정규 옵션이다
+- **판정**: **코드 버그 아님. 문서 누락.** 옵션은 aws-sdk-s3가 제공하며 Active Storage가 그대로 전달한다. 빠진 것은 "언제 필요한지"에 대한 설명이다
+- **다음 액션**: rails/rails에 가이드 PR.
+  **착수 전 반드시 S3 섹션 전문을 읽을 것** — #58558에서 상단만 보고 판단했다가 8개월 전 결정과 충돌할 뻔했다.
+  절차: 이슈 없이 PR 직행 / `[ci skip]`은 커밋이 아니라 **PR 제목**에 / 문서 변경은 CHANGELOG 대상 아님 / CLA·DCO 불필요 / 커밋 본문은 반드시 작성
+
+**부수 실측** — Supabase 버킷의 파일 크기 제한(20MB)은 S3 프로토콜 경로에서도 적용된다. 21MB 업로드 시 `Aws::S3::Errors::EntityTooLarge`. 직접 업로드로 큰 파일이 들어와도 스토리지 층에서 막힌다는 뜻이라, 앱 검증이 사후에 도는 구조의 빈틈을 메워준다.
+

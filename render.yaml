@@ -5,10 +5,6 @@ services:
     region: singapore
     plan: free
     buildCommand: |
-      # 一時的な確認用 — Renderのlibvips 8.15.3がHEICを読めるかをビルドログで見る。
-      # iPhoneの標準形式であり、動物写真の主要な入力経路になるため確認する。
-      # 結果を得たら次のPRで削除する。
-      if vips -l | grep -q heifload; then echo "VIPS_HEIF: yes"; else echo "VIPS_HEIF: no"; fi
       bundle install
       bundle exec rails assets:precompile
       bundle exec rails db:migrate
@@ -33,4 +29,12 @@ services:
       - key: SEED_ADMIN_EMAIL
         sync: false
       - key: SEED_ADMIN_PASSWORD
+        sync: false
+      # Supabase Storage（S3プロトコル）。値はRenderのダッシュボードで直接入力する。
+      # 未入力でもアプリは起動し、ファイル操作の時点で初めて認証に失敗する。
+      - key: SUPABASE_S3_ENDPOINT
+        sync: false
+      - key: SUPABASE_S3_ACCESS_KEY_ID
+        sync: false
+      - key: SUPABASE_S3_SECRET_ACCESS_KEY
         sync: false

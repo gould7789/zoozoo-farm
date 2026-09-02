@@ -52,6 +52,9 @@ gem "image_processing", "~> 2.0"
 # image_processing 2.0がruby-vipsをランタイム依存から外したため明示的に追加する。
 # 無いとActive Storageの初期化がLoadErrorで落ちる（詳細はdocs/oss-candidates.md）。
 gem "ruby-vips", "~> 2.3", require: false
+# S3プロトコルのクライアント。AWSではなくSupabase Storageに接続するために使う。
+# Active StorageがS3サービスを構築する時点で読み込むため require: false。
+gem "aws-sdk-s3", require: false
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

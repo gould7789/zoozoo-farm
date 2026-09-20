@@ -99,6 +99,27 @@
           data: { controller: "textarea", action: "input->textarea#resize" } %>
     </div>
 
+    <%# プロフィール写真 — 送信前にブラウザ側で縮小・JPEG化する %>
+    <div data-controller="image-resize">
+      <%= f.label :photo, "프로필 사진 (선택)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+
+      <%# 検証エラーで再描画される際、未保存のblobはsigned_idを持たないため除外する %>
+      <% if @animal.photo.attached? && @animal.photo.blob.persisted? %>
+        <div class="mb-2">
+          <%= image_tag @animal.photo.variant(:thumb),
+              class: "w-20 h-20 object-cover rounded-lg border border-gray-200",
+              alt: "현재 등록된 사진" %>
+          <p class="text-xs text-gray-400 mt-1">새 사진을 선택하면 교체됩니다.</p>
+        </div>
+      <% end %>
+
+      <%= f.file_field :photo,
+          accept: "image/jpeg,image/png,image/webp",
+          class: "w-full text-sm text-gray-700 file:mr-3 file:h-9 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer",
+          data: { image_resize_target: "input", action: "change->image-resize#compress" } %>
+      <p class="text-xs text-gray-400 mt-1">JPG · PNG · WEBP 형식만 등록할 수 있습니다.</p>
+    </div>
+
   </div>
 
   <div class="mt-4 flex flex-col gap-3">

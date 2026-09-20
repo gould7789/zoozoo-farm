@@ -123,4 +123,58 @@ RSpec.describe "Animals", type: :request do
       end
     end
   end
+
+  describe "プロフィール写真" do
+    let(:animal)     { create(:animal, zone: zone) }
+    let(:photo_file) { fixture_file_upload("animal.jpg", "image/jpeg") }
+
+    it "Adminが写真付きで登録できる" do
+      sign_in(admin)
+      expect {
+        post zone_animals_path(zone), params: {
+          animal: { species: "ラッコ", individual_count: 1, photo: photo_file }
+        }
+      }.to change(ActiveStorage::Attachment, :count).by(1)
+
+      expect(Animal.find_by(species: "ラッコ").photo).to be_attached
+    end
+
+    # RenderのlibvipsはHEICを読めないため、保存させずに弾く。
+    # content_typeは申告値ではなく実バイトから判定されるため実物のHEICを使う。
+    it "HEICは拒否して登録されない" do
+      sign_in(admin)
+      expect {
+        post zone_animals_path(zone), params: {
+          animal: {
+            species: "ラッコ",
+            individual_count: 1,
+            photo: fixture_file_upload("animal.heic", "image/heic")
+          }
+        }
+      }.not_to change(Animal, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("HEIC")
+    end
+
+    # 配信はproxy経由 — redirectだとストレージのドメインへ302し、
+    # CSPのimg_src（:self, :data）に阻まれる
+    it "詳細ページがproxy経由のURLで画像を出力する" do
+      animal.photo.attach(photo_file)
+      sign_in(staff)
+
+      get zone_animal_path(zone, animal)
+
+      expect(response.body).to include("/rails/active_storage/representations/proxy/")
+    end
+
+    it "編集フォームに写真の入力欄とリサイズ用コントローラーが出る" do
+      sign_in(admin)
+
+      get edit_zone_animal_path(zone, animal)
+
+      expect(response.body).to include("animal[photo]")
+      expect(response.body).to include("image-resize")
+    end
+  end
 end

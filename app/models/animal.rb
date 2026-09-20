@@ -1,6 +1,14 @@
 # 動物個体モデル
 # 死亡・放出時はactive=falseで論理削除
 class Animal < ApplicationRecord
+  # プロフィール写真で許可する形式。
+  # RenderのlibvipsはHEICを読めないため、到達するとvariant生成が失敗する。
+  # ブラウザ側でJPEGに変換しているが、変換に失敗した場合の最終防衛線として弾く。
+  ALLOWED_PHOTO_TYPES = %w[ image/jpeg image/png image/webp ].freeze
+  # 縮小を強制する装置ではなく安全網。ブラウザで1600pxに縮小済みなら
+  # 数百KBで届く。JSが失敗した場合にスマホの原本は通し、異常に大きいものだけ弾く。
+  MAX_PHOTO_BYTES = 15.megabytes
+
   # 動物は必ずいずれかの館に所属する
   belongs_to :zone
   # カテゴリは任意 — 未分類の動物はNULL
@@ -9,6 +17,14 @@ class Animal < ApplicationRecord
   has_many :health_records,  dependent: :destroy
   # 給餌記録
   has_many :feeding_records, dependent: :destroy
+
+  # プロフィール写真（1枚）。
+  # ジョブワーカーが無い環境のため preprocessed: true は使えない。
+  # variantは初回参照時に生成され、以降は保存されたものが再利用される。
+  has_one_attached :photo do |attachable|
+    attachable.variant :thumb,  resize_to_limit: [ 320, 320 ]
+    attachable.variant :detail, resize_to_limit: [ 1200, 1200 ]
+  end
 
   # 性別 — 入手時に不明なケースが多いためデフォルトはunknown
   enum :gender,      { male: 0, female: 1, unknown: 2 }
@@ -22,6 +38,8 @@ class Animal < ApplicationRecord
   validates :name, length: { maximum: 100 }, allow_nil: true
   # 個体数は1以上の整数（デフォルト1）
   validates :individual_count, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
+  # 添付ファイルはvalidatesで扱えないためカスタム検証で行う
+  validate :photo_must_be_supported_image
 
   # 削除されていない動物のみを返すスコープ
   scope :active, -> { where(active: true) }
@@ -58,4 +76,15 @@ class Animal < ApplicationRecord
       health_records.recent.first&.condition
     end
   end
+
+  private
+
+    # 添付写真の形式とサイズを検証する。
+    # メッセージはko.ymlに置く — errors.formatが%{message}のため文として完結させる。
+    def photo_must_be_supported_image
+      return unless photo.attached?
+
+      errors.add(:photo, :unsupported_type) unless ALLOWED_PHOTO_TYPES.include?(photo.blob.content_type)
+      errors.add(:photo, :too_large, limit: MAX_PHOTO_BYTES / 1.megabyte) if photo.blob.byte_size > MAX_PHOTO_BYTES
+    end
 end

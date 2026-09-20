@@ -35,6 +35,9 @@ ko:
               too_long: "종 이름은 100자 이하로 입력해주세요."
             name:
               too_long: "개체명은 100자 이하로 입력해주세요."
+            photo:
+              unsupported_type: "사진은 JPG·PNG·WEBP 형식만 등록할 수 있습니다. 아이폰으로 촬영한 HEIC 사진은 등록할 수 없습니다."
+              too_large: "사진은 %{limit}MB 이하여야 합니다."
         health_record:
           attributes:
             recorded_on:

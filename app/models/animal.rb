@@ -22,7 +22,10 @@ class Animal < ApplicationRecord
   # ジョブワーカーが無い環境のため preprocessed: true は使えない。
   # variantは初回参照時に生成され、以降は保存されたものが再利用される。
   has_one_attached :photo do |attachable|
-    attachable.variant :thumb,  resize_to_limit: [ 320, 320 ]
+    # アバターは円形で表示するため正方形に切り抜く。
+    # ブラウザ側で切り抜き済みなら実質no-opだが、JSが失敗して
+    # 元の縦横比のまま届いた場合もアバターの見た目を揃えられる。
+    attachable.variant :thumb,  resize_to_fill: [ 320, 320 ]
     attachable.variant :detail, resize_to_limit: [ 1200, 1200 ]
   end
 

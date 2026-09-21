@@ -168,13 +168,23 @@ RSpec.describe "Animals", type: :request do
       expect(response.body).to include("/rails/active_storage/representations/proxy/")
     end
 
-    it "編集フォームに写真の入力欄とリサイズ用コントローラーが出る" do
+    it "編集フォームに写真の入力欄と切り抜き用コントローラーが出る" do
       sign_in(admin)
 
       get edit_zone_animal_path(zone, animal)
 
       expect(response.body).to include("animal[photo]")
-      expect(response.body).to include("image-resize")
+      expect(response.body).to include("photo-crop")
+    end
+
+    # アバターをタップすると原寸を見られる — modalは body 直下にレンダされる
+    it "詳細ページに原寸表示モーダルが出力される" do
+      animal.photo.attach(photo_file)
+      sign_in(staff)
+
+      get zone_animal_path(zone, animal)
+
+      expect(response.body).to include("photo-modal")
     end
   end
 end

@@ -16,34 +16,83 @@
 
   <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-4">
 
-    <%# プロフィール写真 — 正方形に切り抜いてから送信する %>
+    <%# プロフィール写真 — 選択後に円形の切り抜き画面を開いてから送信する %>
     <div data-controller="photo-crop">
       <%= f.label :photo, "프로필 사진 (선택)", class: "block text-sm font-medium text-gray-700 mb-1" %>
 
-      <div class="flex items-start gap-3">
+      <div class="flex items-center gap-4">
         <%# 現在の写真 — 検証エラーでの再描画時、未保存のblobはsigned_idを持たないため除外する %>
-        <% if @animal.photo.attached? && @animal.photo.blob.persisted? %>
+        <% has_saved_photo = @animal.photo.attached? && @animal.photo.blob.persisted? %>
+        <% if has_saved_photo %>
           <%= image_tag @animal.photo.variant(:thumb),
               class: "w-20 h-20 rounded-full object-cover border border-gray-200 shrink-0",
-              alt: "현재 등록된 사진" %>
+              alt: "현재 등록된 사진",
+              data: { photo_crop_target: "current" } %>
         <% end %>
 
-        <%# 切り抜き枠 — ファイル選択後にJS側で表示する %>
-        <div data-photo-crop-target="editor" hidden class="shrink-0">
-          <canvas data-photo-crop-target="canvas"
-                  data-action="pointerdown->photo-crop#startDrag pointermove->photo-crop#drag pointerup->photo-crop#endDrag pointercancel->photo-crop#endDrag"
-                  class="w-20 h-20 rounded-full object-cover border-2 border-green-500 touch-none cursor-move bg-gray-100"></canvas>
-          <p data-photo-crop-target="hint" hidden class="text-xs text-green-700 mt-1">드래그해서 위치를 맞추세요.</p>
-        </div>
+        <%# 切り抜き結果のプレビュー — CSPのためblob: URLではなくcanvasに描く %>
+        <canvas data-photo-crop-target="preview" width="160" height="160" hidden
+                class="w-20 h-20 rounded-full border-2 border-green-500 shrink-0"></canvas>
 
-        <div class="min-w-0 flex-1">
+        <div class="min-w-0 flex-1 space-y-2">
           <%= f.file_field :photo,
               accept: "image/jpeg,image/png,image/webp",
               class: "w-full text-sm text-gray-700 file:mr-3 file:h-9 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer",
               data: { photo_crop_target: "input", action: "change->photo-crop#select" } %>
-          <p class="text-xs text-gray-400 mt-1">JPG · PNG · WEBP 형식만 등록할 수 있습니다. 정사각형으로 잘라서 저장됩니다.</p>
+
+          <%# 「사진 삭제」は常に画面に見えている写真に対して働く。
+              保存済みの写真 → サーバーで削除（確認モーダルあり）
+              未保存の選択   → 選択を取り消すだけ（失うものが無いので確認しない）
+              どちらを出すかはJSが切り替える %>
+          <% delete_button_class = "inline-flex items-center h-9 px-3 rounded-lg text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors" %>
+
+          <%# button_toはこのフォームの中に<form>を入れ子にしてしまうため、
+              Turboがクリック時にbody直下へフォームを生成するlink_to + turbo_methodを使う %>
+          <% if has_saved_photo %>
+            <%= link_to "사진 삭제", zone_animal_photo_path(@zone, @animal),
+                data: { photo_crop_target: "destroy", turbo_method: :delete, turbo_confirm: "사진을 삭제하시겠습니까?" },
+                class: delete_button_class %>
+          <% end %>
+
+          <button type="button" hidden
+                  data-photo-crop-target="clear"
+                  data-action="photo-crop#clear"
+                  class="<%= delete_button_class %>">사진 삭제</button>
         </div>
       </div>
+      <p class="text-xs text-gray-400 mt-2">JPG · PNG · WEBP 형식만 등록할 수 있습니다.</p>
+
+      <%# 切り抜き画面 — showModal()でtop layerに出すため、祖先のレイアウトに影響されない %>
+      <dialog data-photo-crop-target="dialog"
+              data-action="cancel->photo-crop#cancel"
+              class="m-auto p-0 bg-transparent backdrop:bg-black/80">
+        <div class="w-[92vw] max-w-sm bg-gray-900 rounded-2xl p-4 text-white">
+          <p class="text-sm font-semibold text-center mb-3">사진 영역 선택</p>
+
+          <canvas data-photo-crop-target="stage" width="640" height="640"
+                  data-action="pointerdown->photo-crop#pointerDown pointermove->photo-crop#pointerMove pointerup->photo-crop#pointerUp pointercancel->photo-crop#pointerUp wheel->photo-crop#wheel:!passive"
+                  class="w-full aspect-square rounded-xl touch-none cursor-move"></canvas>
+
+          <div class="flex items-center gap-3 mt-4">
+            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.2-5.2M10.5 7.5v6m-3-3h6M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
+            </svg>
+            <input type="range" min="1" max="4" step="0.01" value="1"
+                   data-photo-crop-target="zoom"
+                   data-action="input->photo-crop#zoomInput"
+                   aria-label="확대"
+                   class="w-full accent-green-500">
+          </div>
+          <p class="text-xs text-gray-400 text-center mt-2">드래그로 위치를 옮기고, 슬라이더나 휠로 확대하세요.</p>
+
+          <div class="grid grid-cols-2 gap-3 mt-4">
+            <button type="button" data-action="photo-crop#cancel"
+                    class="h-11 rounded-lg bg-gray-700 hover:bg-gray-600 text-sm font-medium transition-colors">취소</button>
+            <button type="button" data-action="photo-crop#confirm"
+                    class="h-11 rounded-lg bg-green-600 hover:bg-green-700 text-sm font-medium transition-colors">완료</button>
+          </div>
+        </div>
+      </dialog>
     </div>
 
     <div>

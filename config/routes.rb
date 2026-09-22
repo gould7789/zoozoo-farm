@@ -17,6 +17,8 @@ Rails.application.routes.draw do
       end
     end
     resources :animals do
+      # プロフィール写真の削除（1動物につき1枚のため単数リソース）
+      resource  :photo, only: [ :destroy ], controller: "animal_photos"
       resources :health_logs,  except: [ :show ], controller: "health_records"
       resources :feeding_logs, except: [ :show ], controller: "feeding_records"
     end

@@ -175,6 +175,33 @@ RSpec.describe "Animals", type: :request do
 
       expect(response.body).to include("animal[photo]")
       expect(response.body).to include("photo-crop")
+      # 切り抜き画面はdialogで出す
+      expect(response.body).to include('data-photo-crop-target="dialog"')
+    end
+
+    # 保存前に選んだ写真を取り消すボタン — 新規登録でも出る。
+    # サーバーには何も送らないためbutton型で、最初は隠しておきJSが表示する
+    it "新規登録フォームにも選択取り消し用のボタンが隠れた状態で出る" do
+      sign_in(admin)
+
+      get new_zone_animal_path(zone)
+
+      # 属性の並び順に依存しないようCSSセレクタで確認する
+      assert_select 'button[type="button"][hidden][data-photo-crop-target="clear"][data-action="photo-crop#clear"]'
+    end
+
+    # 削除の動作そのものは spec/requests/animal_photos_spec.rb で検証する
+    it "写真がある時だけ編集フォームに削除ボタンが出て、確認モーダルを経由する" do
+      sign_in(admin)
+      animal.photo.attach(photo_file)
+
+      get edit_zone_animal_path(zone, animal)
+      expect(response.body).to include(zone_animal_photo_path(zone, animal))
+      expect(response.body).to include('data-turbo-confirm="사진을 삭제하시겠습니까?"')
+
+      animal.photo.purge
+      get edit_zone_animal_path(zone, animal)
+      expect(response.body).not_to include(zone_animal_photo_path(zone, animal))
     end
 
     # アバターをタップすると原寸を見られる — modalは body 直下にレンダされる

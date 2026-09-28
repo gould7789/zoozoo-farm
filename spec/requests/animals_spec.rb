@@ -123,4 +123,95 @@ RSpec.describe "Animals", type: :request do
       end
     end
   end
+
+  describe "プロフィール写真" do
+    let(:animal)     { create(:animal, zone: zone) }
+    let(:photo_file) { fixture_file_upload("animal.jpg", "image/jpeg") }
+
+    it "Adminが写真付きで登録できる" do
+      sign_in(admin)
+      expect {
+        post zone_animals_path(zone), params: {
+          animal: { species: "ラッコ", individual_count: 1, photo: photo_file }
+        }
+      }.to change(ActiveStorage::Attachment, :count).by(1)
+
+      expect(Animal.find_by(species: "ラッコ").photo).to be_attached
+    end
+
+    # RenderのlibvipsはHEICを読めないため、保存させずに弾く。
+    # content_typeは申告値ではなく実バイトから判定されるため実物のHEICを使う。
+    it "HEICは拒否して登録されない" do
+      sign_in(admin)
+      expect {
+        post zone_animals_path(zone), params: {
+          animal: {
+            species: "ラッコ",
+            individual_count: 1,
+            photo: fixture_file_upload("animal.heic", "image/heic")
+          }
+        }
+      }.not_to change(Animal, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("HEIC")
+    end
+
+    # 配信はproxy経由 — redirectだとストレージのドメインへ302し、
+    # CSPのimg_src（:self, :data）に阻まれる
+    it "詳細ページがproxy経由のURLで画像を出力する" do
+      animal.photo.attach(photo_file)
+      sign_in(staff)
+
+      get zone_animal_path(zone, animal)
+
+      expect(response.body).to include("/rails/active_storage/representations/proxy/")
+    end
+
+    it "編集フォームに写真の入力欄と切り抜き用コントローラーが出る" do
+      sign_in(admin)
+
+      get edit_zone_animal_path(zone, animal)
+
+      expect(response.body).to include("animal[photo]")
+      expect(response.body).to include("photo-crop")
+      # 切り抜き画面はdialogで出す
+      expect(response.body).to include('data-photo-crop-target="dialog"')
+    end
+
+    # 保存前に選んだ写真を取り消すボタン — 新規登録でも出る。
+    # サーバーには何も送らないためbutton型で、最初は隠しておきJSが表示する
+    it "新規登録フォームにも選択取り消し用のボタンが隠れた状態で出る" do
+      sign_in(admin)
+
+      get new_zone_animal_path(zone)
+
+      # 属性の並び順に依存しないようCSSセレクタで確認する
+      assert_select 'button[type="button"][hidden][data-photo-crop-target="clear"][data-action="photo-crop#clear"]'
+    end
+
+    # 削除の動作そのものは spec/requests/animal_photos_spec.rb で検証する
+    it "写真がある時だけ編集フォームに削除ボタンが出て、確認モーダルを経由する" do
+      sign_in(admin)
+      animal.photo.attach(photo_file)
+
+      get edit_zone_animal_path(zone, animal)
+      expect(response.body).to include(zone_animal_photo_path(zone, animal))
+      expect(response.body).to include('data-turbo-confirm="사진을 삭제하시겠습니까?"')
+
+      animal.photo.purge
+      get edit_zone_animal_path(zone, animal)
+      expect(response.body).not_to include(zone_animal_photo_path(zone, animal))
+    end
+
+    # アバターをタップすると原寸を見られる — modalは body 直下にレンダされる
+    it "詳細ページに原寸表示モーダルが出力される" do
+      animal.photo.attach(photo_file)
+      sign_in(staff)
+
+      get zone_animal_path(zone, animal)
+
+      expect(response.body).to include("photo-modal")
+    end
+  end
 end

@@ -69,6 +69,77 @@ RSpec.describe Animal, type: :model do
     end
   end
 
+  describe "プロフィール写真" do
+    subject(:animal) { build(:animal) }
+
+    def attach_photo(filename:, content_type:, io: StringIO.new("dummy"))
+      animal.photo.attach(io: io, filename: filename, content_type: content_type)
+    end
+
+    it "写真が無くても有効" do
+      expect(animal).to be_valid
+    end
+
+    %w[image/jpeg image/png image/webp].each do |type|
+      it "#{type} は受け入れる" do
+        attach_photo(filename: "photo", content_type: type)
+        expect(animal).to be_valid
+      end
+    end
+
+    # Renderのlibvips 8.15.3はHEICを読めないため、到達した時点で
+    # variant生成が失敗する。表示が壊れる前に弾く。
+    %w[image/heic image/heif image/gif application/pdf].each do |type|
+      it "#{type} は拒否する" do
+        attach_photo(filename: "photo", content_type: type)
+        expect(animal).not_to be_valid
+        expect(animal.errors[:photo]).to be_present
+      end
+    end
+
+    it "拒否メッセージは韓国語で表示形式を案内する" do
+      attach_photo(filename: "photo.heic", content_type: "image/heic")
+      animal.valid?
+      expect(animal.errors[:photo].join).to include("JPG")
+    end
+
+    it "上限ちょうどは受け入れる" do
+      attach_photo(filename: "photo.jpg", content_type: "image/jpeg")
+      allow(animal.photo.blob).to receive(:byte_size).and_return(Animal::MAX_PHOTO_BYTES)
+      expect(animal).to be_valid
+    end
+
+    # 15MBの実ファイルを毎回書き出すとテストが遅くなるため byte_size をスタブする。
+    # 検証したいのは分岐であってアップロード経路ではない。
+    it "上限を超えるサイズは拒否する" do
+      attach_photo(filename: "photo.jpg", content_type: "image/jpeg")
+      allow(animal.photo.blob).to receive(:byte_size).and_return(Animal::MAX_PHOTO_BYTES + 1)
+      expect(animal).not_to be_valid
+      expect(animal.errors[:photo].join).to include("15MB")
+    end
+
+    it "実画像を添付して保存できる" do
+      animal.photo.attach(
+        io: Rails.root.join("spec/fixtures/files/animal.jpg").open,
+        filename: "animal.jpg",
+        content_type: "image/jpeg"
+      )
+      expect(animal.save).to be true
+      expect(animal.reload.photo).to be_attached
+    end
+
+    it "variantが定義されている" do
+      animal.photo.attach(
+        io: Rails.root.join("spec/fixtures/files/animal.jpg").open,
+        filename: "animal.jpg",
+        content_type: "image/jpeg"
+      )
+      animal.save!
+      expect { animal.photo.variant(:thumb).processed }.not_to raise_error
+      expect { animal.photo.variant(:detail).processed }.not_to raise_error
+    end
+  end
+
   describe "スコープ" do
     it ".activeは論理削除されていない動物のみ返す" do
       zone = Zone.create!(name: "テスト館")

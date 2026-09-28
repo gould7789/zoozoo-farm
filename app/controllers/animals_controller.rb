@@ -79,7 +79,7 @@ class AnimalsController < ApplicationController
       params.require(:animal).permit(
         :name, :species, :gender, :birth_date,
         :acquired_at, :acquisition_note, :cites_grade, :note,
-        :animal_category_id, :individual_count
+        :animal_category_id, :individual_count, :photo
       )
     end
 

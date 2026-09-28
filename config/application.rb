@@ -19,6 +19,13 @@ module ZooKeeper
     # デフォルトロケールを韓国語に設定
     config.i18n.default_locale = :ko
 
+    # 添付ファイルはRails経由で配信する（proxy）。
+    # 既定のredirectはストレージのドメインへ302するため、
+    # CSPのimg_src（:self, :data）に阻まれて画像が表示されない。
+    # ビューごとにヘルパーを選ぶ方式だと1か所漏れただけでその画面が壊れるため、
+    # 既定値を安全側に倒して例外を作らない。
+    config.active_storage.resolve_model_to_route = :rails_storage_proxy
+
     # UUID v4をプライマリキーのデフォルトとして設定
     # 順次整数IDのURL露出によるIDOR攻撃を防ぐため採用
     # 実際の生成はDB側のgen_random_uuid()（= v4）が担当する

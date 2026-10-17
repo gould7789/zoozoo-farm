@@ -47,6 +47,7 @@ class AnimalsController < ApplicationController
   def edit
     # 編集フォームのカテゴリドロップダウン用
     @categories = @zone.animal_categories.order(:name)
+    @saved_photo = @animal.photo
   end
 
   def update
@@ -54,6 +55,9 @@ class AnimalsController < ApplicationController
       redirect_to zone_animal_path(@zone, @animal), notice: "동물 정보를 수정했습니다."
     else
       @categories = @zone.animal_categories.order(:name)
+      # 検証エラー時、@animal.photoは未保存の添付を指す。
+      # 保存済みの写真を別に読み直さないと、消えていないのに消えたように見える
+      @saved_photo = Animal.find(@animal.id).photo
       render :edit, status: :unprocessable_entity
     end
   end

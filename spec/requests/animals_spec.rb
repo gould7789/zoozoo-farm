@@ -190,6 +190,23 @@ RSpec.describe "Animals", type: :request do
       assert_select 'button[type="button"][hidden][data-photo-crop-target="clear"][data-action="photo-crop#clear"]'
     end
 
+    # 検証エラーで編集フォームを再描画する際、@animal.photoは未保存の添付を指す。
+    # 保存済みの写真を別に取り出さないと、消えていないのに消えたように見える
+    it "検証エラーで再描画しても保存済みの写真と削除ボタンが残る" do
+      sign_in(admin)
+      animal.photo.attach(photo_file)
+
+      patch zone_animal_path(zone, animal), params: {
+        animal: { species: animal.species, photo: fixture_file_upload("animal.heic", "image/heic") }
+      }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("HEIC")
+      # 保存済みの写真は無傷で、その削除ボタンも出ていること
+      expect(animal.reload.photo).to be_attached
+      expect(response.body).to include(zone_animal_photo_path(zone, animal))
+    end
+
     # 削除の動作そのものは spec/requests/animal_photos_spec.rb で検証する
     it "写真がある時だけ編集フォームに削除ボタンが出て、確認モーダルを経由する" do
       sign_in(admin)

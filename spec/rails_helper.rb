@@ -71,6 +71,9 @@ RSpec.configure do |config|
   # リクエストスペック用ヘルパー（sign_inメソッド）
   config.include RequestHelpers, type: :request
 
+  # systemスペック用ヘルパー（sign_in_asメソッド）
+  config.include SystemHelpers, type: :system
+
   # travel_to等の時刻操作ヘルパー — タイムゾーン境界のテストで使用する
   config.include ActiveSupport::Testing::TimeHelpers
 

@@ -63,8 +63,12 @@ export default class extends Controller {
     this.centerY = this.bitmap.height / 2
 
     this.#draw()
-    this.dialogTarget.showModal()
+    // スクロールバーを先に消してから開く。順序が逆だと、ダイアログを描画した直後に
+    // ビューポート幅が変わってw-[92vw]と中央寄せが再計算され、レイアウトがもう一度動く。
+    // 利用者には開いた瞬間のがたつきとして見え、自動テストではその隙間に
+    // クリックが入って隣の要素を押してしまう
     document.body.classList.add("overflow-hidden")
+    this.dialogTarget.showModal()
   }
 
   // 「완료」— 円に外接する正方形を切り出してinputに反映する

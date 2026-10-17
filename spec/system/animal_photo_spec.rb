@@ -15,12 +15,23 @@ RSpec.describe "동물 프로필 사진", type: :system do
   # page.allはcount系のオプションが無いと待たずに即座に返る。
   # toBlobやデコード失敗の直後は描画が一拍遅れるため、遅いCIで取りこぼす。
   # have_css / have_no_cssは条件が満たされるまで再試行して待つ
+  def target_css(target) = "[data-photo-crop-target='#{target}']"
+
   def expect_visible(target)
-    expect(page).to have_css("[data-photo-crop-target='#{target}']", visible: true)
+    expect(page).to have_css(target_css(target), visible: true)
   end
 
   def expect_hidden(target)
-    expect(page).to have_no_css("[data-photo-crop-target='#{target}']", visible: true)
+    expect(page).to have_no_css(target_css(target), visible: true)
+  end
+
+  # ダイアログ内のボタンは押しても届かないことがあるため結果で確かめる
+  def confirm_crop
+    click_in_dialog("완료") { page.has_css?(target_css("preview"), visible: true, wait: 3) }
+  end
+
+  def cancel_crop
+    click_in_dialog("취소") { page.has_no_css?(target_css("preview"), visible: true, wait: 3) }
   end
 
   def choose_photo(filename)
@@ -36,7 +47,7 @@ RSpec.describe "동물 프로필 사진", type: :system do
 
   it "자르기를 완료하면 미리보기가 나오고 서버 삭제 버튼은 숨는다" do
     choose_photo("animal.jpg")
-    click_button "완료"
+    confirm_crop
 
     expect_visible("preview")
     expect_visible("clear")
@@ -48,11 +59,11 @@ RSpec.describe "동물 프로필 사진", type: :system do
   # 2回目の選択を取り消すと1枚目のプレビューが残り、送信しても何も添付されない
   it "두 번째 선택을 취소하면 이전 미리보기가 사라지고 원래 상태로 돌아온다" do
     choose_photo("animal.jpg")
-    click_button "완료"
+    confirm_crop
     expect_visible("preview")
 
     choose_photo("animal2.jpg")
-    click_button "취소"
+    cancel_crop
 
     expect_hidden("preview")
     expect_hidden("clear")
@@ -75,7 +86,7 @@ RSpec.describe "동물 프로필 사진", type: :system do
 
   it "선택 취소를 누르면 저장된 사진과 삭제 버튼이 돌아온다" do
     choose_photo("animal.jpg")
-    click_button "완료"
+    confirm_crop
 
     click_button "사진 삭제"   # 未保存の選択に対しては取り消しとして働く
 

@@ -21,10 +21,10 @@
       <%= f.label :photo, "프로필 사진 (선택)", class: "block text-sm font-medium text-gray-700 mb-1" %>
 
       <div class="flex items-center gap-4">
-        <%# 現在の写真 — 検証エラーでの再描画時、未保存のblobはsigned_idを持たないため除外する %>
-        <% has_saved_photo = @animal.photo.attached? && @animal.photo.blob.persisted? %>
+        <%# 現在の写真 — @animal.photoではなく@saved_photoを見る。検証エラーでの再描画時、@animal.photoは未保存の添付を指しており、それを使うと保存済みの写真が消えたように見える（コントローラー側で読み直す） %>
+        <% has_saved_photo = @saved_photo&.attached? %>
         <% if has_saved_photo %>
-          <%= image_tag @animal.photo.variant(:thumb),
+          <%= image_tag @saved_photo.variant(:thumb),
               class: "w-20 h-20 rounded-full object-cover border border-gray-200 shrink-0",
               alt: "현재 등록된 사진",
               data: { photo_crop_target: "current" } %>

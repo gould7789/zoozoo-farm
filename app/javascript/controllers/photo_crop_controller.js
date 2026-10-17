@@ -45,7 +45,11 @@ export default class extends Controller {
       this.bitmap = await createImageBitmap(file, { imageOrientation: "from-image" })
     } catch {
       // デコードできない形式（WindowsのChromeでのHEIC等）は原本のまま送り、
-      // サーバー側の検証に委ねる
+      // サーバー側の検証に委ねる。
+      // ただし表示は戻す — 前の切り抜きが残っていると別の写真を選んだように見え、
+      // さらにサーバー削除ボタンが再び出ると「選択の取り消し」のつもりで
+      // 保存済みの写真を消してしまう
+      this.#showState({ selected: true, previewed: false })
       return
     }
 
@@ -92,6 +96,7 @@ export default class extends Controller {
   // 「취소」またはESC — 選択自体を取り消す
   cancel() {
     this.inputTarget.value = ""
+    this.#showState({ selected: false, previewed: false })
     this.#close()
   }
 
@@ -99,7 +104,7 @@ export default class extends Controller {
   // サーバーには何も送らないので確認モーダルは出さない
   clear() {
     this.inputTarget.value = ""
-    this.#showPendingState(false)
+    this.#showState({ selected: false, previewed: false })
   }
 
   zoomInput() {
@@ -204,16 +209,22 @@ export default class extends Controller {
   #showPreview(source) {
     const preview = this.previewTarget
     preview.getContext("2d").drawImage(source, 0, 0, preview.width, preview.height)
-    this.#showPendingState(true)
+    this.#showState({ selected: true, previewed: true })
   }
 
-  // 未保存の選択があるかどうかで、写真と「사진 삭제」の出し分けを切り替える。
-  // 選択中は新しいプレビューと取り消しボタン、無ければ保存済みの写真とサーバー削除
-  #showPendingState(pending) {
-    this.previewTarget.hidden = !pending
-    this.clearTarget.hidden = !pending
-    if (this.hasCurrentTarget) this.currentTarget.hidden = pending
-    if (this.hasDestroyTarget) this.destroyTarget.hidden = pending
+  // 表示は「ファイルを選んでいるか」と「プレビューを作れたか」の2軸で決まる。
+  // 1つの真偽値にまとめると、デコードに失敗した時に
+  // 「選択済みなのにプレビューが無い」状態を表現できない。
+  //
+  //   選択あり・プレビューあり … 切り抜き完了
+  //   選択なし              … 保存済みの写真とサーバー削除を出す
+  //   選択あり・プレビューなし … デコード失敗。取り消しだけ出す
+  #showState({ selected, previewed }) {
+    this.previewTarget.hidden = !previewed
+    this.clearTarget.hidden = !selected
+    // 選択中にサーバー削除を出すと、取り消しのつもりで保存済みの写真を消してしまう
+    if (this.hasCurrentTarget) this.currentTarget.hidden = selected
+    if (this.hasDestroyTarget) this.destroyTarget.hidden = selected
   }
 
   #close() {

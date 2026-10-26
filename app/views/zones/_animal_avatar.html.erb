@@ -8,9 +8,14 @@
       loading: "lazy" %>
 <% else %>
   <div class="<%= size %> rounded-full bg-gray-100 border border-gray-200 shrink-0 flex items-center justify-center">
-    <svg class="w-1/2 h-1/2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-        d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M18 9h.008v.008H18V9zm2.25 11.25H3.75A1.5 1.5 0 012.25 18.75V5.25A1.5 1.5 0 013.75 3.75h16.5a1.5 1.5 0 011.5 1.5v13.5a1.5 1.5 0 01-1.5 1.5z" />
+    <%# 肉球 — 写真アイコンだと「画像が壊れている」ように見えるため、
+        未登録であることが分かる動物のマークにする %>
+    <svg class="w-3/5 h-3/5 text-gray-300" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <ellipse cx="6.6" cy="10" rx="2.1" ry="2.7" />
+      <ellipse cx="10.3" cy="6.6" rx="2.2" ry="2.9" />
+      <ellipse cx="14.5" cy="6.6" rx="2.2" ry="2.9" />
+      <ellipse cx="18.2" cy="10" rx="2.1" ry="2.7" />
+      <path d="M12 12.6c3.1 0 5.6 2.2 5.6 4.6 0 1.9-1.6 3-3.4 2.6-.8-.2-1.5-.3-2.2-.3s-1.4.1-2.2.3C8 20.2 6.4 19.1 6.4 17.2 6.4 14.8 8.9 12.6 12 12.6z" />
     </svg>
   </div>
 <% end %>

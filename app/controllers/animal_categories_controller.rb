@@ -75,6 +75,7 @@ class AnimalCategoriesController < ApplicationController
       @categories = @zone.animal_categories.where(hidden: false).order(:name)
       @animals_by_category = @zone.animals.active
                                   .includes(:health_records)
+                                  .with_attached_photo
                                   .order(:species, :name)
                                   .group_by(&:animal_category_id)
     end

@@ -41,6 +41,9 @@
 # Claude context document
 /CLAUDE.md
 
+# Portfolio material notes (personal — not part of the project documentation)
+/docs/portfolio-notes.md
+
 # Ruby LSP cache (local editor tooling)
 /.ruby-lsp/
 

@@ -100,7 +100,7 @@ PR #121(동물 프로필 사진)을 **배포까지 끝낸 뒤** `/code-review`�
 | 부팅 실패 수정의 완료 조건 | `bin/rails -v`로 확인 | **고치기 전에도 통과한다.** 버전 출력은 앱을 부팅하지 않는다 |
 | `resize_to_fill`이 안 먹는 줄 알았음 | 설정이 틀렸다 | `VariantWithRecord#blob`은 **원본**을 가리킨다. `image.blob`이 실제 variant이고 320×320으로 정상 |
 | HEIC 거부 테스트 | content_type만 바꾸면 됨 | Active Storage는 **Marcel로 실제 바이트를 판정**한다. 가짜 HEIC는 통과해버린다 |
-| `with_attached_photo`가 variant까지 덮는가 | 모름 | **덮는다.** 쿼리 목록에 `active_storage_variant_records`를 IN으로 긁는 줄이 있다 |
+| `with_attached_photo`가 variant까지 덮는가 | 모름 | **덮지만 그게 요점이 아니었다.** `variant_records`를 IN으로 긁는 줄을 보고 "variant의 N+1도 막았다"고 결론냈는데, 화면을 그릴 때는 그 테이블을 **애초에 보지 않는다**. `variant(:thumb)`은 URL을 조립할 뿐이고, 변환본 조회는 브라우저가 그 URL로 보내는 **별개의 요청**에서 일어난다. N+1의 정체는 `attachments` + `blobs` 마리당 2회였다 |
 | system spec이 안정적인가 | 로컬·CI 각 1회 통과 | **불안정했다.** 5회 중 2회 실패. 원인 2개(입력 유실, 클릭 유실) |
 
 ### 수치로 남은 것

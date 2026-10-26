@@ -1,0 +1,34 @@
+<%# 動物一覧のモバイルカード1件 — カテゴリ別と未分類の両方から使う %>
+<% condition = animal.latest_condition %>
+<%= link_to zone_animal_path(zone, animal),
+    class: "flex items-center gap-3 py-2 px-1",
+    data: { search_target: "item", search_text: "#{animal.species} #{animal.name}" } do %>
+  <%= render "zones/animal_avatar", animal: animal, size: "w-10 h-10" %>
+  <div class="min-w-0 flex-1">
+    <div class="flex items-center gap-1.5 flex-wrap">
+      <p class="text-sm font-semibold text-gray-900"><%= animal.name.presence || animal.species %></p>
+      <% if animal.name.present? %>
+        <p class="text-xs text-gray-400">(<%= animal.species %>)</p>
+      <% end %>
+    </div>
+    <div class="flex items-center gap-2 mt-1">
+      <span class="text-xs text-gray-400"><%= ({ "male" => "수컷", "female" => "암컷", "unknown" => "미확인" })[animal.gender] %></span>
+      <% if animal.age %>
+        <span class="text-xs text-gray-400"><%= animal.age %>살</span>
+      <% end %>
+      <% if condition %>
+        <%
+          badge = case condition
+          when "normal"  then { text: "정상", cls: "bg-green-100 text-green-700" }
+          when "caution" then { text: "주의", cls: "bg-yellow-100 text-yellow-700" }
+          when "danger"  then { text: "위험", cls: "bg-red-100 text-red-700" }
+          end
+        %>
+        <span class="inline-block px-1.5 py-0.5 rounded text-xs font-medium <%= badge[:cls] %>"><%= badge[:text] %></span>
+      <% end %>
+    </div>
+  </div>
+  <svg class="w-4 h-4 text-gray-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+  </svg>
+<% end %>

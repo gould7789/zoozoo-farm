@@ -24,6 +24,7 @@ class ZonesController < ApplicationController
     # @animals_by_category[nil]         → 未分類の動物
     @animals_by_category = @zone.animals.active
                                 .includes(:health_records)
+                                .with_attached_photo
                                 .order(:species, :name)
                                 .group_by(&:animal_category_id)
   end

@@ -88,7 +88,7 @@ RSpec.describe "동물 프로필 사진", type: :system do
     choose_photo("animal.jpg")
     confirm_crop
 
-    click_button "사진 삭제"   # 未保存の選択に対しては取り消しとして働く
+    click_reliably "사진 삭제"   # 未保存の選択に対しては取り消しとして働く
 
     expect_hidden("preview")
     expect_visible("destroy")

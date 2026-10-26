@@ -1,0 +1,21 @@
+<%# 動物一覧のアバター — モバイルカードとデスクトップ行の両方から使う。
+    写真が無い個体も同じ大きさの枠を出し、行ごとに文字の開始位置がずれないようにする。
+    altを空にしているのは装飾だから — 隣に種名と個体名があり、読み上げが重複する %>
+<% if animal.photo.attached? %>
+  <%= image_tag animal.photo.variant(:thumb),
+      class: "#{size} rounded-full object-cover border border-gray-200 shrink-0",
+      alt: "",
+      loading: "lazy" %>
+<% else %>
+  <div class="<%= size %> rounded-full bg-gray-100 border border-gray-200 shrink-0 flex items-center justify-center">
+    <%# 肉球 — 写真アイコンだと「画像が壊れている」ように見えるため、
+        未登録であることが分かる動物のマークにする %>
+    <svg class="w-3/5 h-3/5 text-gray-300" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <ellipse cx="6.6" cy="10" rx="2.1" ry="2.7" />
+      <ellipse cx="10.3" cy="6.6" rx="2.2" ry="2.9" />
+      <ellipse cx="14.5" cy="6.6" rx="2.2" ry="2.9" />
+      <ellipse cx="18.2" cy="10" rx="2.1" ry="2.7" />
+      <path d="M12 12.6c3.1 0 5.6 2.2 5.6 4.6 0 1.9-1.6 3-3.4 2.6-.8-.2-1.5-.3-2.2-.3s-1.4.1-2.2.3C8 20.2 6.4 19.1 6.4 17.2 6.4 14.8 8.9 12.6 12 12.6z" />
+    </svg>
+  </div>
+<% end %>

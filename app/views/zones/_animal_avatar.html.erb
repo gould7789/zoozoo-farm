@@ -1,0 +1,16 @@
+<%# 動物一覧のアバター — モバイルカードとデスクトップ行の両方から使う。
+    写真が無い個体も同じ大きさの枠を出し、行ごとに文字の開始位置がずれないようにする。
+    altを空にしているのは装飾だから — 隣に種名と個体名があり、読み上げが重複する %>
+<% if animal.photo.attached? %>
+  <%= image_tag animal.photo.variant(:thumb),
+      class: "#{size} rounded-full object-cover border border-gray-200 shrink-0",
+      alt: "",
+      loading: "lazy" %>
+<% else %>
+  <div class="<%= size %> rounded-full bg-gray-100 border border-gray-200 shrink-0 flex items-center justify-center">
+    <svg class="w-1/2 h-1/2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+        d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M18 9h.008v.008H18V9zm2.25 11.25H3.75A1.5 1.5 0 012.25 18.75V5.25A1.5 1.5 0 013.75 3.75h16.5a1.5 1.5 0 011.5 1.5v13.5a1.5 1.5 0 01-1.5 1.5z" />
+    </svg>
+  </div>
+<% end %>

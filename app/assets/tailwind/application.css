@@ -77,6 +77,21 @@ trix-editor:focus {
   box-shadow: 0 0 0 2px var(--color-green-500);
 }
 
+/* 添付のファイル名とサイズの吹き出しを出さない。
+   選択中ずっと画像の上に重なって出るため、キャプションを書いている間
+   肝心の画像が隠れる。飼育員に伝える情報でもない */
+trix-editor .attachment__metadata-container {
+  display: none;
+}
+
+/* 画像の下に出るファイル名とバイト数も隠す。開発者向けの情報で、
+   飼育員が見て判断することは無い。キャプション欄自体は残すので
+   「Add a caption...」を押して説明を書ける */
+trix-editor .attachment__caption .attachment__name,
+trix-editor .attachment__caption .attachment__size {
+  display: none;
+}
+
 /* actiontext.css の .trix-content * { margin: 0 } が段落間の余白まで消すので戻す。
    平文から移行したお知らせは改行が <p> の連続になっているため、
    これが無いと全文が一塊に見える */

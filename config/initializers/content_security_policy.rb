@@ -8,8 +8,15 @@ Rails.application.configure do
   config.content_security_policy do |policy|
     policy.default_src :self
     policy.font_src    :self, :data
-    policy.img_src     :self, :data
+    # :blob は Trix が添付を選んだ直後に出すプレビューのため。
+    # URL.createObjectURL は同一オリジンのスクリプトしか作れないので、
+    # これを許しても外部から画像を読み込めるようにはならない
+    policy.img_src     :self, :data, :blob
     policy.object_src  :none
+    # ダイレクトアップロードは署名付きURLへ直接PUTする。connect_srcを書かないと
+    # default_src :self が適用され、本番（Supabase）でのみアップロードが落ちる。
+    # 開発・テストはDiskサービスで同一オリジンのため再現しない
+    policy.connect_src :self, *[ ENV["SUPABASE_S3_ENDPOINT"] ].compact
     policy.script_src  :self
     policy.style_src   :self
   end

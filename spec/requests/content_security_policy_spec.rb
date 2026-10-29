@@ -14,9 +14,17 @@ RSpec.describe "Content Security Policy", type: :request do
     expect(csp).to include("object-src 'none'")
   end
 
-  # 外部参照が0件のため:httpsは付けない — 付けると任意のhttpsオリジンを許可してしまう
+  # 裸の https: は任意のhttpsオリジンを許可してしまうので付けない。
+  # ダイレクトアップロード先として connect-src に1つだけ具体的なオリジンが入るが、
+  # それはホストまで固定されているので別物である
   it "任意のhttpsオリジンを許可しない" do
-    expect(csp).not_to include("https:")
+    expect(csp).not_to match(%r{(?:\A|[;\s])https:(?:[;\s]|\z)})
+  end
+
+  # ダイレクトアップロードは署名付きURLへ直接PUTする。
+  # connect-src が無いと default-src 'self' が効いて本番でのみ落ちる
+  it "connect-srcが自分自身を許可する" do
+    expect(csp).to match(/connect-src 'self'/)
   end
 
   # importmapが出力するインラインスクリプト用

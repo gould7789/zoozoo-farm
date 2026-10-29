@@ -7,3 +7,81 @@
 @media (min-width: 1024px) {
   .zoo-bg { background-image: url("/images/bg_desktop.svg"); }
 }
+
+/* --- Trix（お知らせ本文エディタ）の調整 --------------------------------- */
+
+/* ツールバーは折り返す。横スクロールにすると画面外のボタンに気付けず、
+   実際に添付ボタンが見えなくなっていた。
+   ボタンは13個あり、どの幅でも1行には収まらない */
+trix-toolbar .trix-button-row {
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+trix-toolbar .trix-button-group {
+  margin-bottom: 0;
+  border-color: var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+trix-toolbar .trix-button-group:not(:first-child) {
+  margin-left: 0;
+}
+/* 右端に寄せるための伸び代。折り返すと行が崩れるので使わない */
+trix-toolbar .trix-button-group-spacer {
+  display: none;
+}
+
+/* 入力欄ではなく補助なので、本文より主張を弱くする。
+   見た目は小さくしつつ、高さ40pxは触れる大きさとして残す */
+trix-toolbar .trix-button {
+  min-height: 40px;
+  border-bottom: 0;
+  border-left-color: var(--color-gray-200);
+  color: var(--color-gray-400);
+}
+trix-toolbar .trix-button--icon {
+  height: 40px;
+  width: 40px;
+  max-width: 40px;
+}
+trix-toolbar .trix-button--icon::before {
+  /* 既定は0。アイコンが枠いっぱいに広がって重く見える */
+  inset: 11px;
+  opacity: 0.55;
+}
+trix-toolbar .trix-button:not(:disabled):hover {
+  background: var(--color-gray-50);
+}
+trix-toolbar .trix-button.trix-active {
+  background: var(--color-green-50);
+}
+trix-toolbar .trix-button.trix-active::before {
+  opacity: 0.9;
+}
+
+/* エディタ本体をフォームの他の入力欄と揃える。
+   デスクトップは本文を書く場所なので高さを取る */
+trix-editor {
+  border-color: var(--color-gray-300);
+  border-radius: var(--radius-lg);
+  padding: 0.625rem 0.75rem;
+  min-height: 11rem;
+  font-size: 1rem;
+}
+@media (min-width: 768px) {
+  trix-editor { min-height: 20rem; }
+}
+trix-editor:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-green-500);
+}
+
+/* actiontext.css の .trix-content * { margin: 0 } が段落間の余白まで消すので戻す。
+   平文から移行したお知らせは改行が <p> の連続になっているため、
+   これが無いと全文が一塊に見える */
+.trix-content p + p { margin-top: 0.75em; }
+.trix-content ul { list-style: disc; }
+.trix-content ol { list-style: decimal; }
+.trix-content ul,
+.trix-content ol { padding-left: 1.25em; }

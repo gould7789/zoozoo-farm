@@ -45,7 +45,10 @@
               </div>
             <% end %>
           </div>
-          <p class="text-sm text-gray-700 whitespace-pre-wrap"><%= notice.body %></p>
+          <h2 class="text-base font-bold text-gray-900 mb-1.5"><%= notice.title %></h2>
+          <%# contentはActionText::RichTextで、描画時にサニタイズされる。
+              trix-contentのクラスはレイアウトパーシャル側で付く %>
+          <div class="text-sm text-gray-700"><%= notice.content %></div>
         </div>
       <% end %>
     </div>

@@ -7,7 +7,9 @@ class NoticesController < ApplicationController
   before_action -> { require_owner(@notice) },  only: [ :edit, :update, :destroy ]
 
   def index
-    @notices = Notice.recent.includes(:created_by)
+    # 本文は action_text_rich_texts、埋め込み画像は Active Storage の別テーブルにある。
+    # with_rich_text_content_and_embeds を外すと一覧の件数ぶんクエリが増える
+    @notices = Notice.recent.includes(:created_by).with_rich_text_content_and_embeds
   end
 
   def new
@@ -47,6 +49,8 @@ class NoticesController < ApplicationController
     end
 
     def notice_params
-      params.require(:notice).permit(:category, :body)
+      # :body ではなく :content。本文は notices.body ではなく
+      # action_text_rich_texts に入るようになった
+      params.require(:notice).permit(:category, :title, :content)
     end
 end

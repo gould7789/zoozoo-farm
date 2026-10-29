@@ -32,7 +32,7 @@ RSpec.describe "Notices", type: :request do
   end
 
   describe "POST /notices" do
-    let(:valid_params) { { notice: { category: "general", body: "テストお知らせ" } } }
+    let(:valid_params) { { notice: { category: "general", title: "テスト題名", content: "<div>テストお知らせ</div>" } } }
 
     context "未ログイン" do
       before { post notices_path, params: valid_params }
@@ -46,6 +46,11 @@ RSpec.describe "Notices", type: :request do
         post notices_path, params: valid_params
         expect(response).to redirect_to(notices_path)
         expect(Notice.last.created_by).to eq(staff)
+      end
+
+      it "本文がリッチテキストとして保存される" do
+        post notices_path, params: valid_params
+        expect(Notice.last.content.to_s).to include("テストお知らせ")
       end
     end
   end
@@ -71,7 +76,7 @@ RSpec.describe "Notices", type: :request do
   end
 
   describe "PATCH /notices/:id" do
-    let(:valid_params) { { notice: { body: "更新されたお知らせ" } } }
+    let(:valid_params) { { notice: { title: "更新された題名", content: "<div>更新されたお知らせ</div>" } } }
 
     context "本人が更新" do
       let(:notice) { create(:notice, created_by: staff) }
@@ -80,7 +85,7 @@ RSpec.describe "Notices", type: :request do
       it "お知らせを更新して一覧ページにリダイレクトする" do
         patch notice_path(notice), params: valid_params
         expect(response).to redirect_to(notices_path)
-        expect(notice.reload.body).to eq("更新されたお知らせ")
+        expect(notice.reload.content.to_s).to include("更新されたお知らせ")
       end
     end
 

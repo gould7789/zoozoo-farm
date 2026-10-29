@@ -10,6 +10,7 @@ class ZonesController < ApplicationController
     # ホーム画面アラート用 — 最新健康記録がcaution/dangerの動物（最大10件）
     @alert_animals = Animal.with_alert_condition.limit(10)
     # ホーム画面最新お知らせ用
+    # ホームは題名だけを出すので本文は読まない
     @recent_notices = Notice.recent.limit(5).includes(:created_by)
   end
 

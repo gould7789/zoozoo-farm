@@ -2,6 +2,21 @@
 require "rails_helper"
 
 RSpec.describe "Zones", type: :request do
+  def query_count
+    count = 0
+    sub = ActiveSupport::Notifications.subscribe("sql.active_record") do |_, _, _, _, payload|
+      count += 1 unless payload[:name].to_s =~ /SCHEMA|TRANSACTION/
+    end
+    begin
+      yield
+    ensure
+      # ensureが無いと、ブロックが例外を投げた時に購読が残り
+      # 以降のテストの計測値が狂う
+      ActiveSupport::Notifications.unsubscribe(sub)
+    end
+    count
+  end
+
   describe "GET /zones" do
     # 未ログインはログインページへ強制リダイレクト
     context "未ログイン" do
@@ -44,23 +59,32 @@ RSpec.describe "Zones", type: :request do
     end
   end
 
+  describe "ホームの最新お知らせ" do
+    let(:staff) { create(:user) }
+
+    # 本文の保存先を変えたとき、ここの描画を直し忘れると行が空のまま出る。
+    # notices一覧と違ってspecが無かった
+    it "題名を表示する" do
+      create(:notice, created_by: staff, title: "급수대 점검 예정")
+      sign_in(staff)
+      get zones_path
+      expect(response.body).to include("급수대 점검 예정")
+    end
+
+    it "お知らせが増えてもクエリ数が増えない" do
+      sign_in(staff)
+      create(:notice, created_by: staff, title: "하나")
+      few = query_count { get zones_path }
+
+      3.times { |i| create(:notice, created_by: staff, title: "제목#{i}") }
+      many = query_count { get zones_path }
+
+      expect(many).to eq(few)
+    end
+  end
+
   describe "一覧のサムネイル" do
     let(:zone) { create(:zone) }
-
-    def query_count
-      count = 0
-      sub = ActiveSupport::Notifications.subscribe("sql.active_record") do |_, _, _, _, payload|
-        count += 1 unless payload[:name].to_s =~ /SCHEMA|TRANSACTION/
-      end
-      begin
-        yield
-      ensure
-        # ensureが無いと、ブロックが例外を投げた時に購読が残り
-        # 以降のテストの計測値が狂う
-        ActiveSupport::Notifications.unsubscribe(sub)
-      end
-      count
-    end
 
     def create_animal_with_photo(category: nil)
       create(:animal, zone: zone, animal_category: category).tap do |animal|

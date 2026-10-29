@@ -1,8 +1,10 @@
 # 이미지 파이프라인 (Active Storage)
 
-동물 프로필 사진이 **어디에 어떻게 저장되고, 화면에 나올 때 무슨 일이 일어나는지**를 적는다.
+동물 프로필 사진과 공지 본문 이미지가 **어디에 어떻게 저장되고, 화면에 나올 때 무슨 일이 일어나는지**를 적는다.
 
 `has_one_attached` 한 줄 뒤에서 일어나는 일이 보이지 않으면, N+1이 왜 나는지도 보이지 않는다.
+
+1~6은 폼 업로드(동물 사진), 7은 다이렉트 업로드(공지 본문 이미지)다. **둘은 같은 Active Storage를 쓰지만 신뢰 경계가 다른 곳에 있다.**
 
 ---
 
@@ -224,10 +226,111 @@ config.active_storage.resolve_model_to_route = :rails_storage_proxy
 
 ---
 
-## 7. 아직 안 본 것
+## 7. 다이렉트 업로드 — 업로드 경로가 두 개가 됐다
+
+공지 본문 이미지를 넣으면서 **성격이 다른 업로드**가 하나 늘었다.
+
+```
+① 동물 프로필 사진 ─ 폼 업로드
+   브라우저 ──파일──▶ Rails ──▶ Supabase
+                      │
+                      └─ 서버가 바이트를 직접 쥔다
+
+② 공지 본문 이미지 ─ 다이렉트 업로드
+   브라우저 ──메타데이터만──▶ Rails   "photo.jpg, 10MB, image/jpeg"
+   브라우저 ◀──서명된 URL────  Rails
+   브라우저 ─────파일──────────────▶ Supabase
+                                     │
+                                     └─ 서버는 바이트를 보지 못한다
+```
+
+②가 2단계인 이유는 간단하다. **파일을 서버에 통과시키지 않으면** 앱 서버의 메모리와 대역을 안 쓴다. 무료 플랜(512MB)에서 수MB짜리 사진이 Puma 스레드를 붙잡고 있지 않게 된다.
+
+대신 **blob 레코드가 파일보다 먼저 생긴다.**
+
+```ruby
+# ActiveStorage::DirectUploadsController#create
+params.expect(blob: [ :filename, :byte_size, :checksum, :content_type, metadata: {} ])
+# → create_before_direct_upload!(...)  검사 없이 INSERT
+```
+
+### `content_type`은 브라우저의 신고값이다
+
+①은 `unfurl(io, identify: true)`가 실제 바이트에서 타입을 뽑으므로 브라우저가 뭐라 하든 덮어쓴다. ②는 그 시점에 바이트가 없으니 신고값이 그대로 들어간다.
+
+그래서 **HEIC에 `.jpg`를 붙이고 `image/jpeg`로 신고해** 실측했다.
+
+| 지점 | 값 |
+| --- | --- |
+| DB의 `content_type` | `"image/jpeg"` (신고값) |
+| `identified` | `nil` |
+| **모델 검증이 본 값** | **`"image/heic"`, `identified=true`** |
+| 결과 | 거부 |
+
+```ruby
+# activestorage/lib/active_storage/attached/changes/create_many.rb:10
+blobs.each(&:identify_without_saving)
+#   └─ 저장소에서 앞 4KB를 내려받아 Marcel로 실체 판정
+```
+
+첨부가 모델에 붙는 시점에 Rails가 다시 판정한다. **신고값은 검증까지 도달하지 못한다.**
+
+단 이건 문서화된 보장이 아니라 내부 동작이므로, 위장 파일을 올리는 spec으로 고정해 뒀다(`spec/models/notice_spec.rb`). Rails가 이 동작을 바꾸면 빨개진다.
+
+### 거부돼도 파일은 남는다
+
+```
+① 신청      → blob 레코드 생성       ← 여기까지는 성공
+② 업로드    → Supabase에 파일 저장    ← 여기까지도 성공
+③ 공지 저장 → 검증에서 거부
+```
+
+**①②는 이미 끝나 있다.** 아무도 안 가리키는 blob과 파일이 남는다. 잡 워커도 스케줄러도 없어 자동 정리를 넣지 않았다. 치우는 방법은 `ActiveStorage::Blob.unattached` 를 Rake로 돌리는 것이고, 용량이 실제로 차면 그때 넣는다.
+
+### 입구가 늘면 인증도 늘려야 한다
+
+```ruby
+class ActiveStorage::DirectUploadsController < ActiveStorage::BaseController
+#                                              ↑ ApplicationController가 아니다
+```
+
+`before_action :require_login`은 **`ApplicationController`를 상속한 컨트롤러에만** 걸린다. 비로그인으로 찔러 **200 + Supabase 직접 쓰기용 서명 URL**을 받는 것을 재현했다.
+
+```ruby
+# config/initializers/active_storage_authentication.rb
+Rails.application.config.to_prepare do
+  ActiveStorage::DirectUploadsController.class_eval do
+    before_action :require_logged_in_user
+  end
+end
+```
+
+`initializer`가 아니라 `to_prepare`인 이유는, 개발 환경의 코드 재로드마다 클래스가 다시 만들어져 한 번만 쓴 패치가 사라지기 때문이다.
+
+**조회 쪽은 그대로 열려 있다.**
+
+| 엔드포인트 | 비로그인 |
+| --- | --- |
+| `POST /rails/active_storage/direct_uploads` | 302 |
+| `GET /rails/active_storage/blobs/proxy/...` | **200** |
+| `GET /rails/active_storage/blobs/redirect/...` | **200** |
+
+서명된 URL만 있으면 누구나 이미지를 볼 수 있다. Rails의 의도된 설계(capability URL)이고 URL은 추측 불가라 그대로 뒀다. **"로그인한 직원만"은 업로드에만 해당한다.**
+
+> gem을 추가하면 라우트가 늘어난다. `rails routes`로 늘어난 것을 보고, 그게 우리 인증 안쪽인지 확인한다.
+
+### 본문 이미지는 `:detail`과 같은 치수로 맞췄다
+
+Action Text의 기본 `_blob` 파셜은 이름 없는 variant(`resize_to_limit: [1024, 768]`)를 쓴다. `Animal`의 `:detail`(1200×1200)과 다르면 **variant가 두 벌 생성**되고, 잡 워커가 없는 환경에서는 첫 표시마다 변환이 돈다. 파셜을 덮어 1200×1200으로 통일했다.
+
+---
+
+## 8. 아직 안 본 것
 
 | 항목 | 상태 |
 | --- | --- |
 | 목록 썸네일의 variant 생성 부하 | 미관측. 사진이 많은 관을 **처음** 열면 그 수만큼 libvips 변환이 3스레드 Puma 뒤에서 일어난다. `loading: "lazy"`로 한 번에 몰리는 양은 줄였고 variant는 한 번 만들면 저장되지만, 잡 워커가 없어 비동기로 뺄 방법이 없다 |
 | Supabase 저장 용량·전송량 | 기준선 미측정 |
 | 아이폰 실기기 | HEIC 직접 업로드 경로 미검증 |
+| Windows Chrome의 공지 이미지 첨부 | 미검증. **현장 주 경로**(카톡 → PC 다운로드 → 업로드)인데 아직 사람이 눌러보지 않았다 |
+| 고아 blob 누적량 | 미측정. 검증에 걸린 업로드만 남으므로 양은 적을 것으로 보지만 세어본 적 없다 |

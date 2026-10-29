@@ -14,9 +14,23 @@
     <% end %>
   </div>
 
+  <%# カテゴリ絞り込み — リンクで作る。
+      サーバー側で絞るので、リロードも戻るもURL共有も素直に動く。
+      横スクロールは館が7つあってモバイル幅に収まらないため %>
+  <nav class="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-1 px-1 [scrollbar-width:none]">
+    <%# generalのラベルは「전체」なので、絞り込み無しは「모두」にする。
+        並べると「전체」が2つ出て、どちらが絞り込み無しか分からなくなる %>
+    <% categories = Notice.categories.keys.map { |key| [ key, key == "general" ? "전체 공지" : notice_category_label(key)[0] ] } %>
+    <% [ [ nil, "모두" ] ].concat(categories).each do |key, label| %>
+      <% selected = @category == key %>
+      <%= link_to label, notices_path(category: key),
+          class: "shrink-0 inline-flex items-center h-9 px-3.5 rounded-full text-sm font-medium transition-colors #{selected ? 'bg-green-600 text-white' : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'}" %>
+    <% end %>
+  </nav>
+
   <% if @notices.empty? %>
     <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
-      <p class="text-gray-400 text-sm">공지가 없습니다.</p>
+      <p class="text-gray-400 text-sm"><%= @category ? "이 관의 공지가 없습니다." : "공지가 없습니다." %></p>
     </div>
   <% else %>
     <%# カード形式（本文が長いためモバイル・デスクトップ共通） %>
@@ -45,10 +59,25 @@
               </div>
             <% end %>
           </div>
-          <h2 class="text-base font-bold text-gray-900 mb-1.5"><%= notice.title %></h2>
-          <%# contentはActionText::RichTextで、描画時にサニタイズされる。
-              trix-contentのクラスはレイアウトパーシャル側で付く %>
-          <div class="text-sm text-gray-700"><%= notice.content %></div>
+          <%# 一覧は題名と抜粋だけにする。本文と写真は詳細ページで出す。
+              全文を並べると、お知らせが増えるほどカードの高さがばらついて読みにくい %>
+          <%= link_to notice_path(notice), class: "block group" do %>
+            <h2 class="text-base font-bold text-gray-900 mb-1 group-hover:text-green-700 transition-colors">
+              <%= notice.title %>
+            </h2>
+            <% if notice.excerpt.present? %>
+              <p class="text-sm text-gray-600 line-clamp-2"><%= notice.excerpt %></p>
+            <% end %>
+            <% if notice.photo_count.positive? %>
+              <span class="inline-flex items-center gap-1 mt-2 text-xs text-gray-400">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M18 14.25h.008v.008H18v-.008zM2.25 6.75v10.5a2.25 2.25 0 002.25 2.25h15a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25h-15a2.25 2.25 0 00-2.25 2.25z" />
+                </svg>
+                사진 <%= notice.photo_count %>장
+              </span>
+            <% end %>
+          <% end %>
         </div>
       <% end %>
     </div>

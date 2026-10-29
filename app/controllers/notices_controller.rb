@@ -3,13 +3,19 @@
 class NoticesController < ApplicationController
   include OwnerRestriction
 
-  before_action :set_notice,                    only: [ :edit, :update, :destroy ]
+  before_action :set_notice,                    only: [ :show, :edit, :update, :destroy ]
   before_action -> { require_owner(@notice) },  only: [ :edit, :update, :destroy ]
 
   def index
-    # 本文は action_text_rich_texts、埋め込み画像は Active Storage の別テーブルにある。
-    # with_rich_text_content_and_embeds を外すと一覧の件数ぶんクエリが増える
+    @category = Notice.categories.key?(params[:category]) ? params[:category] : nil
+
+    # 一覧は抜粋と写真の枚数しか出さないが、どちらも本文を読む必要がある。
+    # with_rich_text_content_and_embeds を外すと件数ぶんクエリが増える
     @notices = Notice.recent.includes(:created_by).with_rich_text_content_and_embeds
+    @notices = @notices.where(category: @category) if @category
+  end
+
+  def show
   end
 
   def new

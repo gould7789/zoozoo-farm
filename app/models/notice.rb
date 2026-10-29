@@ -38,6 +38,24 @@ class Notice < ApplicationRecord
   # 最新投稿順に並べるスコープ
   scope :recent, -> { order(created_at: :desc) }
 
+  # 一覧に出す抜粋。見出しの下の2行なので、タグも画像も要らない。
+  #
+  # to_plain_text ではなく HTML からタグを剥がす。to_plain_text は添付を
+  # 1件ずつ sgid から引き直して平文表現を作るため、一覧で使うと
+  # お知らせの数だけクエリが増える（実測で1件あたり2クエリ）
+  def excerpt(length: 80)
+    ActionController::Base.helpers.strip_tags(content.body.to_html).squish.truncate(length)
+  end
+
+  # 本文に貼られた画像の枚数。0なら一覧にバッジを出さない。
+  #
+  # body からではなく embeds から数える。body.attachables は sgid を1件ずつ
+  # GlobalID で引き直すため、一覧で使うとお知らせの数だけクエリが増える。
+  # embeds は with_rich_text_content_and_embeds で先読みされる
+  def photo_count
+    content.embeds.size
+  end
+
   private
 
     # 本文に貼られた画像の形式とサイズを検証する。

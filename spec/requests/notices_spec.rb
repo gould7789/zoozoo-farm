@@ -87,6 +87,11 @@ RSpec.describe "Notices", type: :request do
         expect(response).to redirect_to(notices_path)
         expect(notice.reload.content.to_s).to include("更新されたお知らせ")
       end
+
+      it "題名だけを変えても反映される" do
+        patch notice_path(notice), params: { notice: { title: "바뀐 제목" } }
+        expect(notice.reload.title).to eq("바뀐 제목")
+      end
     end
 
     context "他人のお知らせを更新しようとする" do

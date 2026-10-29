@@ -47,6 +47,10 @@ class Notice < ApplicationRecord
       return if content.blank?
 
       content.body.attachables.grep(ActiveStorage::Blob).each do |blob|
+        # content_type はブラウザの申告ではなく実体から判定された値である。
+        # ActiveStorage::Attached::Changes が添付を組み立てる時点で
+        # identify_without_saving を通すため、ここに来るまでに確定している。
+        # Rails内部の動作に依存するので、偽装ファイルのspecで固定してある
         errors.add(:content, :unsupported_type) unless ALLOWED_EMBED_TYPES.include?(blob.content_type)
         errors.add(:content, :too_large, limit: MAX_EMBED_BYTES / 1.megabyte) if blob.byte_size > MAX_EMBED_BYTES
       end

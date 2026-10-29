@@ -61,6 +61,22 @@ RSpec.describe Notice, type: :model do
       expect(notice).to be_valid
     end
 
+    # ダイレクトアップロードはブラウザの申告した content_type をそのまま保存する。
+    # 拡張子と申告を image/jpeg に付け替えても、中身を読んで弾けること
+    it "拡張子を偽装したファイルを中身で判定して拒否する" do
+      path = Rails.root.join("spec/fixtures/files/animal.heic")
+      blob = ActiveStorage::Blob.create_before_direct_upload!(
+        filename: "photo.jpg", byte_size: path.size,
+        checksum: ActiveStorage::Blob.new.send(:compute_checksum_in_chunks, path.open),
+        content_type: "image/jpeg"
+      )
+      blob.upload_without_unfurling(path.open)
+      notice.content = ActionText::Content.new.append_attachables(blob)
+
+      expect(notice).not_to be_valid
+      expect(notice.errors[:content].join).to include("JPG")
+    end
+
     it "対応していない形式は拒否する" do
       attach_embed(filename: "photo.heic", content_type: "image/heic")
       expect(notice).not_to be_valid

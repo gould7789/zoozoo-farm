@@ -64,7 +64,20 @@ class Notice < ApplicationRecord
     def embeds_must_be_supported_images
       return if content.blank?
 
-      content.body.attachables.grep(ActiveStorage::Blob).each do |blob|
+      attachables = content.body.attachables
+
+      # エディタが作る添付は必ず ActiveStorage::Blob になる。
+      # それ以外が混ざるのは本文のHTMLを手で組み立てた場合で、たとえば
+      # <action-text-attachment url="..."> は RemoteImage になり、
+      # blob を対象にした下の検証を素通りして <img src="外部URL"> として描画される。
+      # CSP の img-src が外部を弾くので今は実害が無いが、
+      # 防御を1枚に頼る形になるのでここで弾く
+      unless attachables.all? { |attachable| attachable.is_a?(ActiveStorage::Blob) }
+        errors.add(:content, :unsupported_attachment)
+        return
+      end
+
+      attachables.each do |blob|
         # content_type はブラウザの申告ではなく実体から判定された値である。
         # ActiveStorage::Attached::Changes が添付を組み立てる時点で
         # identify_without_saving を通すため、ここに来るまでに確定している。

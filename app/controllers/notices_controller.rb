@@ -3,6 +3,17 @@
 class NoticesController < ApplicationController
   include OwnerRestriction
 
+  # 本文エディタのダイレクトアップロードは署名付きURLへ直接PUTする。
+  # connect_src を書かないと default_src :self が適用されて弾かれるが、
+  # 必要なのはこのコントローラーだけなので全体ではなくここに足す。
+  # 全体に置くと未ログインで見えるログイン画面にもホスト名が載る。
+  #
+  # 開発・テストは Disk サービスで同一オリジンのため、
+  # これが無くても落ちない。本番でだけ効く
+  content_security_policy do |policy|
+    policy.connect_src :self, *[ ENV["SUPABASE_S3_ENDPOINT"] ].compact
+  end
+
   before_action :set_notice,                    only: [ :show, :edit, :update, :destroy ]
   before_action -> { require_owner(@notice) },  only: [ :edit, :update, :destroy ]
 

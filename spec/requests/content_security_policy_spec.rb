@@ -27,6 +27,37 @@ RSpec.describe "Content Security Policy", type: :request do
     expect(csp).to match(/connect-src 'self'/)
   end
 
+  # ストレージのオリジンは本文エディタのある画面にだけ足す。
+  # 全体に置くと、未ログインで見えるログイン画面にもホスト名が載る
+  describe "ストレージオリジンの適用範囲" do
+    def connect_src = response.headers["Content-Security-Policy"].to_s[/connect-src [^;]+/]
+
+    it "ログイン画面には載せない" do
+      expect(connect_src).to eq("connect-src 'self'")
+    end
+
+    it "お知らせの作成画面には載せる" do
+      user = create(:user)
+      sign_in(user)
+      get new_notice_path
+
+      expect(connect_src).to start_with("connect-src 'self'")
+      # ENV が無い環境（CI）では 'self' だけになるので、
+      # 「設定があれば足される」ことだけを見る
+      if ENV["SUPABASE_S3_ENDPOINT"].present?
+        expect(connect_src).to include(ENV["SUPABASE_S3_ENDPOINT"])
+      end
+    end
+
+    it "お知らせ以外の画面には載せない" do
+      user = create(:user)
+      sign_in(user)
+      get zones_path
+
+      expect(connect_src).to eq("connect-src 'self'")
+    end
+  end
+
   # importmapが出力するインラインスクリプト用
   it "script-srcに空でないnonceが含まれる" do
     expect(csp).to match(/script-src 'self' 'nonce-[^']+'/)

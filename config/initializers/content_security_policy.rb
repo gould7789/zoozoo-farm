@@ -13,10 +13,10 @@ Rails.application.configure do
     # これを許しても外部から画像を読み込めるようにはならない
     policy.img_src     :self, :data, :blob
     policy.object_src  :none
-    # ダイレクトアップロードは署名付きURLへ直接PUTする。connect_srcを書かないと
-    # default_src :self が適用され、本番（Supabase）でのみアップロードが落ちる。
-    # 開発・テストはDiskサービスで同一オリジンのため再現しない
-    policy.connect_src :self, *[ ENV["SUPABASE_S3_ENDPOINT"] ].compact
+    # 既定は自分自身のみ。ストレージのオリジンは NoticesController だけに足す。
+    # 全ページに書くと、未ログインで見えるログイン画面にも
+    # ストレージのホスト名が載ってしまう
+    policy.connect_src :self
     policy.script_src  :self
     policy.style_src   :self
   end

@@ -5,7 +5,9 @@ FactoryBot.define do
     association :created_by, factory: :user
     # カテゴリ（デフォルトは全体通知）
     category { :general }
-    # お知らせ本文
-    body { "テストお知らせ本文" }
+    # 題名（一覧で内容を見分けるための見出し）
+    title { "テストお知らせ" }
+    # 本文（Action Textのリッチテキスト）
+    content { "テストお知らせ本文" }
   end
 end

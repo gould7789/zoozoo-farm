@@ -2,8 +2,147 @@
 
 /* モバイル/デスクトップで背景画像を切り替える */
 /* CSPはインラインの<style>を拒否するため、レイアウトからここへ移した */
-.zoo-bg { background-image: url("/images/bg_mobile.svg"); }
+/*
+ * 背景は body ではなくビューポートに固定した疑似要素に描く。
+ * body に bg-cover を当てると、cover が「bodyの高さ」を覆うように拡大する。
+ * お知らせの入力欄は改行のたびに伸びるので、打つたびに背景が拡大して見えた。
+ * position: fixed なら基準がビューポートになり、本文の長さに影響されない。
+ */
+.zoo-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: url("/images/bg_mobile.svg");
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+}
 
 @media (min-width: 1024px) {
-  .zoo-bg { background-image: url("/images/bg_desktop.svg"); }
+  .zoo-bg::before { background-image: url("/images/bg_desktop.svg"); }
 }
+
+/* --- Trix（お知らせ本文エディタ）の調整 --------------------------------- */
+
+/* ツールバーは折り返す。横スクロールにすると画面外のボタンに気付けず、
+   実際に添付ボタンが見えなくなっていた。
+   ボタンは13個あり、どの幅でも1行には収まらない */
+trix-toolbar .trix-button-row {
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+trix-toolbar .trix-button-group {
+  margin-bottom: 0;
+  border-color: var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+trix-toolbar .trix-button-group:not(:first-child) {
+  margin-left: 0;
+}
+/* 右端に寄せるための伸び代。折り返すと行が崩れるので使わない */
+trix-toolbar .trix-button-group-spacer {
+  display: none;
+}
+
+/* 入力欄ではなく補助なので、本文より主張を弱くする。
+   見た目は小さくしつつ、高さ40pxは触れる大きさとして残す */
+trix-toolbar .trix-button {
+  min-height: 40px;
+  border-bottom: 0;
+  border-left-color: var(--color-gray-200);
+  color: var(--color-gray-400);
+}
+trix-toolbar .trix-button--icon {
+  height: 40px;
+  width: 40px;
+  max-width: 40px;
+}
+trix-toolbar .trix-button--icon::before {
+  /* 既定は0。アイコンが枠いっぱいに広がって重く見える */
+  inset: 11px;
+  opacity: 0.55;
+}
+trix-toolbar .trix-button:not(:disabled):hover {
+  background: var(--color-gray-50);
+}
+trix-toolbar .trix-button.trix-active {
+  background: var(--color-green-50);
+}
+trix-toolbar .trix-button.trix-active::before {
+  opacity: 0.9;
+}
+
+/* エディタ本体をフォームの他の入力欄と揃える。
+   デスクトップは本文を書く場所なので高さを取る */
+trix-editor {
+  border-color: var(--color-gray-300);
+  border-radius: var(--radius-lg);
+  padding: 0.625rem 0.75rem;
+  min-height: 11rem;
+  font-size: 1rem;
+}
+@media (min-width: 768px) {
+  trix-editor { min-height: 20rem; }
+}
+trix-editor:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-green-500);
+}
+
+/* 添付のファイル名とサイズの吹き出しを出さない。
+   選択中ずっと画像の上に重なって出るため、キャプションを書いている間
+   肝心の画像が隠れる。飼育員に伝える情報でもない */
+trix-editor .attachment__metadata-container {
+  display: none;
+}
+
+/* 画像の下に出るファイル名とバイト数を隠す。編集中と閲覧中の両方。
+   開発者向けの情報で、飼育員が見て判断することは無い。
+   キャプション欄自体は残すので、説明を書けば それは表示される */
+trix-editor .attachment__caption .attachment__name,
+trix-editor .attachment__caption .attachment__size,
+.trix-content .attachment__caption .attachment__name,
+.trix-content .attachment__caption .attachment__size {
+  display: none;
+}
+
+/* 添付は必ず単独の行に置く。
+   Trix の既定は inline-block で、同じ行に文字が入れる。画像が幅いっぱいだと
+   残りが数pxしかなく、1文字打つごとに改行されたように見える。
+   block にすれば文字が画像の横に回り込むこと自体が起きない */
+trix-editor .attachment--preview,
+.trix-content .attachment--preview {
+  display: block;
+  margin: 0.75em 0;
+}
+
+/* 添付が2枚以上並ぶと Trix は attachment-gallery を作り、flex で横に並べて
+   1枚あたり50%幅にする。現場が貼るのはカカオトークのスクリーンショットで、
+   半分の幅では文字が読めない。1枚ずつ縦に並べる */
+.trix-content .attachment-gallery {
+  display: block;
+}
+/* actiontext.css 側は --2 / --4 を付けた 0,4,0 の詳細度で max-width を決めている。
+   同じ形で書かないと上書きできない（trix-editor にも trix-content クラスが付くので
+   この指定だけで編集中と閲覧中の両方に効く） */
+.trix-content .attachment-gallery > action-text-attachment,
+.trix-content .attachment-gallery > .attachment,
+.trix-content .attachment-gallery.attachment-gallery--2 > action-text-attachment,
+.trix-content .attachment-gallery.attachment-gallery--2 > .attachment,
+.trix-content .attachment-gallery.attachment-gallery--4 > action-text-attachment,
+.trix-content .attachment-gallery.attachment-gallery--4 > .attachment {
+  max-width: 100%;
+  padding: 0;
+}
+
+/* actiontext.css の .trix-content * { margin: 0 } が段落間の余白まで消すので戻す。
+   平文から移行したお知らせは改行が <p> の連続になっているため、
+   これが無いと全文が一塊に見える */
+.trix-content p + p { margin-top: 0.75em; }
+.trix-content ul { list-style: disc; }
+.trix-content ol { list-style: decimal; }
+.trix-content ul,
+.trix-content ol { padding-left: 1.25em; }

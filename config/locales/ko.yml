@@ -60,8 +60,13 @@ ko:
               less_than_or_equal_to: "급여량은 99,999g 이하로 입력해주세요."
         notice:
           attributes:
-            body:
+            title:
+              blank: "제목을 입력해주세요."
+              too_long: "제목은 100자 이하로 입력해주세요."
+            content:
               blank: "내용을 입력해주세요."
+              unsupported_type: "본문 이미지는 JPG·PNG·WEBP 형식만 등록할 수 있습니다."
+              too_large: "본문 이미지는 %{limit}MB 이하여야 합니다."
             category:
               blank: "카테고리를 선택해주세요."
         sales_record:

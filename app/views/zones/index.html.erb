@@ -79,7 +79,7 @@
                 </span>
                 <span class="text-xs text-gray-400"><%= notice.created_at.strftime("%m/%d") %></span>
               </div>
-              <p class="text-sm text-gray-600 line-clamp-1"><%= truncate(notice.body, length: 70) %></p>
+              <p class="text-sm text-gray-600 line-clamp-1"><%= notice.title %></p>
             </li>
           <% end %>
         </ul>

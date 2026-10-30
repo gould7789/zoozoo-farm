@@ -8,8 +8,15 @@ Rails.application.configure do
   config.content_security_policy do |policy|
     policy.default_src :self
     policy.font_src    :self, :data
-    policy.img_src     :self, :data
+    # :blob は Trix が添付を選んだ直後に出すプレビューのため。
+    # URL.createObjectURL は同一オリジンのスクリプトしか作れないので、
+    # これを許しても外部から画像を読み込めるようにはならない
+    policy.img_src     :self, :data, :blob
     policy.object_src  :none
+    # 既定は自分自身のみ。ストレージのオリジンは NoticesController だけに足す。
+    # 全ページに書くと、未ログインで見えるログイン画面にも
+    # ストレージのホスト名が載ってしまう
+    policy.connect_src :self
     policy.script_src  :self
     policy.style_src   :self
   end

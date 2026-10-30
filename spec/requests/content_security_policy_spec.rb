@@ -45,8 +45,23 @@ RSpec.describe "Content Security Policy", type: :request do
       # ENV が無い環境（CI）では 'self' だけになるので、
       # 「設定があれば足される」ことだけを見る
       if ENV["SUPABASE_S3_ENDPOINT"].present?
-        expect(connect_src).to include(ENV["SUPABASE_S3_ENDPOINT"])
+        expect(connect_src).to include(URI.parse(ENV["SUPABASE_S3_ENDPOINT"]).host)
       end
+    end
+
+    # CSP のソースにパスがあり末尾が "/" でない場合、URLのパスは完全一致が要る。
+    # ENV は .../storage/v1/s3 だが実際のPUT先はその下の
+    # <バケット>/<キー> なので、パスごと入れると本番でだけアップロードが落ちる。
+    # ローカルは Disk サービスで同一オリジンのため再現しない
+    it "パスを含めない（オリジンだけ）" do
+      skip "ENV 未設定" if ENV["SUPABASE_S3_ENDPOINT"].blank?
+
+      user = create(:user)
+      sign_in(user)
+      get new_notice_path
+
+      origin = connect_src[%r{https://\S+}]
+      expect(URI.parse(origin).path).to eq("")
     end
 
     it "お知らせ以外の画面には載せない" do

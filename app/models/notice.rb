@@ -40,11 +40,20 @@ class Notice < ApplicationRecord
 
   # 一覧に出す抜粋。見出しの下の2行なので、タグも画像も要らない。
   #
-  # to_plain_text ではなく HTML からタグを剥がす。to_plain_text は添付を
-  # 1件ずつ sgid から引き直して平文表現を作るため、一覧で使うと
-  # お知らせの数だけクエリが増える（実測で1件あたり2クエリ）
+  # to_plain_text ではなく HTML から作る。to_plain_text は添付を1件ずつ
+  # sgid から引き直して平文表現を作るため、一覧で使うとお知らせの数だけ
+  # クエリが増える（実測で1件あたり2クエリ）。
+  #
+  # タグを空白に置き換えてから剥がすのは、strip_tags がブロックの境目に
+  # 空白を入れないからである。そのまま剥がすと段落が繋がって読めなくなる。
+  #   <div>テスト内容</div><div>굿</div> → "テスト内容굿"
+  #
+  # そのあと実体参照を戻すのは、平文から移行した本文に &lt; などが
+  # 入っているためである。残したままERBに渡すと二重エスケープされ、
+  # 画面に &lt; と出る。Nokogiri の text は &nbsp; も含めて戻す
   def excerpt(length: 80)
-    ActionController::Base.helpers.strip_tags(content.body.to_html).squish.truncate(length)
+    spaced = content.body.to_html.gsub(/<[^>]*>/, " ")
+    Nokogiri::HTML5.fragment(spaced).text.squish.truncate(length)
   end
 
   # 本文に貼られた画像の枚数。0なら一覧にバッジを出さない。

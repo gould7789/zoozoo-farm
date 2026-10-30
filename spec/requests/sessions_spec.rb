@@ -131,4 +131,21 @@ RSpec.describe "Sessions", type: :request do
       expect(response).to redirect_to(login_path)
     end
   end
+
+  # 既定では expire_after が無く、ブラウザを閉じるまでクッキーが生きる。
+  # 現場のスマホはブラウザをほとんど閉じないので実質無期限だった。
+  describe "セッションの有効期限" do
+    it "9時間で切れるクッキーを発行する" do
+      expect(Rails.application.config.session_options[:expire_after]).to eq(9.hours)
+    end
+
+    it "ログイン時のSet-Cookieに期限が付く" do
+      user = create(:user)
+      post login_path, params: { email: user.email, password: "password123" }
+
+      cookie = response.headers["Set-Cookie"].to_s
+      expect(cookie).to include("_zoo_keeper_session")
+      expect(cookie).to match(/expires=/i)
+    end
+  end
 end

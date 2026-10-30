@@ -77,6 +77,20 @@ RSpec.describe Notice, type: :model do
       expect(notice.errors[:content].join).to include("JPG")
     end
 
+    # 本文のHTMLを直接組み立てれば、Active Storage を通さない添付も作れる。
+    # <action-text-attachment url="..."> は ActionText::Attachables::RemoteImage になり、
+    # blob ではないので形式検証を素通りして <img src="外部URL"> として描画される。
+    # 今は CSP の img-src が外部を弾くが、CSP を緩めた瞬間に生き返る穴なので塞ぐ
+    it "外部URLの添付を拒否する" do
+      notice.content = <<~HTML
+        <div>본문<action-text-attachment url="https://evil.example/track.png"
+          content-type="image/png" width="1" height="1"></action-text-attachment></div>
+      HTML
+
+      expect(notice).not_to be_valid
+      expect(notice.errors[:content]).to be_present
+    end
+
     it "対応していない形式は拒否する" do
       attach_embed(filename: "photo.heic", content_type: "image/heic")
       expect(notice).not_to be_valid

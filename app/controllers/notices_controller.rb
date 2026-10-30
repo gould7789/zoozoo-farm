@@ -8,10 +8,32 @@ class NoticesController < ApplicationController
   # 必要なのはこのコントローラーだけなので全体ではなくここに足す。
   # 全体に置くと未ログインで見えるログイン画面にもホスト名が載る。
   #
+  # 許可するのはオリジン（scheme://host）までで、パスは付けない。
+  # CSP のソースにパスがあり末尾が "/" でない場合、URLのパスは完全一致が要る。
+  # ENV の値は .../storage/v1/s3 だが実際のPUT先は
+  # .../storage/v1/s3/<バケット>/<キー>?X-Amz-... なので、そのまま入れると弾かれる。
+  #
   # 開発・テストは Disk サービスで同一オリジンのため、
   # これが無くても落ちない。本番でだけ効く
+  # ENV が未設定の環境（CI）では空配列になる
+  STORAGE_ORIGIN = begin
+    endpoint = ENV["SUPABASE_S3_ENDPOINT"]
+    if endpoint.present?
+      uri = URI.parse(endpoint)
+      # 既定ポートは書かない。:443 を付けても仕様上は一致するが、
+      # ヘッダーが読みにくくなるだけで得が無い
+      origin = +"#{uri.scheme}://#{uri.host}"
+      origin << ":#{uri.port}" unless uri.port == uri.default_port
+      [ origin ]
+    else
+      []
+    end
+  rescue URI::InvalidURIError
+    []
+  end.freeze
+
   content_security_policy do |policy|
-    policy.connect_src :self, *[ ENV["SUPABASE_S3_ENDPOINT"] ].compact
+    policy.connect_src :self, *STORAGE_ORIGIN
   end
 
   before_action :set_notice,                    only: [ :show, :edit, :update, :destroy ]

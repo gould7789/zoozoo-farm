@@ -25,7 +25,7 @@ Rails.application.routes.draw do
   end
 
   # お知らせ（全体・館別統合）
-  resources :notices, except: [ :show ]
+  resources :notices
 
   # 売上・経費（Admin専用）— _records パターンを隠蔽
   resources :sales,    except: [ :show ], controller: "sales_records"

@@ -43,6 +43,9 @@
 
 # Portfolio material notes (personal — not part of the project documentation)
 /docs/portfolio-notes.md
+# 作業中のメモ — 内容はノーションと PR 本文に移すのでリポジトリには残さない
+/docs/checklist.md
+/docs/context-notes.md
 
 # Ruby LSP cache (local editor tooling)
 /.ruby-lsp/

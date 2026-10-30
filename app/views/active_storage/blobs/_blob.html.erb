@@ -1,0 +1,22 @@
+<%# 本文に埋め込まれた添付の描画。Action Text の既定パーシャルを上書きしている。
+    既定は 1024x768（ギャラリー時 800x600）だが、Animal の :detail variant と
+    同じ 1200x1200 に揃えた。別々のサイズを持つと variant が二重に生成され、
+    ジョブワーカーの無いこの環境では初回表示のたびに変換が走る。
+
+    representable? が false になるのは libvips が読めない形式（HEIC 等）で、
+    そのときは画像を出さずファイル名とサイズだけを見せる。 %>
+<figure class="attachment attachment--<%= blob.representable? ? "preview" : "file" %> attachment--<%= blob.filename.extension %>">
+  <% if blob.representable? %>
+    <%= image_tag blob.representation(resize_to_limit: [ 1200, 1200 ]),
+        class: "rounded-lg max-w-full h-auto" %>
+  <% end %>
+
+  <figcaption class="attachment__caption">
+    <% if caption = blob.try(:caption) %>
+      <%= caption %>
+    <% else %>
+      <span class="attachment__name"><%= blob.filename %></span>
+      <span class="attachment__size"><%= number_to_human_size blob.byte_size %></span>
+    <% end %>
+  </figcaption>
+</figure>

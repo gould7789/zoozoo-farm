@@ -107,6 +107,45 @@ RSpec.describe Notice, type: :model do
     end
   end
 
+  describe "#excerpt" do
+    # 一覧に出す2行の抜粋。本文のHTMLから作る。
+    # to_plain_text は添付を1件ずつ引き直してN+1になるので使わない
+    def excerpt_of(html)
+      build(:notice, content: html).excerpt
+    end
+
+    # strip_tags はブロックの境目に空白を入れない。
+    # そのまま剥がすと「テスト内容」「굿」「응?」が繋がって読めなくなる
+    it "段落の境目を空白にする" do
+      expect(excerpt_of("<div>테스트 내용</div><div>굿</div><div>응?</div>"))
+        .to eq("테스트 내용 굿 응?")
+    end
+
+    it "brも空白にする" do
+      expect(excerpt_of("<p>1행<br>2행</p>")).to eq("1행 2행")
+    end
+
+    # 平文から移行したお知らせは本文に &lt; などが入っている。
+    # 実体参照のままERBに渡すと二重エスケープされ、画面に &lt; と出る
+    it "実体参照を戻す" do
+      expect(excerpt_of("<div>a &amp; b &lt;c&gt;</div>")).to eq("a & b <c>")
+    end
+
+    it "添付は抜粋に出さない" do
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io: Rails.root.join("spec/fixtures/files/animal.jpg").open,
+        filename: "a.jpg", content_type: "image/jpeg"
+      )
+      content = ActionText::Content.new("<div>본문</div>").append_attachables(blob)
+
+      expect(build(:notice, content: content).excerpt).to eq("본문")
+    end
+
+    it "長い本文は切り詰める" do
+      expect(excerpt_of("<div>#{'가' * 200}</div>").length).to eq(80)
+    end
+  end
+
   describe "アソシエーション" do
     it { is_expected.to belong_to(:created_by).class_name("User") }
   end

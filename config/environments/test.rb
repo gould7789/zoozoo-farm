@@ -20,8 +20,8 @@ Rails.application.configure do
 
   # Show full error reports.
   config.consider_all_requests_local = true
-  # null_storeはincrementがnilを返すため、rate_limitの判定（count && count > to）が
-  # 常に素通りしてしまう — レート制限のスペックを書けるようmemory_storeを使う
+  # null_store 는 increment 가 nil 을 돌려줘 rate_limit 판정이 항상 통과한다 —
+  # 제한 스펙을 쓸 수 있게 memory_store 를 쓴다
   config.cache_store = :memory_store
 
   # Render exception templates for rescuable exceptions and raise for other exceptions.

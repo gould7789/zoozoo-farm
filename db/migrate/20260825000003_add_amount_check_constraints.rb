@@ -1,15 +1,15 @@
-# 金額に負数が入らないようDB側にもCHECK制約を張る
+# 금액에 음수가 들어가지 않도록 DB 에도 CHECK 제약을 건다
 #
-# モデルには既にnumericality: { greater_than_or_equal_to: 0 }があるが、
-# update_all・insert_all・生SQL・バックフィルはモデル検証を通らない。
-# 売上と支出は監査対応のテーブルで、負数が混ざると合計が静かに狂う。
-# 例外も警告も出ないので、気づく手段がバリデーション頼みでは足りない。
+# 모델에 이미 numericality: { greater_than_or_equal_to: 0 } 가 있지만
+# update_all · insert_all · 생SQL · 백필은 모델 검증을 지나지 않는다.
+# 매출과 지출은 감사 대응 테이블이라 음수가 섞이면 합계가 조용히 어긋난다.
+# 예외도 경고도 안 나므로 검증 하나에 맡기면 알아챌 수단이 없다.
 #
-# 上限（<= 9_999_999）はDBに降ろさない。物理的な整合性ではなく
-# 「1日の売上が1000万を超えるなら入力ミスだろう」という業務規則で、変わり得る。
+# 상한(<= 9_999_999)은 DB 로 내리지 않는다. 물리적 정합성이 아니라
+# 「하루 매출이 1000만을 넘으면 입력 실수일 것」이라는 업무 규칙이고, 바뀔 수 있다.
 #
-# 本番データに違反行が無いことをSupabase上で確認済み（両テーブルとも0件）。
-# 違反行があるとADD CONSTRAINTが失敗し、デプロイのビルドごと止まる。
+# 운영 데이터에 위반 행이 없음을 Supabase 에서 확인했다(두 테이블 다 0건).
+# 위반 행이 있으면 ADD CONSTRAINT 가 실패하고 배포 빌드째로 멈춘다.
 class AddAmountCheckConstraints < ActiveRecord::Migration[8.1]
   def change
     add_check_constraint :sales_records,   "amount >= 0", name: "chk_sales_amount"

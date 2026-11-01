@@ -1,12 +1,11 @@
-# notices.body（平文）を Action Text のリッチテキストへ移行する。
+# notices.body(평문)를 Action Text 의 리치텍스트로 이관한다.
 #
-# 本番DBの既存データを書き換えるため、以下の方針を取る。
-#   - body カラムは残す（読み書きしない保管用）。確認後に別PRで落とす
-#   - down で移行分を削除できるようにし、git revert で元の状態に戻せるようにする
+# 운영 DB 의 기존 데이터를 고치므로 두 가지 방침을 둔다.
+#   - body 컬럼은 남긴다 (읽지도 쓰지도 않는 보관용). 확인 뒤 별도 PR 로 떨어뜨린다
+#   - down 으로 이관분을 지울 수 있게 해 git revert 로 되돌아갈 수 있게 한다
 #
-# 平文の改行は HTML では消えるため simple_format で <p>/<br> を付ける。
-# 先に html_escape するのは、simple_format のデフォルトのサニタイズが
-# タグを剥がしつつ中身のテキストだけ残してしまい、原文が黙って変形するからである。
+# 함정 4개(simple_format 의 기본 살균, NOT NULL, squish, 제목 백필)는
+# .claude/rules/notes/notice.md 에 정리돼 있다.
 class MigrateNoticeBodyToRichText < ActiveRecord::Migration[8.1]
   def up
     helpers = ActionController::Base.helpers
@@ -14,7 +13,7 @@ class MigrateNoticeBodyToRichText < ActiveRecord::Migration[8.1]
     select_all("SELECT id, body FROM notices WHERE body IS NOT NULL").each do |row|
       html = helpers.simple_format(ERB::Util.html_escape(row["body"]), {}, sanitize: false)
 
-      # 本文を埋め込むので squish を掛けない。掛けると HTML 内の改行まで潰れる
+      # 본문을 끼워 넣으므로 squish 를 걸지 않는다 — 걸면 HTML 안의 개행까지 뭉개진다
       execute <<~SQL
         INSERT INTO action_text_rich_texts
           (id, name, body, record_type, record_id, created_at, updated_at)
@@ -25,21 +24,21 @@ class MigrateNoticeBodyToRichText < ActiveRecord::Migration[8.1]
       SQL
     end
 
-    # body を書かなくなるので NOT NULL を外す。
-    # これを忘れるとお知らせの新規作成が DB レベルで落ちる。
+    # body 를 쓰지 않게 되므로 NOT NULL 을 뗀다.
+    # 빠뜨리면 공지 신규 작성이 DB 레벨에서 떨어진다.
     change_column_null :notices, :body, true
   end
 
   def down
-    # 移行後に作られたお知らせは body が NULL なので、先に平文へ戻す。
-    # これをしないと NOT NULL を戻す時点で落ちて、down が使えなくなる。
+    # 이관 뒤에 만들어진 공지는 body 가 NULL 이므로 먼저 평문으로 되돌린다.
+    # 안 하면 NOT NULL 을 되돌리는 시점에 떨어져 down 을 쓸 수 없다.
     select_all(<<~SQL.squish).each do |row|
       SELECT record_id, body FROM action_text_rich_texts
       WHERE record_type = 'Notice' AND name = 'content'
     SQL
       plain = ActionText::Content.new(row["body"]).to_plain_text
 
-      # 平文を埋め込むので squish を掛けない。掛けると改行が空白に潰れる
+      # 평문을 끼워 넣으므로 squish 를 걸지 않는다 — 걸면 개행이 공백으로 뭉개진다
       execute <<~SQL
         UPDATE notices SET body = #{quote(plain)}
         WHERE id = #{quote(row['record_id'])} AND body IS NULL

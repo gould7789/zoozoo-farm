@@ -4,6 +4,7 @@ paths:
   - "app/controllers/application_controller.rb"
   - "app/controllers/admin/users_controller.rb"
   - "app/models/user.rb"
+  - "config/initializers/session_store.rb"
 ---
 
 # 인증 — 왜 이렇게 생겼나
@@ -30,6 +31,14 @@ by: -> { params[:email].to_s.downcase.strip }
 | 로그아웃 | 세션 ID 째로 버린다. 값을 하나씩 지우면 빠뜨린다 |
 
 **로그아웃에서는 `reset_session` 을 `redirect_to` 보다 먼저 불러야 한다.** 나중에 부르면 `flash` 가 세션째로 지워져 「로그아웃했습니다」가 안 뜬다.
+
+## 세션은 9시간에 끊는다
+
+기본값은 `expire_after` 가 없어 **브라우저를 닫을 때까지 쿠키가 산다.** 현장 스마트폰은 브라우저를 거의 닫지 않으므로 사실상 무기한이었다.
+
+9시간은 하루 근무 시간에 맞춘 것이다. 출근 때 한 번 들어오면 퇴근까지 끊기지 않고, 이튿날 아침에 다시 들어온다. **사무실 공용 PC 에 켜둔 채 두어도 밤에는 끊긴다** — 위협 모델의 「공용 PC 방치」에 대응한다.
+
+`CookieStore` 는 응답마다 쿠키를 다시 쓰므로, 이건 **「마지막 조작으로부터 9시간」이고 「로그인으로부터 9시간」이 아니다.** 작업 중에 끊기지 않는다.
 
 ## 퇴사 처리는 기존 세션에도 즉시 듣는다
 

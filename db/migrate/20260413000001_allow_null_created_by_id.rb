@@ -1,4 +1,4 @@
-# created_by_idのNOT NULL制約を解除 — ユーザー削除時にdependent: :nullifyが機能するよう変更
+# created_by_id 의 NOT NULL 을 뗀다 — 사용자 삭제 시 dependent: :nullify 가 듣게
 class AllowNullCreatedById < ActiveRecord::Migration[8.0]
   def change
     change_column_null :health_records,   :created_by_id, true

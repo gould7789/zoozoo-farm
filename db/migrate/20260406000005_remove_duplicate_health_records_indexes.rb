@@ -1,11 +1,9 @@
-# health_recordsテーブルの重複インデックスを削除するマイグレーション
-# t.referencesが自動生成したインデックス（Railsの慣例名）を残し、
-# add_indexで手動追加した重複インデックス（カスタム名）を削除する
+# health_records 의 중복 인덱스를 지운다.
+# t.references 가 자동 생성한 것(Rails 관례명)을 남기고
+# add_index 로 손수 더한 중복(커스텀 이름)을 지운다
 class RemoveDuplicateHealthRecordsIndexes < ActiveRecord::Migration[8.0]
   def change
-    # add_indexで手動追加した重複インデックスを削除（自動生成のindex_health_records_on_animal_idを残す）
     remove_index :health_records, name: "idx_health_records_animal_id"
-    # add_indexで手動追加した重複インデックスを削除（自動生成のindex_health_records_on_created_by_idを残す）
     remove_index :health_records, name: "idx_health_records_created_by"
   end
 end

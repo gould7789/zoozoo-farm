@@ -1,6 +1,6 @@
 ko:
   errors:
-    # 属性名を先頭に付けない — メッセージ自体に含めているため
+    # 속성명을 앞에 붙이지 않는다 — 메시지 자체에 포함시켰다
     format: "%{message}"
   activerecord:
     errors:
@@ -95,7 +95,7 @@ ko:
               less_than_or_equal_to: "금액은 9,999,999원 이하로 입력해주세요."
             description:
               blank: "지출 내용을 입력해주세요."
-  # CSVエクスポート用 enum の韓国語ラベル
+  # 내보내기용 enum 의 한국어 라벨
   enums:
     health_record:
       condition:

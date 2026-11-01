@@ -1,13 +1,8 @@
-# お知らせに題名を追加する。
+# 공지에 제목을 더한다. 목록에서 본문을 읽지 않고 내용을 가르기 위해서다.
 #
-# 一覧で本文を読まずに内容を見分けられるようにするのが目的。
-# 既存の行にも値が要るので、本文の1行目から埋めてから NOT NULL を付ける。
-#
-# 本文はこの時点ですでにリッチテキストなので、HTMLから平文を取り出す。
-# 1行目ではなく最初の空でない行を使う。添付だけのお知らせは平文が改行で始まり、
-# 1行目を取ると空になってしまうためである。
-# それでも取れなければ既定値を入れる。空文字のまま NOT NULL を付けると、
-# presence 検証を通らない行がDBに残る。
+# 기존 행에도 값이 필요하므로 본문에서 채운 뒤 NOT NULL 을 붙인다.
+# 첫 줄이 아니라 「첫 비어있지 않은 줄」을 쓰는 이유와 기본값을 두는 이유는
+# .claude/rules/notes/notice.md
 class AddTitleToNotices < ActiveRecord::Migration[8.1]
   DEFAULT_TITLE = "공지".freeze
   MAX_LENGTH = 100
@@ -28,7 +23,7 @@ class AddTitleToNotices < ActiveRecord::Migration[8.1]
       SQL
     end
 
-    # リッチテキストが無いお知らせ（移行前に本文が空だった行）も埋める
+    # 리치텍스트가 없는 공지(이관 전에 본문이 비었던 행)도 채운다
     execute <<~SQL.squish
       UPDATE notices SET title = #{quote(DEFAULT_TITLE)} WHERE title IS NULL
     SQL

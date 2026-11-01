@@ -73,7 +73,7 @@ RSpec.describe "FeedingRecords", type: :request do
   end
 
   describe "PATCH /zones/:zone_id/animals/:animal_id/feeding_records/:id" do
-    let(:valid_params) { { feeding_record: { food_type: "野菜" } } }
+    let(:valid_params) { { feeding_record: { food_type: "채소" } } }
 
     context "본인이 수정" do
       let(:feeding_record) { create(:feeding_record, animal: animal, created_by: staff) }
@@ -82,7 +82,7 @@ RSpec.describe "FeedingRecords", type: :request do
       it "기록을 수정하고 목록으로 보낸다" do
         patch zone_animal_feeding_log_path(zone, animal, feeding_record), params: valid_params
         expect(response).to redirect_to(zone_animal_feeding_logs_path(zone, animal))
-        expect(feeding_record.reload.food_type).to eq("野菜")
+        expect(feeding_record.reload.food_type).to eq("채소")
       end
     end
 

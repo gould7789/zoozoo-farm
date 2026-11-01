@@ -66,7 +66,7 @@ RSpec.describe "Notices", type: :request do
     end
   end
 
-  describe "GET /notices （N+1）" do
+  describe "GET /notices (N+1)" do
     def query_count
       count = 0
       sub = ActiveSupport::Notifications.subscribe("sql.active_record") do |_, _, _, _, payload|

@@ -24,7 +24,7 @@ RSpec.describe "Active Storage endpoints", type: :request do
     end
   end
 
-  context "退職者（active = false）" do
+  context "퇴사자 (active = false)" do
     before do
       sign_in(staff)
       staff.update!(active: false)
@@ -59,9 +59,9 @@ RSpec.describe "Active Storage endpoints", type: :request do
     # 배열로 도는 이유는 「하나를 막는 걸 빠뜨렸다」를 떨구기 위해서다
     def paths
       {
-        "原本（proxy）"    => rails_storage_proxy_path(blob),
-        "原本（redirect）" => rails_blob_path(blob),
-        "variant（proxy）" => rails_storage_proxy_path(blob.variant(resize_to_limit: [ 100, 100 ]))
+        "원본 (proxy)"    => rails_storage_proxy_path(blob),
+        "원본 (redirect)" => rails_blob_path(blob),
+        "variant (proxy)" => rails_storage_proxy_path(blob.variant(resize_to_limit: [ 100, 100 ]))
       }
     end
 

@@ -46,7 +46,7 @@ RSpec.describe "Content Security Policy", type: :request do
 
     # 경로를 넣으면 완전 일치가 요구돼 운영에서만 업로드가 떨어진다 (notes/notice.md)
     it "경로를 넣지 않는다 (오리진만)" do
-      skip "ENV 未設定" if ENV["SUPABASE_S3_ENDPOINT"].blank?
+      skip "ENV 미설정" if ENV["SUPABASE_S3_ENDPOINT"].blank?
 
       user = create(:user)
       sign_in(user)

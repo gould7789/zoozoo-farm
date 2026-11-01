@@ -1,7 +1,7 @@
-<%# カテゴリ管理モーダル内の1行 — 보기/편집 두 가지 모드 %>
-<%# editing: true の場合はインライン編集フォームを最初から表示 %>
+<%# 카테고리 관리 모달 안의 1행 — 보기/편집 두 가지 모드 %>
+<%# editing: true 면 인라인 편집 폼을 처음부터 펼친다 %>
 <% editing ||= false %>
-<%# idはturbo_streamの差し替え先として使う（JSからは参照しない） %>
+<%# id 는 turbo_stream 의 교체 대상이다 (JS 는 참조하지 않는다) %>
 <div id="category_row_<%= category.id %>"
      data-controller="category-row"
      class="flex items-center justify-between px-6 py-3.5 hover:bg-gray-50 transition-colors">
@@ -9,7 +9,8 @@
   <%# 보기 모드 %>
   <div data-category-row-target="view" class="<%= editing ? "hidden" : "" %> flex items-center justify-between w-full">
 
-    <%# チェックボックス — クリックでhiddenトグル %>
+    <%# 체크박스 — 누르면 숨김이 뒤집힌다 %>
+    <%# form 에 display:contents — 행 전체가 button 이 되게 한다 (common/views.md) %>
     <%= button_to toggle_zone_animal_category_path(zone, category),
         method: :patch,
         form: { class: "contents" },
@@ -26,7 +27,6 @@
       </span>
     <% end %>
 
-    <%# 수정・삭제 %>
     <div class="flex items-center gap-3 shrink-0 ml-3">
       <button type="button"
               data-action="click->category-row#startEdit"

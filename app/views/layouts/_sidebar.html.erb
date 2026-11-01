@@ -1,12 +1,11 @@
-<%# デスクトップ用サイドバーナビゲーション — lg以上で固定表示 %>
+<%# 데스크톱 사이드바 — lg 이상에서 고정 표시 %>
 <div class="flex flex-col h-full">
 
-  <%# ロゴ・ユーザー情報 %>
   <div class="px-4 pt-0 pb-2 border-b border-gray-200">
     <div class="flex justify-center py-3">
       <%= link_to image_tag("main_logo.png", alt: "Zoo Zoo Farm", class: "w-52 object-contain drop-shadow-md hover:opacity-90 transition-opacity"), zones_path, class: "inline-block" %>
     </div>
-    <%# ユーザープロフィール — 将来的にプロフィール写真を追加予定 %>
+    <%# 사용자 프로필 — 프로필 사진은 나중에 붙일 예정 %>
     <div class="flex items-center gap-3 px-2 py-2 relative z-10">
       <%= link_to account_path, class: "w-9 h-9 rounded-full bg-green-100 flex items-center justify-center shrink-0 hover:bg-green-200 transition-colors" do %>
         <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,7 +22,6 @@
     </div>
   </div>
 
-  <%# ナビゲーションリンク %>
   <nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
 
     <%= link_to zones_path, class: sidebar_link_class(zones_path) do %>
@@ -72,7 +70,6 @@
       <% end %>
     <% end %>
 
-    <%# マイページ — ナビゲーション最下部 %>
     <div class="pt-3 mt-2 border-t border-gray-200">
       <%= link_to account_path, class: sidebar_link_class(account_path) do %>
         <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +82,6 @@
 
   </nav>
 
-  <%# ログアウト %>
   <div class="px-3 py-3 border-t border-gray-200">
     <%= button_to logout_path, method: :delete,
         class: "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors group" do %>

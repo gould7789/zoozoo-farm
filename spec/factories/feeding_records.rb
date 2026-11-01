@@ -1,14 +1,10 @@
-# 給餌記録のテストデータファクトリー
+# FeedingRecord 테스트 데이터
 FactoryBot.define do
   factory :feeding_record do
-    # 対象動物（自動的にzoneも生成される）
     animal
-    # 作成者
     association :created_by, factory: :user
-    # 給餌日時（デフォルトは現在時刻）
     fed_at    { Time.current }
-    # 餌の種類（デフォルトはペレット）
-    food_type { "ペレット" }
+    food_type { "펠렛" }
     amount_g  { nil }
     note      { nil }
   end

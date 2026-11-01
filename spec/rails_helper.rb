@@ -65,20 +65,20 @@ RSpec.configure do |config|
   # To enable this behaviour uncomment the line below.
   # config.infer_spec_type_from_file_location!
 
-  # FactoryBotのメソッド（create, build等）をspec内でそのまま呼び出せるようにする
+  # FactoryBot 의 create, build 등을 spec 에서 그대로 부를 수 있게 한다
   config.include FactoryBot::Syntax::Methods
 
-  # リクエストスペック用ヘルパー（sign_inメソッド）
+  # 요청 스펙용 헬퍼 (sign_in)
   config.include RequestHelpers, type: :request
 
-  # systemスペック用ヘルパー（sign_in_asメソッド）
+  # system 스펙용 헬퍼 (sign_in_as)
   config.include SystemHelpers, type: :system
 
-  # travel_to等の時刻操作ヘルパー — タイムゾーン境界のテストで使用する
+  # travel_to 등 시각 조작 헬퍼 — 타임존 경계 테스트에서 쓴다
   config.include ActiveSupport::Testing::TimeHelpers
 
-  # memory_storeはDBと違いトランザクションのロールバックで戻らずプロセス全体で保持される
-  # 例ごとにクリアしないとレート制限のカウンタが後続の例に漏れ、実行順で結果が変わる
+  # memory_store 는 DB 와 달리 트랜잭션 롤백으로 되돌아가지 않고 프로세스 전체에 남는다.
+  # 예제마다 비우지 않으면 rate limit 카운터가 다음 예제로 새어 실행 순서에 따라 결과가 바뀐다
   config.before do
     Rails.cache.clear
   end

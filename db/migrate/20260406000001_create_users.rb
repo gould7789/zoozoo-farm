@@ -1,4 +1,4 @@
-# ユーザーテーブルを作成するマイグレーション
+# users 테이블
 class CreateUsers < ActiveRecord::Migration[8.1]
   def change
     enable_extension "pgcrypto" unless extension_enabled?("pgcrypto")

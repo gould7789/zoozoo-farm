@@ -1,5 +1,5 @@
-# Zoneのテストデータファクトリ
-# sequenceで連番の館名を生成 — 一意制約に対応
+# Zone 테스트 데이터
+# sequence 로 연번 관 이름을 만든다 — UNIQUE 제약 때문
 FactoryBot.define do
   factory :zone do
     sequence(:name) { |n| "Zone #{n}" }

@@ -1,6 +1,6 @@
-// モーダルの開閉を管理するコントローラー
-// 同一コントローラー内: data-action="click->modal#open/close"
-// 別のDOMツリーからの呼び出し: modal_opener_controller が Outlet 経由で open() を呼ぶ
+// 모달 열고 닫기
+//   같은 트리 안에서   data-action="click->modal#open/close"
+//   다른 트리에서      modal_opener_controller 가 Outlet 으로 open() 을 부른다
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
@@ -18,7 +18,7 @@ export default class extends Controller {
     document.body.classList.remove("overflow-hidden")
   }
 
-  // オーバーレイ（背景）クリックで閉じる
+  // 배경을 누르면 닫는다
   closeOnOverlay(event) {
     if (event.target === this.overlayTarget) {
       this.close()

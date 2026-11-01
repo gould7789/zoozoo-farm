@@ -1,13 +1,13 @@
-# 動物個体のCRUDを担当するコントローラー
-# 閲覧（show）はStaff/Admin共通、作成・編集・削除はAdmin専用
-# 削除はactive=falseの論理削除 — 物理削除は行わない
+# 동물 개체 CRUD
+# 조회(show)는 Staff 와 Admin 공통, 등록·수정과 삭제는 Admin 전용
+# 삭제는 active = false 논리 삭제 — 물리 삭제는 하지 않는다
+# 판단 근거는 .claude/rules/notes/animal-photo.md, notes/xlsx-export.md
 class AnimalsController < ApplicationController
   before_action :set_zone
-  # 新規登録・作成・編集・更新・削除はAdmin専用
   before_action :require_admin, only: [ :index, :new, :create, :edit, :update, :destroy ]
   before_action :set_animal,    only: [ :show, :edit, :update, :destroy ]
 
-  # xlsxエクスポート専用 — HTMLはゾーン詳細ページにリダイレクト
+  # xlsx 내보내기 전용 — HTML 요청은 관 상세로 돌려보낸다
   def index
     respond_to do |format|
       format.xlsx do
@@ -28,9 +28,7 @@ class AnimalsController < ApplicationController
   end
 
   def new
-    # 館に紐づいた新規動物インスタンスをビルド
     @animal = @zone.animals.build
-    # フォームのカテゴリドロップダウン用
     @categories = @zone.animal_categories.order(:name)
   end
 
@@ -45,7 +43,6 @@ class AnimalsController < ApplicationController
   end
 
   def edit
-    # 編集フォームのカテゴリドロップダウン用
     @categories = @zone.animal_categories.order(:name)
     @saved_photo = @animal.photo
   end
@@ -55,15 +52,15 @@ class AnimalsController < ApplicationController
       redirect_to zone_animal_path(@zone, @animal), notice: "동물 정보를 수정했습니다."
     else
       @categories = @zone.animal_categories.order(:name)
-      # 検証エラー時、@animal.photoは未保存の添付を指す。
-      # 保存済みの写真を別に読み直さないと、消えていないのに消えたように見える
+      # 검증 에러 때 @animal.photo 는 저장되지 않은 첨부를 가리킨다.
+      # 저장된 사진을 따로 다시 읽지 않으면, 지워지지 않았는데 지워진 것처럼 보인다
       @saved_photo = Animal.find(@animal.id).photo
       render :edit, status: :unprocessable_entity
     end
   end
 
   def destroy
-    # 物理削除ではなくactive=falseにして履歴を保持する
+    # 물리 삭제가 아니라 active = false — 기록을 남긴다
     @animal.update!(active: false)
     redirect_to zone_path(@zone), notice: "동물을 삭제했습니다."
   end
@@ -78,7 +75,7 @@ class AnimalsController < ApplicationController
       @animal = @zone.animals.find(params[:id])
     end
 
-    # ストロングパラメータ — activeは更新対象外
+    # active 는 폼에서 받지 않는다 — 삭제는 destroy 액션만 거친다
     def animal_params
       params.require(:animal).permit(
         :name, :species, :gender, :birth_date,
@@ -91,14 +88,14 @@ class AnimalsController < ApplicationController
       package = Axlsx::Package.new
       wb = package.workbook
       s = xlsx_styles(wb)
-      # 列ごとの型に応じてスタイルを割り当てる（数値は右寄せ、日付は中央寄せ等）
+      # 열의 형에 맞춰 스타일을 붙인다 (금액은 오른쪽, 날짜는 가운데)
       row_styles = [ s[:text], s[:text], s[:text], s[:number], s[:text], s[:date], s[:date], s[:text], s[:left] ]
       wb.add_worksheet(name: "동물목록") do |sheet|
         sheet.add_row [ "분류", "이름", "종", "개체수", "성별", "생년월일", "입수일", "CITES 등급", "특이사항" ], style: s[:header]
         last_category = nil
         animals.each do |a|
           current_category = a.animal_category&.name || "미분류"
-          # カテゴリが変わった行のみ分類名を出力、同一カテゴリ内は空白
+          # 분류명은 카테고리가 바뀐 행에만 쓴다 — 같은 카테고리 안은 비워 둔다
           category_cell = current_category == last_category ? nil : current_category
           last_category = current_category
           sheet.add_row [
@@ -113,7 +110,7 @@ class AnimalsController < ApplicationController
             a.note
           ], style: row_styles
         end
-        # 列幅を明示してExcelの####表示を防ぎ、ヘッダー行を固定・フィルタを付与
+        # 폭을 명시하지 않으면 Excel 이 #### 로 가린다
         sheet.column_widths 12, 12, 16, 8, 8, 13, 13, 12, 30
         sheet.auto_filter = "A1:I1"
         sheet.sheet_view.pane do |pane|

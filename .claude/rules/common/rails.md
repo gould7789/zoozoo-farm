@@ -75,6 +75,23 @@ enum :cites_grade, { none: 0, ... }, prefix: :cites   # AR의 none? 과 충돌�
 @category = Notice.categories.key?(params[:category]) ? params[:category] : nil
 ```
 
+## 월별 집계 — 컬럼에 함수를 씌우지 않는다
+
+`in_month` 처럼 연월로 거를 때 `EXTRACT(YEAR FROM spent_on) = ?` 를 쓰면
+**컬럼에 함수가 씌워져 인덱스가 먹지 않는다.** 범위 조건으로 쓴다.
+
+```ruby
+first_day = Date.new(year, month, 1)
+where(spent_on: first_day..first_day.end_of_month)
+```
+
+`available_year_months` 처럼 "기록이 있는 연월"을 뽑을 때는 전건을 Ruby 로
+읽지 않고 `date_trunc`(PostgreSQL 고유)로 월 단위로 뭉쳐 `distinct` 한다.
+이때 `reorder(nil)` 이 필요하다 — 정렬이 붙은 릴레이션에서 부르면
+`SELECT DISTINCT` 와 `ORDER BY` 가 충돌해 PostgreSQL 이 에러를 낸다.
+
+`sales_record.rb` 와 `expense_record.rb` 가 같은 형태를 쓴다.
+
 ## N+1
 
 목록을 만들 때는 **쿼리 수를 세는 스펙**을 같이 쓴다. 다만 쿼리 수가 줄었다고 끝이 아니다 — **성능 검증과 표시 검증은 다른 축**이다. 쿼리를 줄이려고 바꾼 코드가 화면 결과를 망가뜨릴 수 있다.

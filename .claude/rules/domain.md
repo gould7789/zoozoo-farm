@@ -16,6 +16,21 @@
 
 > **「직원 10명 미만」은 설계 판단의 근거로 계속 쓰인다.** Puma 스레드 3개, CDN 미도입, 고아 blob 방치가 전부 이 숫자에서 나왔다. 규모를 모르면 과한 설계를 하게 된다.
 
+## 설명 문서 지도
+
+**코드를 고치기 전에 그 파일이 어느 노트에 걸려 있는지 본다.** 각 코드 파일 맨 위에도 같은 포인터가 있다.
+
+| 노트 | 무엇이 들어 있나 | 어느 코드 |
+| --- | --- | --- |
+| `notes/notice.md` | 리치텍스트 이름 충돌, 2단계 이관, CSP, 발췌, 임베드 검증 | `notice.rb`, `notices_controller`, `views/notices`, 이관 마이그레이션 |
+| `notes/auth.md` | 이메일 기준 rate limit, `reset_session` 순서, 마지막 관리자 보호 | `sessions_controller`, `application_controller`, `admin/users_controller`, `user.rb` |
+| `notes/animal-photo.md` | HEIC·libvips, `purge` vs `purge_later`, 검증 에러 때 사진 | `animal.rb`, `animal_photos_controller`, 사진 JS 2개 |
+| `notes/xlsx-export.md` | Excel `####`, 서식 코드, 고정 행, 분류 칸 비우기 | 내보내기 컨트롤러 5개 + base |
+
+`common/` 은 레이어 축(지킬 규칙), `notes/` 는 도메인 축(왜 이렇게 생겼나)이다. **축을 섞지 않는다.**
+
+더 두꺼운 설명은 `docs/` 에 있다 — `active-storage.md`(이미지 파이프라인 336줄), `ai-workflow.md`.
+
 ## 언어
 
 | 대상 | 언어 |
@@ -25,7 +40,9 @@
 
 화면 텍스트가 한국어인 이유는 **쓰는 사람이 한국 동물원 직원**이기 때문이다. 현장 직원이 읽지 못하면 기능이 없는 것과 같다.
 
-> 주석과 테스트 문자열은 **현재 일본어**다. 한국어 전환은 리팩토링 단계에서 일괄로 한다. 그때까지 **새로 쓰는 주석은 일본어를 유지한다** — 한 파일에 두 언어가 섞이면 전환 PR의 diff가 읽히지 않는다.
+주석은 **코드를 되풀이하지 않는다.** 남기는 기준은 「이 줄을 지우면 다음 사람이 같은 함정에 빠지는가」다. 설계 근거와 알아두면 좋은 문법만 남기고, 두 줄로 안 되는 분량은 `notes/` 로 뺀다.
+
+`README.md` 는 일본어다 — 읽는 사람이 다르다.
 
 ## 권한
 

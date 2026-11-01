@@ -1,11 +1,9 @@
-# お知らせ本文のリッチテキスト編集を検証する system spec
+# 공지 본문 리치텍스트 편집 — 확인하는 건 두 가지다.
+#   1. 본문에 붙인 이미지가 올리기 전에 브라우저에서 줄어드는가
+#   2. 기본 window 리스너를 멈춰 두 벌 올라가지 않는가
 #
-# ここで確かめたいのは2点だけ。
-#   1. 本文に貼った画像がアップロード前にブラウザ側で縮小されること
-#   2. 既定の window リスナーを止められていて、二重送信になっていないこと
-#
-# Trix のツールバーの見た目や文字装飾は目視に委ねる。
-# 壊れたときに静かに壊れるのは上の2点で、どちらもDBを見ないと分からない。
+# 툴바 모양과 글자 장식은 목시에 맡긴다. 조용히 깨지는 건 위 두 가지이고
+# 둘 다 DB 를 봐야 알 수 있다. 축소 자체의 판단은 .claude/rules/notes/notice.md
 require "rails_helper"
 
 RSpec.describe "공지 리치텍스트", type: :system do
@@ -16,11 +14,9 @@ RSpec.describe "공지 리치텍스트", type: :system do
     visit new_notice_path
   end
 
-  # 縮小を検証するには fixture より大きい画像が要る。
-  # ファイルを置くと数MBをリポジトリに入れることになるので、
-  # ブラウザ側で生成して editor.insertFile に渡す。
-  # 一様な塗りつぶしだとJPEGがほぼゼロまで潰れて縮小の効果が測れないため、
-  # ランダムな矩形でノイズを入れる
+  # 축소를 검증하려면 fixture 보다 큰 이미지가 필요하다. 파일로 두면 수MB 를
+  # 저장소에 넣게 되므로 브라우저에서 만들어 editor.insertFile 에 넘긴다.
+  # 단색으로 칠하면 JPEG 이 거의 0까지 뭉개져 효과를 못 재므로 무작위 사각형으로 노이즈를 넣는다
   def insert_generated_image(width:, height:, type: "image/png")
     page.execute_script(<<~JS, width, height, type)
       const [ width, height, type ] = arguments
@@ -39,10 +35,9 @@ RSpec.describe "공지 리치텍스트", type: :system do
     JS
   end
 
-  # figure.attachment はアップロードの「開始」時点でもう現れる。
-  # そこで待ったつもりになると、POST がロールバックの後に着地して
-  # 次のexampleの計測を壊す（実測で半分ほど落ちた）。
-  # sgid が入るのはアップロードが完了して setAttributes が走った後なので、そこで待つ
+  # figure.attachment 는 업로드 「시작」 시점에 이미 나타난다. 거기서 기다린 줄 알면
+  # POST 가 롤백 뒤에 착지해 다음 example 의 측정을 깬다(실측으로 절반쯤 떨어졌다).
+  # sgid 는 업로드가 끝나고 setAttributes 가 돈 뒤에 들어가므로 그걸 기다린다
   def wait_for_upload
     expect(page).to have_css("figure[data-trix-attachment*='sgid']", wait: 10)
   end
@@ -54,10 +49,9 @@ RSpec.describe "공지 리치텍스트", type: :system do
     Notice.last.content.embeds.first.tap { |blob| blob.analyze unless blob.analyzed? }
   end
 
-  # 縮小が不要なPNGまでJPEGに焼き直すと、ロゴやスクリーンショットの
-  # 透過が黒く潰れる。現場はカカオトークの画像を貼るので
-  # スクリーンショットが混じる
-  it "縮小が要らない画像はPNGのまま保存される" do
+  # 축소가 필요 없는 PNG 까지 JPEG 로 다시 구우면 투명이 검게 뭉개진다.
+  # 현장은 카카오톡 이미지를 붙이므로 스크린샷이 섞인다
+  it "축소가 필요 없는 이미지는 PNG 그대로 저장된다" do
     insert_generated_image(width: 400, height: 300)
     wait_for_upload
 
@@ -66,25 +60,23 @@ RSpec.describe "공지 리치텍스트", type: :system do
     expect(blob.metadata["width"]).to eq(400)
   end
 
-  it "本文に貼った画像は1600pxに縮小されて1件だけ保存される" do
-    # このexampleでアップロードされた blob だけを数える。
-    # 単純な総数では2件になるが、2件目はアップロードではなく variant である。
-    # 一覧を描画した時点で _blob.html.erb が 1200px の変換を要求し、
-    # その結果が VariantRecord に添付された別の blob として入る。
-    # 前のexampleの行が混ざるのも防ぐため created_at でも切る
+  it "본문에 붙인 이미지는 1600px 로 줄어 1건만 저장된다" do
+    # 이 example 에서 올라간 blob 만 센다. 단순 총수로는 2건이 되는데
+    # 2건째는 업로드가 아니라 variant 다 — 목록을 그릴 때 _blob.html.erb 가
+    # 1200px 변환을 요구하고, 그 결과가 VariantRecord 에 붙은 다른 blob 으로 들어간다.
+    # 앞 example 의 행이 섞이는 것도 막으려 created_at 으로도 자른다
     started_at = Time.current
 
     insert_generated_image(width: 3000, height: 2000)
 
-    # ダイレクトアップロードの完了を待つ。完了すると attachment の
-    # figure に sgid が入り、プログレス表示が消える
+    # 다이렉트 업로드 완료를 기다린다 — figure 에 sgid 가 들어가고 진행 표시가 사라진다
     wait_for_upload
 
     blob = submit_and_take_blob
 
-    # blob の件数で見る。本文の embeds は sgid が1つしか残らないため、
-    # 二重に送られていても1件に見えてしまう（実測で確認した）。
-    # 既定の window リスナーが生きていると原本ぶんの blob が余分に作られる
+    # blob 건수로 본다. 본문의 embeds 는 sgid 가 하나만 남아 두 벌 보내져도
+    # 1건으로 보인다(실측으로 확인했다). 기본 window 리스너가 살아 있으면
+    # 원본 몫의 blob 이 하나 더 생긴다
     uploaded = ActiveStorage::Blob
       .where(created_at: started_at..)
       .where.not(id: ActiveStorage::Attachment.where(record_type: "ActiveStorage::VariantRecord").select(:blob_id))

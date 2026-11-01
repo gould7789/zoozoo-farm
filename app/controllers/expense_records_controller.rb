@@ -1,4 +1,5 @@
-# 支出記録のCRUDを担当するコントローラー — Admin専用
+# 지출 기록 CRUD — Admin 전용
+# xlsx 내보내기 판단은 .claude/rules/notes/xlsx-export.md
 class ExpenseRecordsController < ApplicationController
   include MonthlyFilterable
 
@@ -30,7 +31,7 @@ class ExpenseRecordsController < ApplicationController
 
   def create
     @expense_record = ExpenseRecord.new(expense_record_params)
-    # created_byは必ずログイン中のAdminを設定
+    # created_by 는 폼에서 받지 않고 로그인한 Admin 으로 강제한다
     @expense_record.created_by = current_user
     if @expense_record.save
       redirect_to expenses_path, notice: "지출 기록을 저장했습니다."
@@ -61,7 +62,7 @@ class ExpenseRecordsController < ApplicationController
       @expense_record = ExpenseRecord.find(params[:id])
     end
 
-    # ストロングパラメータ — created_byはコントローラーで強制設定するので除外
+    # created_by 는 컨트롤러에서 강제하므로 폼에서 받지 않는다
     def expense_record_params
       params.require(:expense_record).permit(:spent_on, :category, :amount, :description)
     end
@@ -82,7 +83,7 @@ class ExpenseRecordsController < ApplicationController
             r.created_by&.name
           ], style: row_styles
         end
-        # 列幅を明示してExcelの####表示を防ぎ、ヘッダー行を固定・フィルタを付与
+        # 폭을 명시하지 않으면 Excel 이 #### 로 가린다
         sheet.column_widths 13, 14, 14, 36, 14
         sheet.auto_filter = "A1:E1"
         sheet.sheet_view.pane do |pane|

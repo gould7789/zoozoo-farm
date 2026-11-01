@@ -1,16 +1,13 @@
-# 支出記録テーブルの作成マイグレーション（Admin専用）
+# expense_records 테이블 (Admin 전용)
 class CreateExpenseRecords < ActiveRecord::Migration[8.0]
   def change
     create_table :expense_records, id: :uuid do |t|
-      # 入力した管理者
       t.references :created_by,   null: false, foreign_key: { to_table: :users }, type: :uuid
-      # 支出発生日
       t.date        :spent_on,    null: false
-      # 支出種類 enum（0=動物購入費, 1=餌代, 2=医療費, 3=死骸処理費, 4=施設維持費, 5=その他）
+      # 0=동물 구매비, 1=먹이 구매비, 2=병원비, 3=시체 처리비, 4=시설 유지보수, 5=기타
       t.integer     :category,    null: false
-      # 支出額（ウォン単位整数）
+      # 지출액 — 원 단위 정수
       t.integer     :amount,      null: false
-      # 支出内容
       t.text        :description, null: false
 
       t.timestamps
@@ -18,6 +15,6 @@ class CreateExpenseRecords < ActiveRecord::Migration[8.0]
 
     add_index :expense_records, :spent_on
     add_index :expense_records, :category
-    # created_by_idインデックスはt.referencesが自動生成するため不要
+    # created_by_id 인덱스는 t.references 가 만들므로 더하지 않는다
   end
 end

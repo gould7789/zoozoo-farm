@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Sessions", type: :request do
   describe "GET /login" do
-    it "ログインページを表示する" do
+    it "로그인 화면을 보여준다" do
       get login_path
       expect(response).to have_http_status(:ok)
     end
@@ -11,34 +11,34 @@ RSpec.describe "Sessions", type: :request do
   describe "POST /login" do
     let(:user) { create(:user, password: "password123") }
 
-    context "正しい認証情報の場合" do
-      it "ルートにリダイレクトする" do
+    context "올바른 인증 정보" do
+      it "루트로 보낸다" do
         post login_path, params: { email: user.email, password: "password123" }
         expect(response).to redirect_to(root_path)
       end
 
-      it "セッションにuser_idを保存する" do
+      it "세션에 user_id 를 저장한다" do
         post login_path, params: { email: user.email, password: "password123" }
         expect(session[:user_id]).to eq(user.id)
       end
     end
 
-    context "間違ったパスワードの場合" do
-      it "ログインページに戻る" do
+    context "틀린 비밀번호" do
+      it "로그인 화면으로 돌아간다" do
         post login_path, params: { email: user.email, password: "wrongpassword" }
         expect(response).to have_http_status(:unprocessable_content)
       end
 
-      it "セッションにuser_idを保存しない" do
+      it "세션에 user_id 를 저장하지 않는다" do
         post login_path, params: { email: user.email, password: "wrongpassword" }
         expect(session[:user_id]).to be_nil
       end
     end
 
-    context "非アクティブユーザーの場合" do
+    context "퇴사 처리된 사용자" do
       let(:inactive_user) { create(:user, :inactive, password: "password123") }
 
-      it "ログインできない" do
+      it "로그인되지 않는다" do
         post login_path, params: { email: inactive_user.email, password: "password123" }
         expect(response).to have_http_status(:unprocessable_content)
       end
@@ -51,22 +51,21 @@ RSpec.describe "Sessions", type: :request do
       post login_path, params: { email: user.email, password: "password123" }
     end
 
-    it "ログアウト後はログインページにリダイレクトする" do
+    it "로그아웃 뒤에는 로그인 화면으로 보낸다" do
       delete logout_path
       expect(response).to redirect_to(login_path)
     end
 
-    it "セッションのuser_idを削除する" do
+    it "세션의 user_id 를 지운다" do
       delete logout_path
       expect(session[:user_id]).to be_nil
     end
 
-    # user_idを消すだけではセッションIDが再利用される
-    # ログイン時のreset_sessionと対称にして、値の消し忘れが起きない構造にする
-    it "セッションを完全に破棄する" do
-      # session.idはRack::Session::SessionIdオブジェクトを返す
-      # このクラスは==を定義しておらずオブジェクト同一性で比較されるため、
-      # 値を比べるには必ず文字列化する（そのまま比較すると常にパスする無意味なテストになる）
+    # user_id 만 지우면 세션 ID 가 재사용된다 (notes/auth.md)
+    it "세션을 완전히 버린다" do
+      # session.id 는 Rack::Session::SessionId 객체를 돌려준다. 이 클래스는 == 를
+      # 정의하지 않아 객체 동일성으로 비교되므로, 값을 비교하려면 반드시 문자열화한다
+      # (그냥 비교하면 항상 통과하는 무의미한 테스트가 된다)
       session_id_before = session.id.to_s
 
       delete logout_path
@@ -76,16 +75,16 @@ RSpec.describe "Sessions", type: :request do
     end
   end
 
-  # ブルートフォース攻撃対策 — 同一メールアドレスへの試行を10回/3分に制限する
-  describe "ログイン試行の制限" do
+  # 무차별 대입 대비 — 같은 이메일로의 시도를 10회/3분으로 제한한다
+  describe "로그인 시도 제한" do
     let(:user) { create(:user, password: "password123") }
 
-    it "同一メールアドレスへの試行が上限を超えるとブロックされる" do
+    it "같은 이메일로의 시도가 상한을 넘으면 막힌다" do
       10.times do
         post login_path, params: { email: user.email, password: "wrongpassword" }
       end
 
-      # 11回目は正しいパスワードでもブロックされる
+      # 11회째는 올바른 비밀번호여도 막힌다
       post login_path, params: { email: user.email, password: "password123" }
 
       expect(response).to redirect_to(login_path)
@@ -93,9 +92,9 @@ RSpec.describe "Sessions", type: :request do
       expect(session[:user_id]).to be_nil
     end
 
-    # by: がIPではなくメールアドレス基準であることの確認
-    # 同一Wi-Fi（NAT）配下の他の職員が巻き込まれないことを保証する
-    it "別のメールアドレスは影響を受けない" do
+    # by: 가 IP 가 아니라 이메일 기준인지 확인한다 —
+    # 같은 Wi-Fi(NAT) 아래의 다른 직원이 휘말리지 않아야 한다
+    it "다른 이메일은 영향을 받지 않는다" do
       11.times do
         post login_path, params: { email: user.email, password: "wrongpassword" }
       end
@@ -107,39 +106,39 @@ RSpec.describe "Sessions", type: :request do
       expect(session[:user_id]).to eq(other_user.id)
     end
 
-    # rate_limitは `count = store.increment(...)` / `if count && count > to` で判定するため、
-    # ストアが数えられないと例外も警告もなく全リクエストを通してしまう。
-    # 上の2つはmemory_store前提で通るので、ストア側が壊れたことを検知できない。
-    # ここが先に落ちれば原因がストアだと即座に分かる。
-    describe "バッキングストア" do
-      it "レート制限用のテーブルがスキーマに存在する" do
-        # 本番はsolid_cache_store。このテーブルが無いとincrementがUndefinedTableで落ちる
+    # rate_limit 은 `count = store.increment(...)` / `if count && count > to` 로
+    # 판정하므로, 스토어가 세지 못하면 예외도 경고도 없이 전부 통과시킨다.
+    # 위의 두 예제는 memory_store 전제로 통과해 스토어가 깨진 것을 못 잡는다.
+    # 여기가 먼저 떨어지면 원인이 스토어임을 바로 알 수 있다.
+    describe "백킹 스토어" do
+      it "rate limit 용 테이블이 스키마에 있다" do
+        # 운영은 solid_cache_store — 이 테이블이 없으면 increment 가 UndefinedTable 로 떨어진다
         expect(ActiveRecord::Base.connection).to be_table_exists("solid_cache_entries")
       end
 
-      it "incrementが加算後の値を返す" do
-        # null_storeのincrementは空メソッドでnilを返し、判定が丸ごとスキップされる
+      it "increment 가 더한 뒤의 값을 반환한다" do
+        # null_store 의 increment 는 빈 메서드로 nil 을 돌려 판정이 통째로 건너뛰어진다
         store = ActionController::Base.cache_store
         expect(store.increment("spec:rate-limit-probe", 1, expires_in: 1.minute)).to eq(1)
       end
     end
   end
 
-  describe "未ログインのアクセス制限" do
-    it "保護されたページはログインページにリダイレクトする" do
+  describe "비로그인 접근 제한" do
+    it "보호된 화면은 로그인 화면으로 보낸다" do
       get root_path
       expect(response).to redirect_to(login_path)
     end
   end
 
-  # 既定では expire_after が無く、ブラウザを閉じるまでクッキーが生きる。
-  # 現場のスマホはブラウザをほとんど閉じないので実質無期限だった。
-  describe "セッションの有効期限" do
-    it "9時間で切れるクッキーを発行する" do
+  # 기본값은 expire_after 가 없어 브라우저를 닫을 때까지 쿠키가 산다.
+  # 현장 스마트폰은 브라우저를 거의 닫지 않아 사실상 무기한이었다.
+  describe "세션 유효 기간" do
+    it "9시간에 끊기는 쿠키를 낸다" do
       expect(Rails.application.config.session_options[:expire_after]).to eq(9.hours)
     end
 
-    it "ログイン時のSet-Cookieに期限が付く" do
+    it "로그인 시 Set-Cookie 에 기한이 붙는다" do
       user = create(:user)
       post login_path, params: { email: user.email, password: "password123" }
 

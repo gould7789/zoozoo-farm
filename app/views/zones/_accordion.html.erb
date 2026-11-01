@@ -1,5 +1,5 @@
-<%# カテゴリ別アコーディオン — hidden:falseのカテゴリのみ表示 %>
-<%# turbo_streamでこのpartial全体を差し替えることでリアルタイム反映 %>
+<%# 카테고리별 아코디언 — hidden: false 인 카테고리만 %>
+<%# turbo_stream 이 이 partial 전체를 갈아끼운다 (notes/zone-accordion.md) %>
 <%
   category_colors = [
     { border: "border-l-4 border-green-400",  bg: "bg-green-50"  },
@@ -29,16 +29,13 @@
     <div class="border-t border-gray-100">
 
       <% if animals.empty? %>
-        <%# 動物なしの場合 %>
         <p class="px-5 py-6 text-sm text-gray-400 text-center">등록된 동물이 없습니다.</p>
       <% else %>
 
-        <%# モバイルカードリスト %>
         <div class="space-y-2 md:hidden px-4 py-3">
           <%= render partial: "zones/animal_card", collection: animals, as: :animal, locals: { zone: zone } %>
         </div>
 
-        <%# デスクトップテーブル %>
         <div class="hidden md:block">
           <table class="w-full text-sm table-fixed">
             <thead class="bg-gray-50">
@@ -62,7 +59,6 @@
   </details>
 <% end %>
 
-<%# 動物が一頭もいない場合のメッセージ %>
 <% has_any_animals = categories.any? { |c| animals_by_category[c.id].present? } || animals_by_category[nil].present? %>
 <% unless has_any_animals %>
   <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
@@ -70,7 +66,6 @@
   </div>
 <% end %>
 
-<%# 未分類セクション %>
 <% if animals_by_category[nil].present? %>
   <% uncategorized = animals_by_category[nil] %>
   <details class="bg-white rounded-xl border border-dashed border-gray-300 shadow-sm mb-3 group" open>
@@ -86,12 +81,10 @@
 
     <div class="border-t border-gray-100">
 
-      <%# モバイルカードリスト %>
       <div class="space-y-2 md:hidden px-4 py-3">
         <%= render partial: "zones/animal_card", collection: uncategorized, as: :animal, locals: { zone: zone } %>
       </div>
 
-      <%# デスクトップテーブル %>
       <div class="hidden md:block">
         <table class="w-full text-sm table-fixed">
           <thead class="bg-gray-50">

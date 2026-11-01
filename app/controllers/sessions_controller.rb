@@ -1,13 +1,9 @@
-# 認証（ログイン・ログアウト）を担当するコントローラー
+# 인증(로그인·로그아웃) 담당
+# 판단 근거는 .claude/rules/notes/auth.md
 class SessionsController < ApplicationController
-  # ログインページは認証不要
   skip_before_action :require_login, only: [ :new, :create ]
 
-  # ブルートフォース攻撃対策 — 同一メールアドレスへのログイン試行を制限する
-  # IPではなくメールアドレスを基準にする理由:
-  #   現場は同一Wi-Fi（NAT）配下から複数人が接続するため、IP基準だと
-  #   誰か一人の入力ミスで全員が締め出される
-  # 大文字小文字・前後の空白で制限をすり抜けられないよう正規化する
+  # 무차별 대입 대비. IP 가 아니라 이메일 기준인 이유는 현장이 같은 Wi-Fi(NAT) 아래라서다
   rate_limit to: 10, within: 3.minutes, only: :create,
              by: -> { params[:email].to_s.downcase.strip },
              with: -> {
@@ -16,7 +12,6 @@ class SessionsController < ApplicationController
              }
 
   def new
-    # ログイン済みならルートへリダイレクト
     redirect_to root_path if logged_in?
   end
 
@@ -24,7 +19,7 @@ class SessionsController < ApplicationController
     user = User.active.find_by(email: params[:email])
 
     if user&.authenticate(params[:password])
-      # セッション固定攻撃を防ぐためログイン成功時にセッションIDを再生成する
+      # 세션 고정 공격을 막기 위해 로그인 성공 시 세션 ID 를 다시 만든다
       reset_session
       session[:user_id] = user.id
       redirect_to root_path, notice: "로그인했습니다."
@@ -35,8 +30,7 @@ class SessionsController < ApplicationController
   end
 
   def destroy
-    # セッションIDごと破棄する — ログイン時のreset_sessionと対称にし、値の消し忘れを防ぐ
-    # reset_sessionを先に呼ぶこと（後にするとflashがセッションごと消えて通知が出ない）
+    # reset_session 을 redirect 보다 먼저 불러야 한다 — 나중에 부르면 flash 가 세션째로 지워진다
     reset_session
     redirect_to login_path, notice: "로그아웃했습니다."
   end

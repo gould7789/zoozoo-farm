@@ -1,4 +1,4 @@
-<%# 健康記録フォーム（new/edit共用） %>
+<%# 건강 기록 폼 (new/edit 공용) %>
 <%= form_with model: health_record, url: health_record.new_record? ? zone_animal_health_logs_path(@zone, @animal) : zone_animal_health_log_path(@zone, @animal, health_record), data: { controller: "form", action: "submit->form#submit" } do |f| %>
 
   <% if health_record.errors.any? %>
@@ -12,7 +12,7 @@
     </div>
   <% end %>
 
-  <%# data-controller="date-default" で空フィールドに今日の日付を自動セット %>
+  <%# date-default 가 빈 칸에 오늘 날짜를 넣는다 %>
   <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-4" data-controller="date-default">
 
     <div>

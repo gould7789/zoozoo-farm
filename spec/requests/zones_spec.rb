@@ -1,4 +1,4 @@
-# ZonesControllerのリクエストテスト — 認証制御を中心に検証する
+# ZonesController — 인증 제어와 목록의 쿼리 수
 require "rails_helper"
 
 RSpec.describe "Zones", type: :request do
@@ -10,27 +10,24 @@ RSpec.describe "Zones", type: :request do
     begin
       yield
     ensure
-      # ensureが無いと、ブロックが例外を投げた時に購読が残り
-      # 以降のテストの計測値が狂う
+      # ensure 가 없으면 블록이 예외를 던질 때 구독이 남아 뒤 테스트의 측정값이 흐트러진다
       ActiveSupport::Notifications.unsubscribe(sub)
     end
     count
   end
 
   describe "GET /zones" do
-    # 未ログインはログインページへ強制リダイレクト
-    context "未ログイン" do
-      it "ログインページにリダイレクトする" do
+    context "비로그인" do
+      it "로그인 화면으로 보낸다" do
         get zones_path
         expect(response).to redirect_to(login_path)
       end
     end
 
-    # ログイン済みは正常表示
-    context "ログイン済み" do
+    context "로그인 상태" do
       before { sign_in(create(:user)) }
 
-      it "200を返す" do
+      it "200을 반환한다" do
         get zones_path
         expect(response).to have_http_status(:ok)
       end
@@ -40,38 +37,36 @@ RSpec.describe "Zones", type: :request do
   describe "GET /zones/:id" do
     let(:zone) { create(:zone) }
 
-    # 未ログインはログインページへ強制リダイレクト
-    context "未ログイン" do
-      it "ログインページにリダイレクトする" do
+    context "비로그인" do
+      it "로그인 화면으로 보낸다" do
         get zone_path(zone)
         expect(response).to redirect_to(login_path)
       end
     end
 
-    # ログイン済みは正常表示
-    context "ログイン済み" do
+    context "로그인 상태" do
       before { sign_in(create(:user)) }
 
-      it "200を返す" do
+      it "200을 반환한다" do
         get zone_path(zone)
         expect(response).to have_http_status(:ok)
       end
     end
   end
 
-  describe "ホームの最新お知らせ" do
+  describe "홈의 최신 공지" do
     let(:staff) { create(:user) }
 
-    # 本文の保存先を変えたとき、ここの描画を直し忘れると行が空のまま出る。
-    # notices一覧と違ってspecが無かった
-    it "題名を表示する" do
+    # 본문의 저장 위치를 바꿀 때 여기 그리기를 빠뜨리면 행이 빈 채로 나온다.
+    # 공지 목록과 달리 spec 이 없었다
+    it "제목을 표시한다" do
       create(:notice, created_by: staff, title: "급수대 점검 예정")
       sign_in(staff)
       get zones_path
       expect(response.body).to include("급수대 점검 예정")
     end
 
-    it "お知らせが増えてもクエリ数が増えない" do
+    it "공지가 늘어도 쿼리 수가 늘지 않는다" do
       sign_in(staff)
       create(:notice, created_by: staff, title: "하나")
       few = query_count { get zones_path }
@@ -83,7 +78,7 @@ RSpec.describe "Zones", type: :request do
     end
   end
 
-  describe "一覧のサムネイル" do
+  describe "목록의 썸네일" do
     let(:zone) { create(:zone) }
 
     def create_animal_with_photo(category: nil)
@@ -94,7 +89,7 @@ RSpec.describe "Zones", type: :request do
 
     before { sign_in(create(:user)) }
 
-    it "写真がある動物はproxy経由のサムネイルを出す" do
+    it "사진이 있는 동물은 proxy 경유 썸네일을 낸다" do
       create_animal_with_photo
 
       get zone_path(zone)
@@ -102,8 +97,8 @@ RSpec.describe "Zones", type: :request do
       expect(response.body).to include("/rails/active_storage/representations/proxy/")
     end
 
-    # 添付のプリロードが無いと動物ごとにクエリが増える
-    it "動物が増えてもクエリ数が増えない" do
+    # 첨부 선읽기가 없으면 동물마다 쿼리가 는다
+    it "동물이 늘어도 쿼리 수가 늘지 않는다" do
       3.times { create_animal_with_photo }
       few = query_count { get zone_path(zone) }
 
@@ -113,17 +108,17 @@ RSpec.describe "Zones", type: :request do
       expect(many).to eq(few)
     end
 
-    # @animals_by_categoryを作る箇所はzones#showとanimal_categoriesの2つある。
-    # こちらを直し忘れると、カテゴリ操作後の再描画でのみN+1が出る。
-    # 普段は見えず特定の操作の後だけ現れるため、最も気づきにくい
-    it "カテゴリ操作後の再描画でもクエリ数が増えない" do
+    # @animals_by_category 를 만드는 자리는 zones#show 와 animal_categories 두 곳이다.
+    # 이쪽을 빠뜨리면 카테고리 조작 뒤 다시 그릴 때만 N+1 이 난다 —
+    # 평소에는 안 보이고 특정 조작 뒤에만 나타나 가장 알아채기 어렵다
+    it "카테고리 조작 뒤 다시 그릴 때도 쿼리 수가 늘지 않는다" do
       sign_in(create(:user, :admin))
-      # トグル対象とは別に、未分類の動物を置く。
-      # トグルするとそのカテゴリは非表示になり所属動物がアコーディオンから消えるため、
-      # トグル対象に動物を入れると写真を参照するコードまで届かない
+      # 토글 대상과 별개로 미분류 동물을 둔다. 토글하면 그 카테고리가 숨겨져
+      # 소속 동물이 아코디언에서 사라지므로, 토글 대상에 동물을 넣으면
+      # 사진을 참조하는 코드까지 닿지 않는다
       toggled = create(:animal_category, zone: zone, hidden: false)
-      # Acceptヘッダが無いとformat.htmlに落ちてリダイレクトされ、
-      # アコーディオンが描画されないまま通ってしまう
+      # Accept 헤더가 없으면 format.html 로 떨어져 리다이렉트되고,
+      # 아코디언이 그려지지 않은 채 통과한다
       turbo = { headers: { "Accept" => "text/vnd.turbo-stream.html" } }
 
       3.times { create_animal_with_photo }

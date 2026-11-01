@@ -1,6 +1,6 @@
 module ApplicationHelper
-  # ナビゲーションリンクのCSSクラスを返す
-  # also_active_on: サブページでもアクティブにしたいパスの配列（管理ハブ用）
+  # 하단 탭 네비게이션 링크의 CSS 클래스
+  # also_active_on: 하위 페이지에서도 활성으로 보일 경로 배열 (관리 허브용)
   def nav_link_class(path, also_active_on: [])
     active = request.path == path ||
              request.path.start_with?("#{path}/") ||
@@ -10,7 +10,7 @@ module ApplicationHelper
     "#{base} #{color}"
   end
 
-  # サイドバーナビゲーションリンクのCSSクラスを返す
+  # 사이드바 네비게이션 링크의 CSS 클래스
   def sidebar_link_class(path)
     active = request.path == path || request.path.start_with?("#{path}/")
     base = "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full"
@@ -18,7 +18,7 @@ module ApplicationHelper
     "#{base} #{color}"
   end
 
-  # お知らせカテゴリのラベルと色クラスを返す — [ラベル文字列, Tailwindクラス]
+  # 공지 카테고리의 라벨과 색 클래스 — [라벨, Tailwind 클래스]
   def notice_category_label(category)
     {
       "general"      => [ "전체",          "bg-blue-100 text-blue-700" ],

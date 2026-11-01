@@ -1,5 +1,4 @@
-// フォームの二重送信を防止するコントローラー
-// 送信ボタンをクリック後、ボタンを無効化してローディングテキストを表示する
+// 폼 이중 전송 방지 — 누른 뒤 버튼을 비활성화하고 로딩 문구를 띄운다
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {

@@ -84,9 +84,8 @@ test:
 # Read https://guides.rubyonrails.org/configuring.html#configuring-a-database
 # for a full overview on how database connection configuration can be specified.
 #
-# Solid Cache / Queue / Cable は接続を分けずprimaryに載せる。
-# DATABASE_URLがあるとURL側のDB名がdatabase:キーを上書きするため、
-# 別名を書いても結局同じDBに解決されていた（Render free + Supabaseは1DB）。
+# Solid Cache / Queue / Cable 은 연결을 나누지 않고 primary 에 올린다.
+# 이유는 .claude/rules/notes/infra.md
 production:
   primary:
     <<: *default

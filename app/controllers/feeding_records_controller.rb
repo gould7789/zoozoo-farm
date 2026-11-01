@@ -1,5 +1,6 @@
-# 給餌記録のCRUDを担当するコントローラー
-# 全アクションにログイン必須、編集・削除は本人記録のみ（Adminは他者記録も操作可能）
+# 먹이 급여 기록 CRUD
+# xlsx 내보내기 판단은 .claude/rules/notes/xlsx-export.md
+# 전체 액션에 로그인 필수, 수정과 삭제는 본인 기록만 (Admin 은 타인 기록도 조작 가능)
 class FeedingRecordsController < ApplicationController
   include AnimalScoped
   include OwnerRestriction
@@ -8,7 +9,7 @@ class FeedingRecordsController < ApplicationController
   before_action -> { require_owner(@feeding_record) },  only: [ :edit, :update, :destroy ]
 
   def index
-    # 最新の給餌日時順に表示
+    # 최신 급여 일시 순
     @feeding_records = @animal.feeding_records.recent.includes(:created_by)
     respond_to do |format|
       format.html
@@ -79,7 +80,7 @@ class FeedingRecordsController < ApplicationController
             r.created_at
           ], style: row_styles
         end
-        # 列幅を明示してExcelの####表示を防ぎ、ヘッダー行を固定・フィルタを付与
+        # 폭을 명시하지 않으면 Excel 이 #### 로 가린다
         sheet.column_widths 18, 16, 10, 36, 14, 18
         sheet.auto_filter = "A1:F1"
         sheet.sheet_view.pane do |pane|

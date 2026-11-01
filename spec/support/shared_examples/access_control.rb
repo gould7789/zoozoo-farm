@@ -1,20 +1,19 @@
-# アクセス制御の共通テストパターン
-# 使い方: beforeブロックでHTTPリクエストを発行してから it_behaves_like で呼び出す
+# 접근 제어 공통 패턴
+# 쓰는 법: before 에서 HTTP 요청을 낸 뒤 it_behaves_like 로 부른다
 #
-# 例:
-#   context "未ログイン" do
+#   context "비로그인" do
 #     before { get some_path }
-#     it_behaves_like "ログインが必要"
+#     it_behaves_like "로그인이 필요하다"
 #   end
 
-RSpec.shared_examples "ログインが必要" do
-  it "ログインページにリダイレクトする" do
+RSpec.shared_examples "로그인이 필요하다" do
+  it "로그인 화면으로 보낸다" do
     expect(response).to redirect_to(login_path)
   end
 end
 
-RSpec.shared_examples "アクセス拒否" do
-  it "ルートにリダイレクトする" do
+RSpec.shared_examples "접근이 거부된다" do
+  it "루트로 보낸다" do
     expect(response).to redirect_to(root_path)
   end
 end

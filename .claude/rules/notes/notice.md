@@ -1,0 +1,193 @@
+---
+paths:
+  - "app/models/notice.rb"
+  - "app/controllers/notices_controller.rb"
+  - "app/views/notices/**/*.erb"
+  - "app/javascript/controllers/image_downscale_controller.js"
+  - "app/assets/tailwind/application.css"
+  - "db/migrate/*_migrate_notice_body_to_rich_text.rb"
+  - "db/migrate/*_add_title_to_notices.rb"
+---
+
+# 공지 게시판 — 왜 이렇게 생겼나
+
+PR #134·#136·#138. 본문을 평문에서 Action Text 리치텍스트로 바꾸고 이미지 첨부를 붙였다.
+
+## 본문은 `notices` 테이블에 없다
+
+```
+notices                      action_text_rich_texts
+┌──────────────┐             ┌─────────────────────────────┐
+│ id           │◄────────────│ record_id                   │
+│ title        │             │ record_type = 'Notice'      │
+│ category     │             │ name       = 'content'      │
+│ body   (보관)│             │ body       = <p>…</p>       │
+└──────────────┘             └─────────────────────────────┘
+                              UNIQUE (record_type, record_id, name)
+```
+
+`has_rich_text :content`는 컬럼을 만들지 않는다. **다른 테이블로 가는 연결**을 만든다.
+
+다형(polymorphic) 구조라 **외래 키 제약을 걸 수 없다** — `record_id`가 어느 테이블을 가리키는지 DB가 모른다. Active Storage도 같은 구조다.
+
+## `:body`가 아니라 `:content`로 지은 이유
+
+`has_rich_text`는 `class_eval`로 **모델 클래스에 직접** 접근자를 정의한다.
+
+```ruby
+# actiontext/lib/action_text/attribute.rb
+class_eval <<-CODE
+  def #{name}
+    rich_text_#{name} || build_rich_text_#{name}
+  end
+CODE
+```
+
+컬럼 접근자는 `Notice::GeneratedAttributeMethods`라는 **모듈**에 들어간다. 조상 체인에서 클래스가 모듈보다 위에 오므로, `:body`로 지으면 **기존 `notices.body` 컬럼이 가려진다.**
+
+```
+Notice                              ← class_eval 이 여기에 정의 (이긴다)
+└ Notice::GeneratedAttributeMethods ← 컬럼 접근자는 여기 (가려진다)
+```
+
+이름을 나눈 덕에 **2단계 이관**이 가능해졌다.
+
+| 단계 | 내용 |
+| --- | --- |
+| PR 1 (완료) | `body`를 읽지도 쓰지도 않는 **보관용**으로 남긴 채 `content`로 전환 |
+| PR 2 (예정) | 운영 확인 후 `body` 컬럼 드롭 |
+
+PR 1 상태에서는 `git revert` 한 번으로 **원본 평문이 살아 있는 상태**로 돌아온다. **이름 선택이 곧 롤백 설계였다.**
+
+> `notices.body`는 아직 남아 있다. 읽지도 쓰지도 않는다. 드롭은 별도 PR.
+
+## 임베드 이미지 검증이 모델에 있는 이유
+
+본문 이미지는 **다이렉트 업로드**로 들어온다 — 브라우저가 Supabase에 직접 PUT하고 서버는 바이트를 보지 못한다. **폼을 거치지 않으므로 폼 검증을 통과하지 않는다.**
+
+검증 시점에 `content.embeds`는 **아직 비어 있다**(리치텍스트 저장 콜백에서 채워진다). 그래서 본문 HTML에서 `attachables`를 직접 꺼낸다.
+
+### 두 가지를 본다
+
+**① blob이 아닌 첨부를 막는다.** 손으로 만든 `<action-text-attachment url="...">`는 `RemoteImage`가 되어 `grep(ActiveStorage::Blob)`에 걸리지 않고 `<img src="외부URL">`로 그려진다. 재현했다.
+
+```
+POST /notices  url="https://evil.example/track.png"
+→ 저장 성공, 검증 통과
+→ 렌더: <img width="1" height="1" src="https://evil.example/track.png">
+```
+
+지금은 CSP의 `img-src`가 막아 실해가 없다. 고친 이유는 **방어가 CSP 한 겹**이라서다.
+
+**② content_type은 신고값이 아니다.** `ActiveStorage::Attached::Changes`가 첨부를 조립할 때 `identify_without_saving`으로 앞 4KB를 읽어 재판정한다. HEIC를 `image/jpeg`로 위장해 올려 확인했다 — 검증이 본 값은 `image/heic`였다.
+
+**문서화된 보장이 아니라 Rails 내부 동작**이라 위장 파일 spec으로 고정해뒀다.
+
+## CSP 가 업로드를 막았던 이유
+
+운영에서 이미지 업로드가 전부 실패했다. 개발에서는 멀쩡했다 — **개발은 Disk 서비스라 같은 오리진이어서 CSP 를 타지 않는다.**
+
+원인은 `connect_src` 에 **경로를 넣은 것**이었다.
+
+```
+허용한 값   https://xxx.supabase.co/storage/v1/s3
+실제 PUT   https://xxx.supabase.co/storage/v1/s3/<버킷>/<키>?X-Amz-...
+```
+
+**CSP 소스에 경로가 있고 끝이 `/` 가 아니면, URL 의 경로는 완전 일치가 요구된다.** 접두사 일치가 아니다. 그래서 오리진까지만 허용한다. `URI.parse(origin).path == ""` 를 spec 으로 고정해뒀다.
+
+같은 함정이 `img_src` 에도 있다. **CSP 는 리다이렉트 뒤의 호스트를 본다.** `rails_service_blob_url` 은 스토리지로 리다이렉트하는 라우트라 `img_src 'self'` 아래에서 깨진다. 같은 오리진으로 중계하는 `rails_service_blob_proxy_url` 을 쓴다.
+
+`connect_src` 를 전체가 아니라 `NoticesController` 에만 붙인 이유는, 전체에 두면 **비로그인으로 보이는 로그인 화면에도 스토리지 호스트명이 실리기** 때문이다.
+
+## 본문 이미지는 올리기 전에 브라우저에서 줄인다
+
+무료 플랜은 메모리 512MB 에 잡 워커가 없다. 스마트폰 원본(수MB)이 그대로 도착하면 variant 생성이 무겁다. **현장의 주 경로가 카카오톡 → PC 다운로드 → 업로드**라 원본 크기 그대로 온다.
+
+### Action Text 의 기본 동작을 가로챈다
+
+```js
+// actiontext/index.js
+addEventListener("trix-attachment-add", event => { ... new AttachmentUpload(...) })
+```
+
+**bare 한 `addEventListener` 라 등록처가 `window` 다.** 이벤트는 `<trix-editor>` 에서 `window` 로 올라가므로 **에디터 요소에 붙인 리스너가 먼저 달린다.** 거기서 `stopPropagation()` 하면 기본 전송을 멈추고, 줄인 파일로 `AttachmentUpload` 를 다시 조립할 수 있다.
+
+**`stopPropagation()` 을 빼면 원본과 축소본이 두 벌 올라간다.**
+
+> 라이브러리 이벤트를 가로챌 때는 **그 리스너가 어디에 등록돼 있는지 먼저 소스로 확인한다.** 요소에 직접 등록돼 있으면 이 방법이 성립하지 않는다.
+
+### 줄일 때 걸리는 것
+
+| 처리 | 왜 |
+| --- | --- |
+| `imageOrientation: "from-image"` | 빼면 EXIF 회전이 날아가 사진이 눕는다 |
+| 축소가 필요 없으면 **JPEG 로 다시 굽지 않는다** | 로고·스크린샷 PNG 를 재인코딩하면 글자가 번지고 투명도 잃는데 크기는 거의 그대로다 |
+| JPEG 로 쓰기 전에 **흰색으로 칠한다** | JPEG 은 투명도를 못 가져, 안 칠하면 투명 부분이 **검게 가라앉는다** |
+| 디코드 실패 시 원본을 돌려준다 | Windows Chrome 의 HEIC 등. 여기서 멈추면 붙여넣기 자체가 안 된다 |
+
+`MAX_EDGE = 1600` 은 본문 표시 폭(`:detail` 의 1200px)보다 **조금 크게** 잡았다. 고해상도 화면에서 거칠어 보이지 않게.
+
+### 실패하면 본문에서 빼고 알린다
+
+조용히 `remove()` 만 하면 **이미지가 사라진 걸 모른 채 공지가 저장된다.** 기본 `alert(error)` 는 영어 스택을 내므로 한국어 문구로 갈아끼운다.
+
+## `excerpt`가 `to_plain_text`를 안 쓰는 이유
+
+`to_plain_text`는 첨부를 1건씩 sgid로 다시 끌어와 평문 표현을 만든다. 목록에서 쓰면 **공지 수만큼 쿼리가 는다**(실측 1건당 2쿼리, 9 → 15).
+
+HTML에서 만들되 두 가지를 처리한다.
+
+| 처리 | 왜 |
+| --- | --- |
+| 태그를 **공백으로 치환** 후 제거 | `strip_tags`는 블록 경계에 공백을 안 넣는다. 그냥 벗기면 `<div>테스트</div><div>굿</div>` → `"테스트굿"` |
+| `Nokogiri...text`로 실체 참조 복원 | 평문에서 이관한 본문에 `&lt;`가 들어 있다. 남기면 ERB가 이중 이스케이프해 화면에 `&lt;`로 보인다. `&nbsp;`까지 풀린다 |
+
+`photo_count`도 같은 이유로 `body.attachables`가 아니라 **선읽기되는 `content.embeds`**를 쓴다.
+
+## 데이터 이관에서 걸린 것
+
+| 함정 | 내용 |
+| --- | --- |
+| `simple_format`의 기본 살균 | **태그를 벗기고 안의 텍스트만 남겨** 원문을 조용히 변형한다. `html_escape` 후 `sanitize: false`로 넘겨야 한다 |
+| `notices.body`의 NOT NULL | 컬럼을 남기는 것과 제약을 남기는 것은 다르다. `change_column_null`을 같이 넣지 않으면 **신규 작성이 DB에서 떨어진다** |
+| `<<~SQL.squish` | 값 안의 개행까지 뭉갠다. `down`에서 평문을 복원할 때 줄이 전부 사라지는 **실제 버그**였다 |
+| 제목 백필 | 1행째가 아니라 **첫 비어있지 않은 줄**을 쓴다. 첨부만 있는 공지는 평문이 개행으로 시작한다 |
+
+## 더 자세한 것
+
+- `docs/active-storage.md` — 이미지 파이프라인 전체, 다이렉트 업로드와 폼 업로드의 차이
+- 노션 학습보고서 #91~#94
+
+## Trix 의 외형을 고칠 때
+
+**`app/assets/tailwind/application.css` 에서 고친다.** `_form.html.erb` 에 `class` 를 더해도 Trix 가 만드는 내부 요소에는 닿지 않는다.
+
+`actiontext.css` 를 덮을 때는 **명시도를 맞춰야 한다** — 자세한 것은 `.claude/rules/common/views.md`.
+
+### 툴바는 가로 스크롤이 아니라 줄바꿈
+
+버튼이 13개라 **어느 폭에서도 한 줄에 안 들어간다.** 가로 스크롤로 두면 화면 밖 버튼을 알아챌 수 없고, 실제로 **첨부 버튼이 보이지 않았다.**
+
+터치 영역(40px)은 남기고 아이콘만 작게·연하게 한다. 두 축을 나누는 이유는 `common/views.md`.
+
+### 첨부에서 숨기는 것
+
+| 숨긴 것 | 왜 |
+| --- | --- |
+| 파일명·용량 말풍선 (편집 중) | 캡션을 쓰는 동안 **이미지 위에 계속 겹쳐** 정작 사진이 가린다 |
+| 파일명·바이트 수 (편집·열람) | 개발자용 정보다. 사육사가 보고 판단할 것이 아니다 |
+
+**캡션 칸 자체는 남긴다** — 설명을 쓰면 그건 표시된다.
+
+### 첨부는 반드시 단독 행
+
+Trix 의 기본은 `inline-block` 이라 같은 행에 글자가 들어갈 수 있다. 이미지가 폭을 다 쓰면 **남는 자리가 몇 px 뿐이라, 한 글자 칠 때마다 줄바꿈된 것처럼 보인다.** `block` 으로 두면 글자가 옆으로 돌아 들어가는 일 자체가 없다.
+
+### 사진 2장 이상일 때
+
+Trix 는 `attachment-gallery` 를 만들어 **flex 로 가로에 놓고 1장당 50% 폭**으로 줄인다. 현장이 붙이는 건 카카오톡 스크린샷이라 **절반 폭에서는 글자가 안 읽힌다.** 1장씩 세로로 쌓는다.
+
+### 문단 사이 여백을 되돌린다
+
+`actiontext.css` 의 `.trix-content * { margin: 0 }` 이 문단 간격까지 지운다. **평문에서 이관한 공지는 개행이 `<p>` 의 연속**이라, 이걸 안 되돌리면 전문이 한 덩어리로 보인다.

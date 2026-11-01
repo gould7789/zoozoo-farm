@@ -1,14 +1,13 @@
-# ゾーンテーブルを作成するマイグレーション
+# zones 테이블 — 시드로 고정 관리한다
 class CreateZones < ActiveRecord::Migration[8.1]
   def change
     create_table :zones, id: :uuid do |t|
-      t.string :name,        null: false, limit: 100  # 館名（例: 사랑새관）— UNIQUEインデックスで重複防止
-      t.text   :description                            # 館の説明（任意）
+      t.string :name,        null: false, limit: 100  # 관 이름 (예: 사랑새관)
+      t.text   :description                            # 관 설명 (선택)
 
       t.timestamps
     end
 
-    # 館名は一意である必要があるためUNIQUEインデックスを追加
     add_index :zones, :name, unique: true
   end
 end

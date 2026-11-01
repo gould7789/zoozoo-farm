@@ -21,9 +21,7 @@ Rails.application.configure do
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
 
-  # アップロードファイルはSupabase Storageに保存する（config/storage.yml参照）。
-  # Renderの無料プランには永続ディスクが無いため、Diskサービスだと
-  # 再デプロイや再起動のたびにファイルが消える。
+  # 첨부는 Supabase Storage 에 둔다 (config/storage.yml, notes/infra.md)
   config.active_storage.service = :supabase
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
@@ -51,8 +49,7 @@ Rails.application.configure do
   # Replace the default in-process memory cache store with a durable alternative.
   config.cache_store = :solid_cache_store
 
-  # Active Jobのアダプタは指定しない（Rails既定の:asyncのまま）。
-  # 現時点でジョブの利用箇所が無く、solid_queueは導入していない。
+  # Active Job 어댑터를 지정하지 않는다 (Rails 기본 :async 그대로)
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.

@@ -1,5 +1,5 @@
-# HealthRecordsControllerのリクエストテスト — 認証・権限制御を中心に検証する
-# Staff/Admin共に作成可能、編集・削除は本人記録のみ（Adminは他者記録も操作可能）
+# HealthRecordsController — 인증·권한 제어
+# Staff 와 Admin 모두 작성 가능, 수정과 삭제는 본인 기록만 (Admin 은 타인 기록도 조작 가능)
 require "rails_helper"
 
 RSpec.describe "HealthRecords", type: :request do
@@ -10,24 +10,24 @@ RSpec.describe "HealthRecords", type: :request do
   let(:other)  { create(:user) }
 
   describe "GET /zones/:zone_id/animals/:animal_id/health_records" do
-    context "未ログイン" do
+    context "비로그인" do
       before { get zone_animal_health_logs_path(zone, animal) }
-      it_behaves_like "ログインが必要"
+      it_behaves_like "로그인이 필요하다"
     end
 
-    context "ログイン済み" do
+    context "로그인 상태" do
       before { sign_in(staff); get zone_animal_health_logs_path(zone, animal) }
       it { expect(response).to have_http_status(:ok) }
     end
   end
 
   describe "GET /zones/:zone_id/animals/:animal_id/health_records/new" do
-    context "未ログイン" do
+    context "비로그인" do
       before { get new_zone_animal_health_log_path(zone, animal) }
-      it_behaves_like "ログインが必要"
+      it_behaves_like "로그인이 필요하다"
     end
 
-    context "ログイン済み" do
+    context "로그인 상태" do
       before { sign_in(staff); get new_zone_animal_health_log_path(zone, animal) }
       it { expect(response).to have_http_status(:ok) }
     end
@@ -36,15 +36,15 @@ RSpec.describe "HealthRecords", type: :request do
   describe "POST /zones/:zone_id/animals/:animal_id/health_records" do
     let(:valid_params) { { health_record: { recorded_on: Date.today, condition: "normal" } } }
 
-    context "未ログイン" do
+    context "비로그인" do
       before { post zone_animal_health_logs_path(zone, animal), params: valid_params }
-      it_behaves_like "ログインが必要"
+      it_behaves_like "로그인이 필요하다"
     end
 
-    context "Staffが作成" do
+    context "Staff 가 작성" do
       before { sign_in(staff) }
 
-      it "created_byが自分のIDで保存されて一覧ページにリダイレクトする" do
+      it "created_by 가 자기 ID 로 저장되고 목록으로 보낸다" do
         post zone_animal_health_logs_path(zone, animal), params: valid_params
         expect(response).to redirect_to(zone_animal_health_logs_path(zone, animal))
         expect(HealthRecord.last.created_by).to eq(staff)
@@ -53,19 +53,19 @@ RSpec.describe "HealthRecords", type: :request do
   end
 
   describe "GET /zones/:zone_id/animals/:animal_id/health_records/:id/edit" do
-    context "本人の記録" do
+    context "본인 기록" do
       let(:health_record) { create(:health_record, animal: animal, created_by: staff) }
       before { sign_in(staff); get edit_zone_animal_health_log_path(zone, animal, health_record) }
       it { expect(response).to have_http_status(:ok) }
     end
 
-    context "他人の記録" do
+    context "타인 기록" do
       let(:health_record) { create(:health_record, animal: animal, created_by: other) }
       before { sign_in(staff); get edit_zone_animal_health_log_path(zone, animal, health_record) }
-      it_behaves_like "アクセス拒否"
+      it_behaves_like "접근이 거부된다"
     end
 
-    context "Adminが他人の記録にアクセス" do
+    context "Admin 이 타인 기록에 접근" do
       let(:health_record) { create(:health_record, animal: animal, created_by: staff) }
       before { sign_in(admin); get edit_zone_animal_health_log_path(zone, animal, health_record) }
       it { expect(response).to have_http_status(:ok) }
@@ -75,47 +75,47 @@ RSpec.describe "HealthRecords", type: :request do
   describe "PATCH /zones/:zone_id/animals/:animal_id/health_records/:id" do
     let(:valid_params) { { health_record: { condition: "caution" } } }
 
-    context "本人が更新" do
+    context "본인이 수정" do
       let(:health_record) { create(:health_record, animal: animal, created_by: staff) }
       before { sign_in(staff) }
 
-      it "記録を更新して一覧ページにリダイレクトする" do
+      it "기록을 수정하고 목록으로 보낸다" do
         patch zone_animal_health_log_path(zone, animal, health_record), params: valid_params
         expect(response).to redirect_to(zone_animal_health_logs_path(zone, animal))
         expect(health_record.reload.condition).to eq("caution")
       end
     end
 
-    context "他人の記録を更新しようとする" do
+    context "타인 기록 수정을 시도" do
       let(:health_record) { create(:health_record, animal: animal, created_by: other) }
       before { sign_in(staff); patch zone_animal_health_log_path(zone, animal, health_record), params: valid_params }
-      it_behaves_like "アクセス拒否"
+      it_behaves_like "접근이 거부된다"
     end
   end
 
   describe "DELETE /zones/:zone_id/animals/:animal_id/health_records/:id" do
-    context "本人が削除" do
+    context "본인이 삭제" do
       let(:health_record) { create(:health_record, animal: animal, created_by: staff) }
       before { sign_in(staff) }
 
-      it "記録を削除して一覧ページにリダイレクトする" do
+      it "기록을 삭제하고 목록으로 보낸다" do
         delete zone_animal_health_log_path(zone, animal, health_record)
         expect(response).to redirect_to(zone_animal_health_logs_path(zone, animal))
         expect { health_record.reload }.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
 
-    context "他人の記録を削除しようとする" do
+    context "타인 기록 삭제를 시도" do
       let(:health_record) { create(:health_record, animal: animal, created_by: other) }
       before { sign_in(staff); delete zone_animal_health_log_path(zone, animal, health_record) }
-      it_behaves_like "アクセス拒否"
+      it_behaves_like "접근이 거부된다"
     end
 
-    context "Adminが他人の記録を削除" do
+    context "Admin 이 타인 기록을 삭제" do
       let(:health_record) { create(:health_record, animal: animal, created_by: staff) }
       before { sign_in(admin) }
 
-      it "記録を削除して一覧ページにリダイレクトする" do
+      it "기록을 삭제하고 목록으로 보낸다" do
         delete zone_animal_health_log_path(zone, animal, health_record)
         expect(response).to redirect_to(zone_animal_health_logs_path(zone, animal))
         expect { health_record.reload }.to raise_error(ActiveRecord::RecordNotFound)

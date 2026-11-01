@@ -1,10 +1,11 @@
-<%# 本文に埋め込まれた添付の描画。Action Text の既定パーシャルを上書きしている。
-    既定は 1024x768（ギャラリー時 800x600）だが、Animal の :detail variant と
-    同じ 1200x1200 に揃えた。別々のサイズを持つと variant が二重に生成され、
-    ジョブワーカーの無いこの環境では初回表示のたびに変換が走る。
+<%# 본문에 심긴 첨부를 그린다. Action Text 의 기본 partial 을 덮어쓴 것이다.
+    기본은 1024x768(갤러리는 800x600)이지만 Animal 의 :detail variant 와
+    같은 1200x1200 으로 맞췄다. 치수가 다르면 variant 가 두 벌 생성되고,
+    잡 워커가 없는 환경이라 첫 표시마다 변환이 돈다.
 
-    representable? が false になるのは libvips が読めない形式（HEIC 等）で、
-    そのときは画像を出さずファイル名とサイズだけを見せる。 %>
+    representable? 가 false 가 되는 건 libvips 가 못 읽는 형식(HEIC 등)이고,
+    그때는 이미지를 내지 않고 파일명과 크기만 보여준다.
+    자세한 것은 .claude/rules/notes/animal-photo.md %>
 <figure class="attachment attachment--<%= blob.representable? ? "preview" : "file" %> attachment--<%= blob.filename.extension %>">
   <% if blob.representable? %>
     <%= image_tag blob.representation(resize_to_limit: [ 1200, 1200 ]),

@@ -1,24 +1,23 @@
 require "rails_helper"
 
 RSpec.describe Notice, type: :model do
-  describe "バリデーション" do
+  describe "검증" do
     it { is_expected.to validate_presence_of(:category) }
 
-    it "contentが空なら無効" do
+    it "content 가 비어 있으면 무효" do
       notice = build(:notice, content: "")
       expect(notice).to be_invalid
       expect(notice.errors[:content]).to be_present
     end
 
-    it "contentがあれば有効" do
-      expect(build(:notice, content: "<div>お知らせ</div>")).to be_valid
+    it "content 가 있으면 유효" do
+      expect(build(:notice, content: "<div>공지</div>")).to be_valid
     end
   end
 
-  describe "リッチテキスト" do
-    # has_rich_text は notices テーブルではなく action_text_rich_texts に保存する。
-    # name カラムに "content" が入り、record_type/record_id で所有者を指す。
-    it "contentはActionText::RichTextとして保存される" do
+  describe "리치텍스트" do
+    # 본문은 notices 가 아니라 action_text_rich_texts 에 들어간다 (notes/notice.md)
+    it "content 는 ActionText::RichText 로 저장된다" do
       notice = create(:notice, content: "<div>단수 안내</div>")
 
       rich_text = ActionText::RichText.find_by(
@@ -28,23 +27,21 @@ RSpec.describe Notice, type: :model do
       expect(rich_text.body.to_s).to include("단수 안내")
     end
 
-    it "noticesテーブルのbodyカラムとは別物として共存する" do
-      # 移行期間中はbodyを保管用として残す。両方が独立して読める必要がある。
-      notice = create(:notice, content: "<div>新しい本文</div>")
-      notice.update_column(:body, "古い平文")
+    it "notices.body 컬럼과 별개로 공존한다" do
+      # 이관 기간 동안 body 를 보관용으로 남긴다. 둘이 독립해서 읽혀야 한다.
+      notice = create(:notice, content: "<div>새 본문</div>")
+      notice.update_column(:body, "지난 평문")
 
-      expect(notice.reload.body).to eq("古い平文")
-      expect(notice.content.to_s).to include("新しい本文")
+      expect(notice.reload.body).to eq("지난 평문")
+      expect(notice.content.to_s).to include("새 본문")
     end
   end
 
-  describe "埋め込み画像の検証" do
-    # 本文の添付はダイレクトアップロードで入るため、フォームの検証を通らない。
-    # 保存時にモデル側で止める
+  describe "임베드 이미지 검증" do
     let(:notice) { build(:notice) }
 
-    # identify: false を付けるのは、付けないと実ファイルのバイト列から
-    # content_type を判定し直され、HEICを装わせられないため
+    # identify: false 가 없으면 실제 바이트에서 content_type 을 다시 판정해
+    # HEIC 로 위장시킬 수 없다 — 위장 자체를 만들기 위한 장치다
     def attach_embed(filename:, content_type:)
       blob = ActiveStorage::Blob.create_and_upload!(
         io: Rails.root.join("spec/fixtures/files/animal.jpg").open,
@@ -56,14 +53,12 @@ RSpec.describe Notice, type: :model do
       blob
     end
 
-    it "対応形式の画像は通す" do
+    it "지원 형식 이미지는 통과시킨다" do
       attach_embed(filename: "photo.jpg", content_type: "image/jpeg")
       expect(notice).to be_valid
     end
 
-    # ダイレクトアップロードはブラウザの申告した content_type をそのまま保存する。
-    # 拡張子と申告を image/jpeg に付け替えても、中身を読んで弾けること
-    it "拡張子を偽装したファイルを中身で判定して拒否する" do
+    it "확장자를 위장한 파일을 내용으로 판정해 거부한다" do
       path = Rails.root.join("spec/fixtures/files/animal.heic")
       blob = ActiveStorage::Blob.create_before_direct_upload!(
         filename: "photo.jpg", byte_size: path.size,
@@ -77,11 +72,7 @@ RSpec.describe Notice, type: :model do
       expect(notice.errors[:content].join).to include("JPG")
     end
 
-    # 本文のHTMLを直接組み立てれば、Active Storage を通さない添付も作れる。
-    # <action-text-attachment url="..."> は ActionText::Attachables::RemoteImage になり、
-    # blob ではないので形式検証を素通りして <img src="外部URL"> として描画される。
-    # 今は CSP の img-src が外部を弾くが、CSP を緩めた瞬間に生き返る穴なので塞ぐ
-    it "外部URLの添付を拒否する" do
+    it "외부 URL 첨부를 거부한다" do
       notice.content = <<~HTML
         <div>본문<action-text-attachment url="https://evil.example/track.png"
           content-type="image/png" width="1" height="1"></action-text-attachment></div>
@@ -91,13 +82,13 @@ RSpec.describe Notice, type: :model do
       expect(notice.errors[:content]).to be_present
     end
 
-    it "対応していない形式は拒否する" do
+    it "지원하지 않는 형식은 거부한다" do
       attach_embed(filename: "photo.heic", content_type: "image/heic")
       expect(notice).not_to be_valid
       expect(notice.errors[:content]).to be_present
     end
 
-    it "上限を超えるサイズは拒否する" do
+    it "상한을 넘는 크기는 거부한다" do
       blob = attach_embed(filename: "photo.jpg", content_type: "image/jpeg")
       allow_any_instance_of(ActiveStorage::Blob)
         .to receive(:byte_size).and_return(Notice::MAX_EMBED_BYTES + 1)
@@ -108,30 +99,24 @@ RSpec.describe Notice, type: :model do
   end
 
   describe "#excerpt" do
-    # 一覧に出す2行の抜粋。本文のHTMLから作る。
-    # to_plain_text は添付を1件ずつ引き直してN+1になるので使わない
     def excerpt_of(html)
       build(:notice, content: html).excerpt
     end
 
-    # strip_tags はブロックの境目に空白を入れない。
-    # そのまま剥がすと「テスト内容」「굿」「응?」が繋がって読めなくなる
-    it "段落の境目を空白にする" do
+    it "문단 경계를 공백으로 만든다" do
       expect(excerpt_of("<div>테스트 내용</div><div>굿</div><div>응?</div>"))
         .to eq("테스트 내용 굿 응?")
     end
 
-    it "brも空白にする" do
+    it "br 도 공백으로 만든다" do
       expect(excerpt_of("<p>1행<br>2행</p>")).to eq("1행 2행")
     end
 
-    # 平文から移行したお知らせは本文に &lt; などが入っている。
-    # 実体参照のままERBに渡すと二重エスケープされ、画面に &lt; と出る
-    it "実体参照を戻す" do
+    it "실체 참조를 되돌린다" do
       expect(excerpt_of("<div>a &amp; b &lt;c&gt;</div>")).to eq("a & b <c>")
     end
 
-    it "添付は抜粋に出さない" do
+    it "첨부는 발췌에 내지 않는다" do
       blob = ActiveStorage::Blob.create_and_upload!(
         io: Rails.root.join("spec/fixtures/files/animal.jpg").open,
         filename: "a.jpg", content_type: "image/jpeg"
@@ -141,17 +126,17 @@ RSpec.describe Notice, type: :model do
       expect(build(:notice, content: content).excerpt).to eq("본문")
     end
 
-    it "長い本文は切り詰める" do
+    it "긴 본문은 잘라낸다" do
       expect(excerpt_of("<div>#{'가' * 200}</div>").length).to eq(80)
     end
   end
 
-  describe "アソシエーション" do
+  describe "연관" do
     it { is_expected.to belong_to(:created_by).class_name("User") }
   end
 
   describe "enum" do
-    it "categoryのenumが正しく定義されている" do
+    it "category enum 이 올바르게 정의돼 있다" do
       expect(Notice.categories).to eq({
         "general"      => 0,
         "lovebird"     => 1,
@@ -164,8 +149,8 @@ RSpec.describe Notice, type: :model do
     end
   end
 
-  describe "スコープ" do
-    it ".recentは作成日時の降順で返す" do
+  describe "스코프" do
+    it ".recent 는 작성 일시 내림차순으로 반환한다" do
       user  = create(:user)
       older = create(:notice, created_by: user, created_at: 2.days.ago)
       newer = create(:notice, created_by: user, created_at: 1.hour.ago)

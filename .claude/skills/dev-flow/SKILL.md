@@ -111,7 +111,7 @@ git checkout develop && git pull origin develop && git checkout -b <타입>/<이
 
 ## ④ 구현 (TDD)
 
-TDD 규칙은 `.claude/rules/testing.md`에 있다. `spec/` 아래 파일을 열면 자동으로 올라온다.
+TDD 규칙은 `.claude/rules/common/testing.md`에 있다. `spec/` 아래 파일을 열면 자동으로 올라온다.
 
 ```
 spec 작성 → 실행해서 Red 확인 → 구현 → 실행해서 Green 확인
@@ -126,13 +126,15 @@ spec 작성 → 실행해서 Red 확인 → 구현 → 실행해서 Green 확인
 | 대상 | 언어 |
 | --- | --- |
 | 코드 (변수·메서드·클래스명) | 영어 |
-| 코드 주석 | 일본어 (전환 예정) |
-| 테스트 코드 내 문자열 | 일본어 (전환 예정) |
+| 코드 주석 | 한국어 |
+| 테스트 코드 내 문자열 | 한국어 |
 | 화면 표시 텍스트 | 한국어 |
 | 커밋 메시지 | 한국어 (접두사는 영어) |
 | 이슈·PR 본문 | 한국어 |
 
-주석과 테스트 문자열의 한국어 전환은 리팩토링 단계에서 일괄로 한다. **그때까지 새 주석은 일본어를 유지한다.** 자세한 근거는 `.claude/rules/domain.md`.
+`README.md` 만 일본어다 — 읽는 사람이 다르다.
+
+**주석은 코드를 되풀이하지 않는다.** 남기는 기준은 「이 줄을 지우면 다음 사람이 같은 함정에 빠지는가」다. 두 줄로 안 되는 분량은 `.claude/rules/notes/` 로 빼고 코드에는 포인터만 남긴다.
 
 기존 코드 스타일을 따른다. 들여쓰기, 네이밍, 주석 밀도를 주변에 맞춘다.
 
@@ -347,10 +349,11 @@ on:
 | 파일 | 내용 |
 | --- | --- |
 | `.claude/rules/domain.md` | 도메인, 언어, 권한, 위협 모델 (항상 로드) |
-| `.claude/rules/rails.md` | 모델·컨트롤러 (해당 파일을 열면 로드) |
-| `.claude/rules/views.md` | 화면·CSS·Stimulus·CSP |
-| `.claude/rules/migrations.md` | 마이그레이션 |
-| `.claude/rules/testing.md` | 테스트 |
+| `.claude/rules/common/rails.md` | 모델·컨트롤러 (해당 파일을 열면 로드) |
+| `.claude/rules/common/views.md` | 화면·CSS·Stimulus·CSP |
+| `.claude/rules/common/migrations.md` | 마이그레이션 |
+| `.claude/rules/common/testing.md` | 테스트 |
+| `.claude/rules/notes/*.md` | 기능 단위 설명 — 왜 이렇게 생겼나 (`paths` 로 좁혀 로드) |
 | `.claude/skills/grill` · `walkthrough` · `qa` | ①-b · ⑤-c · ⑤-d |
 | `.github/PULL_REQUEST_TEMPLATE.md` | PR 본문 구조 |
 | `.github/workflows/ci.yml` | CI job 구성과 실행 명령 |

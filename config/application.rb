@@ -16,19 +16,15 @@ module ZooKeeper
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
-    # デフォルトロケールを韓国語に設定
+    # 기본 로케일은 한국어
     config.i18n.default_locale = :ko
 
-    # 添付ファイルはRails経由で配信する（proxy）。
-    # 既定のredirectはストレージのドメインへ302するため、
-    # CSPのimg_src（:self, :data）に阻まれて画像が表示されない。
-    # ビューごとにヘルパーを選ぶ方式だと1か所漏れただけでその画面が壊れるため、
-    # 既定値を安全側に倒して例外を作らない。
+    # 첨부는 Rails 를 거쳐 배포한다(proxy) — 기본값인 redirect 는 CSP 에 막힌다.
+    # 뷰마다 헬퍼를 고르면 한 곳만 빠뜨려도 그 화면이 깨진다 (notes/infra.md)
     config.active_storage.resolve_model_to_route = :rails_storage_proxy
 
-    # UUID v4をプライマリキーのデフォルトとして設定
-    # 順次整数IDのURL露出によるIDOR攻撃を防ぐため採用
-    # 実際の生成はDB側のgen_random_uuid()（= v4）が担当する
+    # 기본키는 UUID v4 — 순번 정수 ID 가 URL 에 노출되는 IDOR 위험을 막는다.
+    # 실제 생성은 DB 의 gen_random_uuid()(= v4) 가 맡는다
     config.generators do |g|
       g.orm :active_record, primary_key_type: :uuid
     end
@@ -38,8 +34,7 @@ module ZooKeeper
     # These settings can be overridden in specific environments using the files
     # in config/environments, which are processed later.
     #
-    # 利用者・運用拠点が韓国のためKSTに固定する
-    # 未設定だとUTCで動作し、created_atの表示やDate.currentが9時間ずれる
+    # 쓰는 사람과 운영 거점이 한국이라 KST 로 고정한다 (notes/infra.md)
     config.time_zone = "Asia/Seoul"
 
     # config.eager_load_paths << Rails.root.join("extras")

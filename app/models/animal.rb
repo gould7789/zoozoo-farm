@@ -1,53 +1,42 @@
-# 動物個体モデル
-# 死亡・放出時はactive=falseで論理削除
+# 동물 개체 모델
+# 사망·방출 시 active = false 로 논리 삭제한다
+# 사진 관련 판단은 .claude/rules/notes/animal-photo.md
 class Animal < ApplicationRecord
-  # プロフィール写真で許可する形式。
-  # RenderのlibvipsはHEICを読めないため、到達するとvariant生成が失敗する。
-  # ブラウザ側でJPEGに変換しているが、変換に失敗した場合の最終防衛線として弾く。
+  # 브라우저에서 JPEG 로 바꿔 보내지만, 그 변환이 실패했을 때의 최종 방어선
   ALLOWED_PHOTO_TYPES = %w[ image/jpeg image/png image/webp ].freeze
-  # 縮小を強制する装置ではなく安全網。ブラウザで1600pxに縮小済みなら
-  # 数百KBで届く。JSが失敗した場合にスマホの原本は通し、異常に大きいものだけ弾く。
+  # 축소를 강제하는 장치가 아니라 안전망 — JS 가 들으면 수백KB 로 도착한다
   MAX_PHOTO_BYTES = 15.megabytes
 
-  # 動物は必ずいずれかの館に所属する
   belongs_to :zone
-  # カテゴリは任意 — 未分類の動物はNULL
   belongs_to :animal_category, optional: true
-  # 健康記録
   has_many :health_records,  dependent: :destroy
-  # 給餌記録
   has_many :feeding_records, dependent: :destroy
 
-  # プロフィール写真（1枚）。
-  # ジョブワーカーが無い環境のため preprocessed: true は使えない。
-  # variantは初回参照時に生成され、以降は保存されたものが再利用される。
+  # 잡 워커가 없어 preprocessed: true 를 쓰지 않는다 — variant 는 처음 참조할 때 만들어진다
   has_one_attached :photo do |attachable|
-    # アバターは円形で表示するため正方形に切り抜く。
-    # ブラウザ側で切り抜き済みなら実質no-opだが、JSが失敗して
-    # 元の縦横比のまま届いた場合もアバターの見た目を揃えられる。
+    # 아바타는 원형이라 정사각형으로 자른다.
+    # 브라우저에서 이미 잘랐으면 사실상 no-op 이지만, JS 가 실패해도 모양을 맞출 수 있다
     attachable.variant :thumb,  resize_to_fill: [ 320, 320 ]
     attachable.variant :detail, resize_to_limit: [ 1200, 1200 ]
   end
 
-  # 性別 — 入手時に不明なケースが多いためデフォルトはunknown
+  # 입수 시점에 성별을 모르는 경우가 많아 기본값이 unknown
   enum :gender,      { male: 0, female: 1, unknown: 2 }
 
-  # CITES（ワシントン条約）区分 — prefix: :citesでARのnone?メソッドとの衝突を回避
-  # 呼び出し方: animal.cites_none? / animal.cites_grade_i?
+  # prefix: :cites — Active Record가 만드는 none? 메서드와 충돌하므로 접두사를 붙인다.
+  # 호출은 animal.cites_none? / animal.cites_grade_i? 형태가 된다
   enum :cites_grade, { none: 0, grade_i: 1, grade_ii: 2, grade_iii: 3 }, prefix: :cites
 
-  # 種名は必須、個体名は多頭種のためNULL許容
   validates :species, presence: true, length: { maximum: 100 }
   validates :name, length: { maximum: 100 }, allow_nil: true
-  # 個体数は1以上の整数（デフォルト1）
   validates :individual_count, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
-  # 添付ファイルはvalidatesで扱えないためカスタム検証で行う
+  # 첨부 파일은 validates(복수)로 다룰 수 없어 validate(단수)로 커스텀 검증을 건다
   validate :photo_must_be_supported_image
 
-  # 削除されていない動物のみを返すスコープ
   scope :active, -> { where(active: true) }
 
-  # 最新の健康記録がcautionまたはdangerの動物を返すスコープ（ホーム画面アラート用）
+  # 홈 화면 알림용 — 가장 최근 건강 기록이 caution 이나 danger 인 동물.
+  # 서브쿼리로 개체마다 최신 1건만 고른 뒤 그 조건으로 거른다
   scope :with_alert_condition, -> {
     active
       .joins(:health_records)
@@ -64,14 +53,16 @@ class Animal < ApplicationRecord
       .order("health_records.condition DESC, animals.species ASC")
   }
 
-  # 韓国式年齢計算 — 生まれた年を1歳とし、元日に加算する
+  # 한국식 나이 — 태어난 해를 1살로 보고 해가 바뀔 때 더한다
   def age
     return nil if birth_date.nil?
     Date.current.year - birth_date.year + 1
   end
 
-  # 最新の健康記録のconditionを返す — 記録がなければnilを返す
-  # includesで先読み済みの場合はRubyでソートしてN+1を回避する
+  # 가장 최근 건강 기록의 condition. 기록이 없으면 nil.
+  #
+  # loaded? 로 가르는 이유는 N+1 때문이다. 목록에서 includes 로 미리 읽어왔으면
+  # Ruby에서 고르고, 단건 조회처럼 안 읽어온 경우에만 쿼리를 날린다
   def latest_condition
     if health_records.loaded?
       health_records.max_by { |hr| [ hr.recorded_on, hr.id ] }&.condition
@@ -82,8 +73,7 @@ class Animal < ApplicationRecord
 
   private
 
-    # 添付写真の形式とサイズを検証する。
-    # メッセージはko.ymlに置く — errors.formatが%{message}のため文として完結させる。
+    # 메시지는 ko.yml에 둔다 — errors.format이 %{message}라 문장으로 완결시켜야 한다
     def photo_must_be_supported_image
       return unless photo.attached?
 

@@ -1,4 +1,4 @@
-# ユーザーのテストデータファクトリ
+# User 테스트 데이터
 FactoryBot.define do
   factory :user do
     email    { Faker::Internet.unique.email }
@@ -7,12 +7,12 @@ FactoryBot.define do
     role     { :staff }
     active   { true }
 
-    # Admin ユーザーを生成するトレイト
+    # Admin 사용자
     trait :admin do
       role { :admin }
     end
 
-    # 退職済みユーザーを生成するトレイト
+    # 퇴사 처리된 사용자
     trait :inactive do
       active { false }
     end

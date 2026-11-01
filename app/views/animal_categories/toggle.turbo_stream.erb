@@ -1,6 +1,6 @@
-<%# toggle後にアコーディオンとモーダルリストの両方をDOMで更新 %>
+<%# 모달을 닫지 않고 두 자리를 한 응답으로 바꾼다 (notes/zone-accordion.md) %>
 
-<%# 1) アコーディオン全体を差し替え — hidden変更を即座に反映 %>
+<%# 1) 아코디언 전체 — 숨김 변경을 즉시 반영 %>
 <%= turbo_stream.update "category_accordion" do %>
   <%= render "zones/accordion",
       zone: @zone,
@@ -8,7 +8,7 @@
       animals_by_category: @animals_by_category %>
 <% end %>
 
-<%# 2) モーダルのカテゴリ一覧を差し替え — チェックボックス状態と並び順を更新 %>
+<%# 2) 모달의 카테고리 목록 — 체크박스 상태와 순서 %>
 <%= turbo_stream.update "modal_category_list" do %>
   <% if @all_categories.empty? %>
     <p class="px-6 py-8 text-center text-sm text-gray-400">등록된 카테고리가 없습니다.</p>

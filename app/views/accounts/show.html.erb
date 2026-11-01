@@ -1,4 +1,4 @@
-<%# マイページ — ログインユーザーのプロフィール表示（読み取り専用） %>
+<%# 마이페이지 — 로그인한 사용자의 프로필 (읽기 전용) %>
 <% content_for(:title, "내 정보") %>
 
 <% position_label = {
@@ -18,10 +18,8 @@
 
   <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
 
-    <%# プロフィールヘッダー %>
     <div class="px-6 py-5 border-b border-gray-100">
       <div class="flex items-center gap-4">
-        <%# アバター（イニシャル表示） %>
         <div class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
           <span class="text-xl font-bold text-gray-500"><%= @user.name.first %></span>
         </div>
@@ -34,7 +32,6 @@
       </div>
     </div>
 
-    <%# 情報リスト %>
     <dl class="divide-y divide-gray-100">
 
       <div class="px-6 py-4 flex items-center gap-4">
@@ -43,7 +40,7 @@
       </div>
 
       <% if @user.admin? %>
-        <%# Admin: 職位を表示 %>
+        <%# Admin 은 직급을 보여준다 %>
         <div class="px-6 py-4 flex items-center gap-4">
           <dt class="text-sm text-gray-500 w-24 shrink-0">직급</dt>
           <dd class="text-sm text-gray-900">
@@ -55,7 +52,7 @@
           </dd>
         </div>
       <% else %>
-        <%# Staff: 入社日・契約終了日を表示 %>
+        <%# Staff 는 입사일·계약 종료일을 보여준다 %>
         <div class="px-6 py-4 flex items-center gap-4">
           <dt class="text-sm text-gray-500 w-24 shrink-0">입사일</dt>
           <dd class="text-sm text-gray-900">
@@ -74,7 +71,7 @@
     </dl>
   </div>
 
-  <%# ログアウトボタン — モバイルのみ表示 %>
+  <%# 로그아웃 버튼 — 모바일에서만 보인다 %>
   <div class="mt-6 md:hidden">
     <%= button_to "로그아웃", logout_path, method: :delete,
         class: "w-full flex items-center justify-center gap-2 h-12 rounded-xl text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm transition-colors" %>

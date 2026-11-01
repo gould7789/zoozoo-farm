@@ -1,27 +1,23 @@
-# お知らせのCRUDを担当するコントローラー
-# 全アクションにログイン必須、編集・削除は本人記録のみ（Adminは他者記録も操作可能）
+# 공지 CRUD
+# 전체 액션에 로그인 필수, 수정과 삭제는 본인 기록만 (Admin 은 타인 기록도 조작 가능)
 class NoticesController < ApplicationController
   include OwnerRestriction
 
-  # 本文エディタのダイレクトアップロードは署名付きURLへ直接PUTする。
-  # connect_src を書かないと default_src :self が適用されて弾かれるが、
-  # 必要なのはこのコントローラーだけなので全体ではなくここに足す。
-  # 全体に置くと未ログインで見えるログイン画面にもホスト名が載る。
+  # 본문 에디터의 다이렉트 업로드는 서명된 URL 로 직접 PUT 한다.
+  # connect_src 를 안 쓰면 default_src :self 가 적용돼 막힌다.
+  # 전체가 아니라 이 컨트롤러에만 붙이는 이유는, 전체에 두면 비로그인으로 보이는
+  # 로그인 화면에도 스토리지 호스트명이 실리기 때문이다.
   #
-  # 許可するのはオリジン（scheme://host）までで、パスは付けない。
-  # CSP のソースにパスがあり末尾が "/" でない場合、URLのパスは完全一致が要る。
-  # ENV の値は .../storage/v1/s3 だが実際のPUT先は
-  # .../storage/v1/s3/<バケット>/<キー>?X-Amz-... なので、そのまま入れると弾かれる。
+  # 허용 범위는 오리진(scheme://host)까지이고 경로는 붙이지 않는다.
+  # 경로를 붙이면 완전 일치가 요구된다 — 자세한 것은 .claude/rules/notes/notice.md
   #
-  # 開発・テストは Disk サービスで同一オリジンのため、
-  # これが無くても落ちない。本番でだけ効く
-  # ENV が未設定の環境（CI）では空配列になる
+  # 개발과 테스트는 Disk 서비스라 같은 오리진이므로 이게 없어도 안 떨어진다.
+  # 운영에서만 듣는다. ENV 가 없는 환경(CI)에서는 빈 배열이 된다
   STORAGE_ORIGIN = begin
     endpoint = ENV["SUPABASE_S3_ENDPOINT"]
     if endpoint.present?
       uri = URI.parse(endpoint)
-      # 既定ポートは書かない。:443 を付けても仕様上は一致するが、
-      # ヘッダーが読みにくくなるだけで得が無い
+      # 기본 포트는 쓰지 않는다. :443 을 붙여도 명세상 일치하지만 헤더만 읽기 어려워진다
       origin = +"#{uri.scheme}://#{uri.host}"
       origin << ":#{uri.port}" unless uri.port == uri.default_port
       [ origin ]
@@ -42,8 +38,8 @@ class NoticesController < ApplicationController
   def index
     @category = Notice.categories.key?(params[:category]) ? params[:category] : nil
 
-    # 一覧は抜粋と写真の枚数しか出さないが、どちらも本文を読む必要がある。
-    # with_rich_text_content_and_embeds を外すと件数ぶんクエリが増える
+    # 목록은 발췌와 사진 수만 내보내지만 둘 다 본문을 읽어야 한다.
+    # with_rich_text_content_and_embeds 를 빼면 건수만큼 쿼리가 는다
     @notices = Notice.recent.includes(:created_by).with_rich_text_content_and_embeds
     @notices = @notices.where(category: @category) if @category
   end
@@ -88,8 +84,8 @@ class NoticesController < ApplicationController
     end
 
     def notice_params
-      # :body ではなく :content。本文は notices.body ではなく
-      # action_text_rich_texts に入るようになった
+      # :body 가 아니라 :content — 본문은 notices.body 가 아니라
+      # action_text_rich_texts 에 들어간다
       params.require(:notice).permit(:category, :title, :content)
     end
 end

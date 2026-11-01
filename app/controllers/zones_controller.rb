@@ -1,28 +1,27 @@
-# 館一覧・詳細を担当するコントローラー
-# zonesはシードデータで固定 — 読み取り専用（indexとshowのみ）
+# 관 목록·상세 담당
+# zones 는 시드 데이터로 고정 — 읽기 전용(index, show)
 class ZonesController < ApplicationController
   def index
-    # 表示順を固定 — シードデータの並び順に合わせて名前でソート
+    # 표시 순서를 고정한다 — 시드 데이터의 순서에 맞춘다
     display_order = [ "사랑새관", "앵무새관", "파충류관", "미니동물관", "야외동물체험관", "격리실" ]
     @zones = Zone.all.sort_by { |z| display_order.index(z.name) || 999 }
-    # 各館のアクティブ動物のindividual_count合計を一括取得（N+1防止）
+    # 관별 개체 수 합계를 한 번에 — 관마다 세면 N+1 이 된다
     @zone_counts = Animal.active.group(:zone_id).sum(:individual_count)
-    # ホーム画面アラート用 — 最新健康記録がcaution/dangerの動物（最大10件）
+    # 홈 알림용 — 최신 건강 기록이 caution / danger 인 동물
     @alert_animals = Animal.with_alert_condition.limit(10)
-    # ホーム画面最新お知らせ用
-    # ホームは題名だけを出すので本文は読まない
+    # 홈은 제목만 내보내므로 본문(리치텍스트)은 읽지 않는다
     @recent_notices = Notice.recent.limit(5).includes(:created_by)
   end
 
   def show
     @zone = Zone.find(params[:id])
-    # アコーディオン表示用: hiddenでないカテゴリのみ
+    # 아코디언에 펼칠 것 — 숨김이 아닌 카테고리만
     @categories = @zone.animal_categories.where(hidden: false).order(:name)
-    # モーダル用: 全カテゴリ（チェックボックス表示のため hidden含む）
+    # 모달에 띄울 것 — 체크박스로 숨김을 끄고 켜므로 숨김 카테고리도 포함한다
     @all_categories = @zone.animal_categories.order(:name)
-    # アクティブ動物を一括ロードしてカテゴリIDでグループ化（N+1防止）
-    # @animals_by_category[category.id] → そのカテゴリの動物
-    # @animals_by_category[nil]         → 未分類の動物
+    # 동물을 한 번에 읽어 카테고리 ID 로 묶는다 (N+1 방지)
+    #   @animals_by_category[category.id] → 그 카테고리의 동물
+    #   @animals_by_category[nil]         → 미분류 동물
     @animals_by_category = @zone.animals.active
                                 .includes(:health_records)
                                 .with_attached_photo

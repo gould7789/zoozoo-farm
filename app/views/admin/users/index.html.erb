@@ -1,4 +1,4 @@
-<%# ユーザー管理一覧ページ — Admin専用 %>
+<%# 사용자 관리 — Admin 전용 %>
 <%# 재직 중(관리자/스태프)과 퇴사자를 별도 섹션으로 분리 표시 %>
 <% content_for(:title, "직원 관리") %>
 
@@ -14,7 +14,6 @@
 
 <div class="max-w-2xl md:max-w-4xl mx-auto">
 
-  <%# モバイルのみ表示 — 管理ハブへの戻るボタン %>
   <%= link_to admin_dashboard_path, class: "md:hidden inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4" do %>
     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -37,7 +36,6 @@
   <div class="mb-8">
     <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">관리자 · <%= @admins.size %>명</h2>
 
-    <%# モバイルカードリスト %>
     <div class="space-y-3 md:hidden">
       <% @admins.each do |user| %>
         <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
@@ -67,7 +65,6 @@
       <% end %>
     </div>
 
-    <%# デスクトップテーブル %>
     <div class="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <table class="w-full text-sm table-fixed">
         <thead class="bg-gray-50 border-b border-gray-200">
@@ -123,7 +120,6 @@
       </div>
     <% else %>
 
-      <%# モバイルカードリスト %>
       <div class="space-y-3 md:hidden">
         <% @staffs.each do |user| %>
           <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
@@ -149,7 +145,6 @@
         <% end %>
       </div>
 
-      <%# デスクトップテーブル %>
       <div class="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <table class="w-full text-sm table-fixed">
           <thead class="bg-gray-50 border-b border-gray-200">
@@ -193,7 +188,6 @@
     <div>
       <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">퇴사자 · <%= @inactive_users.size %>명</h2>
 
-      <%# モバイルカードリスト %>
       <div class="space-y-3 md:hidden">
         <% @inactive_users.each do |user| %>
           <div class="bg-white/60 rounded-xl border border-gray-200 p-4 shadow-sm">
@@ -222,7 +216,6 @@
         <% end %>
       </div>
 
-      <%# デスクトップテーブル %>
       <div class="hidden md:block bg-white/60 rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <table class="w-full text-sm table-fixed">
           <thead class="bg-gray-50 border-b border-gray-200">

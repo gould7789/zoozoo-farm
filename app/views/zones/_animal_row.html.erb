@@ -1,4 +1,4 @@
-<%# 動物一覧のデスクトップテーブル1行 — カテゴリ別と未分類の両方から使う %>
+<%# 동물 목록의 데스크톱 테이블 1행 — 카테고리별과 미분류 양쪽에서 쓴다 %>
 <% condition = animal.latest_condition %>
 <tr class="hover:bg-gray-50 cursor-pointer"
     data-controller="row-link"
@@ -6,7 +6,7 @@
     data-action="click->row-link#navigate"
     data-search-target="item"
     data-search-text="<%= "#{animal.species} #{animal.name}" %>">
-  <%# 列は増やさない — table-fixedの5列構成を崩さないため種名セルの中に入れる %>
+  <%# 열을 늘리지 않는다 — table-fixed 5열 구성을 깨지 않도록 종명 셀 안에 넣는다 %>
   <td class="px-4 py-3 font-medium text-gray-900">
     <div class="flex items-center gap-2 min-w-0">
       <%= render "zones/animal_avatar", animal: animal, size: "w-8 h-8" %>

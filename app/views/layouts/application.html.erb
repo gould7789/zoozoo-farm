@@ -22,22 +22,20 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <%# モバイル/デスクトップで背景画像を切り替え %>
+  <%# 모바일과 데스크톱에서 배경 이미지를 바꾼다 %>
   <body class="min-h-screen zoo-bg">
 
-    <%# フラッシュメッセージ %>
     <%= render "layouts/flash" %>
 
-    <%# turbo_confirmの確認ダイアログ — body直下に1つだけ置く %>
+    <%# turbo_confirm 의 확인 다이얼로그 — body 바로 아래에 하나만 둔다 %>
     <%= render "layouts/confirm_dialog" %>
 
     <% if logged_in? %>
-      <%# デスクトップ用サイドバー — lg以上でのみ表示 %>
       <div class="hidden md:flex md:fixed md:inset-y-0 md:w-64 md:flex-col md:bg-white md:border-r md:border-gray-200 md:z-30">
         <%= render "layouts/sidebar" %>
       </div>
 
-      <%# モバイル用上部ロゴヘッダー — lg未満でのみ表示 %>
+      <%# 모바일 상단 로고 헤더 — lg 미만에서만 보인다 %>
       <div class="md:hidden flex justify-center pt-2 pb-1">
         <%= link_to zones_path, class: "inline-block" do %>
           <%= image_tag "main_logo.png", alt: "Zoo Zoo Farm", class: "h-48 w-auto drop-shadow-md hover:opacity-90 transition-opacity" %>
@@ -45,19 +43,18 @@
       </div>
     <% end %>
 
-    <%# メインコンテンツ %>
     <main class="<%= logged_in? ? 'md:ml-64 pb-20 md:pb-0 px-4 md:px-8 pt-2 md:pt-6' : '' %> min-h-screen">
       <%= yield %>
     </main>
 
     <% if logged_in? %>
-      <%# モバイル用下部タブバー — lg以上では非表示 %>
+      <%# 모바일 하단 탭 바 — lg 이상에서는 숨긴다 %>
       <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-gray-200 z-30">
         <%= render "layouts/bottom_nav" %>
       </nav>
     <% end %>
 
-    <%# モーダルはbody直下に配置 — fixedがビューポート基準で動作するように %>
+    <%# 모달은 body 바로 아래에 둔다 — fixed 가 뷰포트 기준으로 동작해야 한다 %>
     <%= yield :modal %>
 
   </body>

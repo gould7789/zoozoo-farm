@@ -70,7 +70,7 @@ jobs:
 
     services:
       postgres:
-        # メジャーバージョンを固定 — latestが上がってCIだけ壊れるのを防ぐ
+        # 메이저 버전을 고정한다 — latest 가 올라가 CI 만 깨지는 것을 막는다
         image: postgres:17
         env:
           POSTGRES_USER: postgres
@@ -110,7 +110,7 @@ jobs:
 
     services:
       postgres:
-        # メジャーバージョンを固定 — latestが上がってCIだけ壊れるのを防ぐ
+        # 메이저 버전을 고정한다 — latest 가 올라가 CI 만 깨지는 것을 막는다
         image: postgres:17
         env:
           POSTGRES_USER: postgres

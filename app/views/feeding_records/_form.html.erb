@@ -1,5 +1,5 @@
-<%# 給餌記録フォーム（new/edit共用） %>
-<%# URLはモデルから推論させず明示する — ルート名がfeeding_logsでモデル名と一致しないため %>
+<%# 먹이 급여 기록 폼 (new/edit 공용) %>
+<%# url: 을 명시한다 — 라우트명이 feeding_logs 라 모델명에서 추론되지 않는다 %>
 <%= form_with model: feeding_record, url: feeding_record.new_record? ? zone_animal_feeding_logs_path(@zone, @animal) : zone_animal_feeding_log_path(@zone, @animal, feeding_record), data: { controller: "form", action: "submit->form#submit" } do |f| %>
 
   <% if feeding_record.errors.any? %>
@@ -13,7 +13,7 @@
     </div>
   <% end %>
 
-  <%# data-controller="date-default" で空フィールドに現在日時を自動セット %>
+  <%# date-default 가 빈 칸에 현재 일시를 넣는다 %>
   <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-4" data-controller="date-default">
 
     <div>

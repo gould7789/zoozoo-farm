@@ -1,8 +1,6 @@
-<%# 動物登録・編集の共通フォーム %>
-<%# new.html.erb と edit.html.erb から render "form" で呼び出す %>
+<%# 동물 등록·수정 공용 폼 — 사진 관련 판단은 notes/animal-photo.md %>
 <%= form_with model: [@zone, @animal], data: { controller: "form", action: "submit->form#submit" } do |f| %>
 
-  <%# バリデーションエラー表示 %>
   <% if @animal.errors.any? %>
     <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
       <p class="text-sm font-medium text-red-800 mb-2">입력 오류가 있습니다.</p>
@@ -16,12 +14,12 @@
 
   <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm space-y-4">
 
-    <%# プロフィール写真 — 選択後に円形の切り抜き画面を開いてから送信する %>
+    <%# 프로필 사진 — 고르면 원형 자르기 화면을 띄운 뒤 보낸다 %>
     <div data-controller="photo-crop">
       <%= f.label :photo, "프로필 사진 (선택)", class: "block text-sm font-medium text-gray-700 mb-1" %>
 
       <div class="flex items-center gap-4">
-        <%# 現在の写真 — @animal.photoではなく@saved_photoを見る。検証エラーでの再描画時、@animal.photoは未保存の添付を指しており、それを使うと保存済みの写真が消えたように見える（コントローラー側で読み直す） %>
+        <%# @animal.photo 가 아니라 @saved_photo — 검증 에러 때 전자는 저장되지 않은 첨부를 가리킨다 %>
         <% has_saved_photo = @saved_photo&.attached? %>
         <% if has_saved_photo %>
           <%= image_tag @saved_photo.variant(:thumb),
@@ -30,7 +28,7 @@
               data: { photo_crop_target: "current" } %>
         <% end %>
 
-        <%# 切り抜き結果のプレビュー — CSPのためblob: URLではなくcanvasに描く %>
+        <%# 자르기 결과 미리보기 — CSP 때문에 blob: URL 이 아니라 canvas 에 그린다 %>
         <canvas data-photo-crop-target="preview" width="160" height="160" hidden
                 class="w-20 h-20 rounded-full border-2 border-green-500 shrink-0"></canvas>
 
@@ -40,14 +38,14 @@
               class: "w-full text-sm text-gray-700 file:mr-3 file:h-9 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer",
               data: { photo_crop_target: "input", action: "change->photo-crop#select" } %>
 
-          <%# 「사진 삭제」は常に画面に見えている写真に対して働く。
-              保存済みの写真 → サーバーで削除（確認モーダルあり）
-              未保存の選択   → 選択を取り消すだけ（失うものが無いので確認しない）
-              どちらを出すかはJSが切り替える %>
+          <%# 「사진 삭제」는 항상 화면에 보이는 사진에 대해 작동한다.
+              저장된 사진   → 서버에서 삭제 (확인 모달 있음)
+              미저장 선택분 → 선택만 취소 (잃을 게 없어 확인하지 않는다)
+              어느 쪽을 낼지는 JS 가 가른다 %>
           <% delete_button_class = "inline-flex items-center h-9 px-3 rounded-lg text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors" %>
 
-          <%# button_toはこのフォームの中に<form>を入れ子にしてしまうため、
-              Turboがクリック時にbody直下へフォームを生成するlink_to + turbo_methodを使う %>
+          <%# button_to 는 이 폼 안에 <form> 을 중첩시킨다.
+              Turbo 가 누를 때 body 직하에 폼을 만드는 link_to + turbo_method 를 쓴다 %>
           <% if has_saved_photo %>
             <%= link_to "사진 삭제", zone_animal_photo_path(@zone, @animal),
                 data: { photo_crop_target: "destroy", turbo_method: :delete, turbo_confirm: "사진을 삭제하시겠습니까?" },
@@ -62,7 +60,7 @@
       </div>
       <p class="text-xs text-gray-400 mt-2">JPG · PNG · WEBP 형식만 등록할 수 있습니다.</p>
 
-      <%# 切り抜き画面 — showModal()でtop layerに出すため、祖先のレイアウトに影響されない %>
+      <%# 자르기 화면 — showModal() 이 top layer 에 올려 조상 레이아웃에 영향받지 않는다 %>
       <dialog data-photo-crop-target="dialog"
               data-action="cancel->photo-crop#cancel"
               class="m-auto p-0 bg-transparent backdrop:bg-black/80">
@@ -103,14 +101,14 @@
     </div>
 
     <div>
-      <%# 個体名は任意（多頭飼育種は空白のまま） %>
+      <%# 개체명은 선택 — 여러 마리를 함께 기르는 종은 비워 둔다 %>
       <%= f.label :name, "개체명 (선택)", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.text_field :name,
           class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500",
           placeholder: "예: 오몽이 (여러 마리인 경우 비워도 됩니다)" %>
     </div>
 
-    <%# カテゴリ選択 — 同じ館内のカテゴリのみ表示 %>
+    <%# 카테고리 — 같은 관의 것만 보여준다 %>
     <div>
       <%= f.label :animal_category_id, "카테고리 (선택)", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.select :animal_category_id,
@@ -119,7 +117,7 @@
           class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500 bg-white" %>
     </div>
 
-    <%# 個体数 — 多頭種（ウサギ・モルモット等）の頭数管理 %>
+    <%# 개체 수 — 토끼나 기니피그처럼 여러 마리를 한 기록으로 다루는 종 %>
     <div>
       <%= f.label :individual_count, "개체 수", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.number_field :individual_count,
@@ -137,7 +135,7 @@
     </div>
 
     <div>
-      <%# 生年月日は不明の場合は空白 %>
+      <%# 생년월일을 모르면 비워 둔다 %>
       <%= f.label :birth_date, "생년월일 (선택)", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.date_field :birth_date,
           class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500" %>
@@ -160,7 +158,7 @@
     </div>
 
     <div>
-      <%# CITES区分 — 許可証の実物は書類で保管、システムには区分のみ記録 %>
+      <%# CITES 등급 — 허가증 실물은 서류로 보관하고 시스템에는 등급만 남긴다 %>
       <%= f.label :cites_grade, "CITES 등급", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.select :cites_grade,
           [["해당 없음", "none"], ["부속서 I", "grade_i"], ["부속서 II", "grade_ii"], ["부속서 III", "grade_iii"]],
@@ -169,7 +167,7 @@
     </div>
 
     <div>
-      <%# 先天性疾患・性格など固定の特記事項 %>
+      <%# 선천적 질환이나 성격처럼 바뀌지 않는 특이사항 %>
       <%= f.label :note, "특이사항 (선택)", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.text_area :note,
           rows: 3,

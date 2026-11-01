@@ -1,20 +1,19 @@
-# 動物のプロフィール写真を削除するコントローラー
-# 動物の編集と同じくAdmin専用
+# 동물 프로필 사진 삭제 — 동물 수정과 마찬가지로 Admin 전용
+# 판단 근거는 .claude/rules/notes/animal-photo.md
 class AnimalPhotosController < ApplicationController
   before_action :require_admin
   before_action :set_animal
 
   def destroy
-    # ジョブキューが永続化されていない（:async）ため同期で削除する。
-    # purge_laterだと無料プランのインスタンスが眠った時点でジョブが失われ、
-    # ストレージに孤児ファイルが残る。S3のDELETE1回なので待っても問題ない
+    # purge_later 가 아니라 purge — 잡 큐가 영속화되지 않아(:async)
+    # 인스턴스가 잠드는 시점에 잡이 사라지고 고아 파일이 남는다
     @animal.photo.purge
     redirect_to edit_zone_animal_path(@zone, @animal), notice: "사진을 삭제했습니다."
   end
 
   private
 
-    # 館を経由して探す — URLの館と動物の組み合わせが食い違えば404にする
+    # 관을 거쳐 찾는다 — URL 의 관과 동물 조합이 어긋나면 404 로 떨군다
     def set_animal
       @zone   = Zone.find(params[:zone_id])
       @animal = @zone.animals.find(params[:animal_id])

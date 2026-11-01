@@ -1,9 +1,8 @@
-<%# カテゴリ管理ページ — Admin専用 %>
+<%# 카테고리 관리 — Admin 전용 %>
 <% content_for(:title, "카테고리 관리") %>
 
 <div class="max-w-2xl md:max-w-4xl mx-auto">
 
-  <%# ヘッダー %>
   <div class="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
     <div class="flex items-center gap-3 min-w-0">
       <%= link_to zone_path(@zone), class: "text-gray-400 hover:text-gray-600 transition-colors shrink-0" do %>
@@ -18,7 +17,6 @@
     </div>
   </div>
 
-  <%# カテゴリ一覧 %>
   <div class="bg-white rounded-xl border border-gray-200 shadow-sm mb-4 overflow-hidden">
     <% if @categories.empty? %>
       <div class="px-5 py-10 text-center">
@@ -48,7 +46,6 @@
     <% end %>
   </div>
 
-  <%# カテゴリ追加フォーム %>
   <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4">
     <p class="text-sm font-medium text-gray-700 mb-3">새 카테고리 추가</p>
     <%= form_with model: [ @zone, @new_category ] do |f| %>

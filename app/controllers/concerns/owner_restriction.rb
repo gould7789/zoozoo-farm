@@ -1,5 +1,5 @@
-# 本人記録またはAdminのみ編集・削除を許可するConcern
-# HealthRecords / FeedingRecords / Notices の3コントローラーで共通利用
+# 본인 기록 또는 Admin 만 수정과 삭제를 허용한다
+# HealthRecords / FeedingRecords / Notices 세 컨트롤러가 공유한다
 module OwnerRestriction
   extend ActiveSupport::Concern
 

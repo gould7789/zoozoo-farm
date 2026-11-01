@@ -1,15 +1,15 @@
-# animalsテーブルにカテゴリ外部キーと個体数カラムを追加するマイグレーション
-# animal_category_idはNULL許容 — カテゴリ未分類の動物が存在するため
-# individual_countは多頭種（ウサギ・モルモット等）の頭数管理用
+# animals 에 카테고리 외래 키와 개체 수 컬럼을 더한다
+# animal_category_id 는 NULL 허용 — 미분류 동물이 있다
+# individual_count 는 토끼나 기니피그처럼 여러 마리를 한 기록으로 다루는 종에 쓴다
 class AddCategoryAndCountToAnimals < ActiveRecord::Migration[8.1]
   def change
-    # カテゴリ削除時はNULLに設定（動物自体は削除しない）
+    # 카테고리를 지우면 NULL 로 (동물 자체는 지우지 않는다)
     add_reference :animals, :animal_category,
                   type:        :uuid,
                   null:        true,
                   foreign_key: { on_delete: :nullify }
 
-    # 個体数 — デフォルト1、1以上の制約をDBレベルでも担保
+    # 개체 수 — 기본 1, 1 이상 제약을 DB 에서도 담보한다
     add_column :animals, :individual_count, :integer, null: false, default: 1
 
     add_check_constraint :animals, "individual_count >= 1",

@@ -1,8 +1,8 @@
 require "rails_helper"
 require Rails.root.join("db/migrate/20261030020000_add_title_to_notices")
 
-# 既存のお知らせにも題名が要る。本番DBを書き換えるので、
-# 何が題名になるのかを実データで確認する。
+# 기존 공지에도 제목이 필요하다. 운영 DB 를 고치므로
+# 무엇이 제목이 되는지를 실제 데이터로 확인한다.
 RSpec.describe AddTitleToNotices do
   subject(:migration) { described_class.new }
 
@@ -23,9 +23,9 @@ RSpec.describe AddTitleToNotices do
     ActiveRecord::Migration.verbose = was
   end
 
-  # 本番と同じ順序で再現する — 題名が無い状態のお知らせを作ってから列を落とし、
-  # そこへ移行をかける。PostgreSQLはDDLもトランザクションに乗るので
-  # exampleが終われば列は元に戻る
+  # 운영과 같은 순서로 재현한다 — 제목이 없는 공지를 만든 뒤 컬럼을 떨어뜨리고
+  # 거기에 이관을 돌린다. PostgreSQL 은 DDL 도 트랜잭션에 올라가므로
+  # example 이 끝나면 컬럼이 되돌아온다
   def run_migration
     ActiveRecord::Base.connection.remove_column(:notices, :title)
     Notice.reset_column_information
@@ -36,7 +36,7 @@ RSpec.describe AddTitleToNotices do
   after { Notice.reset_column_information }
 
   describe "#up" do
-    it "本文の1行目を題名にする" do
+    it "본문의 첫 줄을 제목으로 쓴다" do
       notice = create_notice("<div>급수대 점검<br>오전 9시부터</div>")
 
       run_migration
@@ -44,7 +44,7 @@ RSpec.describe AddTitleToNotices do
       expect(title_of(notice)).to eq("급수대 점검")
     end
 
-    it "100文字を超える1行目は切り詰める" do
+    it "100자를 넘는 첫 줄은 잘라낸다" do
       notice = create_notice("<div>#{'가' * 150}</div>")
 
       run_migration
@@ -52,8 +52,7 @@ RSpec.describe AddTitleToNotices do
       expect(title_of(notice).length).to eq(100)
     end
 
-    # 添付だけのお知らせは平文が改行で始まる。1行目を取ると空になる
-    it "添付だけのお知らせは添付名を題名にする" do
+    it "첨부만 있는 공지는 첨부 이름을 제목으로 쓴다 — 평문이 개행으로 시작한다" do
       blob = ActiveStorage::Blob.create_and_upload!(
         io: Rails.root.join("spec/fixtures/files/animal.jpg").open,
         filename: "사진.jpg", content_type: "image/jpeg"
@@ -65,9 +64,9 @@ RSpec.describe AddTitleToNotices do
       expect(title_of(notice)).to eq("[사진.jpg]")
     end
 
-    # presence 検証が無かった頃の行が本番に残っている可能性がある。
-    # 検証を通さず直接入れて、移行が落ちないことを確かめる
-    it "平文が取れなければ既定の題名を入れる" do
+    # presence 검증이 없던 시절의 행이 운영에 남아 있을 수 있다.
+    # 검증을 거치지 않고 직접 넣어 이관이 떨어지지 않는지 확인한다
+    it "평문을 못 얻으면 기본 제목을 넣는다" do
       notice = create_notice("<div>지울 본문</div>")
       ActionText::RichText
         .find_by(record_type: "Notice", record_id: notice.id, name: "content")
@@ -78,7 +77,7 @@ RSpec.describe AddTitleToNotices do
       expect(title_of(notice)).to eq("공지")
     end
 
-    it "NOT NULLを付ける" do
+    it "NOT NULL 을 붙인다" do
       create_notice("<div>안내</div>")
 
       run_migration

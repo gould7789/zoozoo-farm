@@ -8,7 +8,7 @@ development:
 test:
   adapter: test
 
-# Action Cableの使用箇所が0件（チャンネル・broadcast・turbo_stream_from いずれも無し）。
-# solid_cableを外したのでasyncのままにする。実際に必要になった時点で見直す。
+# Action Cable 을 쓰는 곳이 0건이다 (채널·broadcast·turbo_stream_from 전부 없음).
+# solid_cable 을 뺐으므로 async 로 둔다. 실제로 필요해지면 다시 본다.
 production:
   adapter: async

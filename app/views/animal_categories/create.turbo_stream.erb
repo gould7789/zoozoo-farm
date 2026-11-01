@@ -1,13 +1,13 @@
-<%# 追加成功 — モーダルのカテゴリ一覧とアコーディオンを差し替え + 入力フィールドをリセット %>
+<%# 추가 성공 — 모달 목록과 아코디언을 갈아끼우고 입력 칸을 비운다 %>
 
-<%# 1) カテゴリ一覧を最新状態に差し替え %>
+<%# 1) 카테고리 목록 %>
 <%= turbo_stream.update "modal_category_list" do %>
   <% @all_categories.sort_by { |c| [c.hidden? ? 1 : 0, c.name] }.each do |category| %>
     <%= render "animal_categories/category_row", category: category, zone: @zone %>
   <% end %>
 <% end %>
 
-<%# 2) モーダルの裏のアコーディオンを差し替え — 追加したカテゴリを即座に反映 %>
+<%# 2) 모달 뒤의 아코디언 — 추가한 카테고리를 즉시 반영 %>
 <%= turbo_stream.update "category_accordion" do %>
   <%= render "zones/accordion",
       zone: @zone,

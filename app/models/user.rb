@@ -1,10 +1,10 @@
-# ユーザーモデル — 認証・権限管理
+# 사용자 모델 — 인증과 권한
+# 판단 근거는 .claude/rules/notes/auth.md
 class User < ApplicationRecord
   has_secure_password
 
-  # 作成した各種記録一覧
-  # 記録を持つユーザーは物理削除を禁止する — 監査証跡（作成者情報）を保持するため
-  # 削除が必要な場合は退職処理（active = false）を使う
+  # 기록을 가진 사용자는 물리 삭제를 막는다 — 감사 추적(작성자 정보)을 보존해야 한다.
+  # 지워야 하면 퇴사 처리(active = false)를 쓴다
   has_many :health_records,   foreign_key: :created_by_id, dependent: :restrict_with_error
   has_many :feeding_records,  foreign_key: :created_by_id, dependent: :restrict_with_error
   has_many :notices,          foreign_key: :created_by_id, dependent: :restrict_with_error
@@ -12,7 +12,7 @@ class User < ApplicationRecord
   has_many :expense_records,  foreign_key: :created_by_id, dependent: :restrict_with_error
 
   enum :role, { admin: 0, staff: 1 }
-  # 직급 enum — adminのみ使用、staffはnil固定
+  # 직급 — admin만 쓰고 staff는 nil로 둔다
   enum :position, {
     junior:            0,
     associate:         1,
@@ -22,15 +22,14 @@ class User < ApplicationRecord
     general_manager:   5
   }
 
-  # アクティブなユーザーのみを返すスコープ（退職者除外）
   scope :active, -> { where(active: true) }
 
   validates :email, presence: true,
                     uniqueness: { case_sensitive: false },
                     format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :name, presence: true
-  # パスワードは8文字以上 — フォームのプレースホルダーとko.ymlのメッセージに合わせる
-  # allow_nil: 編集時にパスワード欄が空ならパスワード変更なしとして扱うため
-  # （nilを渡すとpassword_digestもnilになるので、新規作成時はpresence検証が別途効く）
+  # allow_nil — 수정 화면에서 비밀번호 칸을 비우면 "변경 안 함"으로 다루기 위해서다.
+  # nil을 넘기면 password_digest도 nil이 되지만, 신규 생성 시에는
+  # has_secure_password가 거는 presence 검증이 따로 잡아준다
   validates :password, length: { minimum: 8 }, allow_nil: true
 end

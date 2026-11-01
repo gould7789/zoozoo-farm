@@ -1,5 +1,5 @@
-# NoticesControllerのリクエストテスト — 認証・権限制御を中心に検証する
-# Staff/Admin共に作成・編集・削除可能、ただし編集・削除は本人記録のみ（Adminは他者記録も操作可能）
+# NoticesController — 인증·권한 제어
+# Staff 와 Admin 모두 작성 가능, 수정과 삭제는 본인 기록만 (Admin 은 타인 기록도 조작 가능)
 require "rails_helper"
 
 RSpec.describe "Notices", type: :request do
@@ -8,12 +8,12 @@ RSpec.describe "Notices", type: :request do
   let(:other) { create(:user) }
 
   describe "GET /notices" do
-    context "未ログイン" do
+    context "비로그인" do
       before { get notices_path }
-      it_behaves_like "ログインが必要"
+      it_behaves_like "로그인이 필요하다"
     end
 
-    context "ログイン済み" do
+    context "로그인 상태" do
       before { sign_in(staff); get notices_path }
       it { expect(response).to have_http_status(:ok) }
     end
@@ -22,52 +22,51 @@ RSpec.describe "Notices", type: :request do
   describe "GET /notices/:id" do
     let(:notice) { create(:notice, created_by: other, title: "히터 점검", content: "<div>본문 전문</div>") }
 
-    context "未ログイン" do
+    context "비로그인" do
       before { get notice_path(notice) }
-      it_behaves_like "ログインが必要"
+      it_behaves_like "로그인이 필요하다"
     end
 
-    # 閲覧は全員に開く。編集・削除だけが本人（とAdmin）に限られる
-    context "他人のお知らせでも読める" do
+    context "타인 공지도 읽을 수 있다" do
       before { sign_in(staff); get notice_path(notice) }
 
       it { expect(response).to have_http_status(:ok) }
 
-      it "本文の全文を出す" do
+      it "본문 전문을 낸다" do
         expect(response.body).to include("본문 전문")
       end
     end
   end
 
-  describe "GET /notices （カテゴリ絞り込み）" do
+  describe "GET /notices (카테고리 필터)" do
     before do
       create(:notice, created_by: staff, category: :parrot,  title: "앵무새관 공지")
       create(:notice, created_by: staff, category: :reptile, title: "파충류관 공지")
       sign_in(staff)
     end
 
-    it "categoryを渡すとそのカテゴリだけ出す" do
+    it "category 를 넘기면 그 카테고리만 낸다" do
       get notices_path(category: "parrot")
       expect(response.body).to include("앵무새관 공지")
       expect(response.body).not_to include("파충류관 공지")
     end
 
-    it "categoryが無ければ全件出す" do
+    it "category 가 없으면 전건을 낸다" do
       get notices_path
       expect(response.body).to include("앵무새관 공지")
       expect(response.body).to include("파충류관 공지")
     end
 
-    # enumに無い値を渡すとArgumentErrorでクラッシュする。
-    # URLは手で書き換えられるので、知らない値は全件扱いにする
-    it "知らないcategoryは全件扱いにする" do
+    # enum 에 없는 값을 넘기면 ArgumentError 로 떨어진다.
+    # URL 은 손으로 고칠 수 있으므로 모르는 값은 전건으로 다룬다
+    it "모르는 category 는 전건으로 다룬다" do
       get notices_path(category: "nonsense")
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("앵무새관 공지")
     end
   end
 
-  describe "GET /notices （N+1）" do
+  describe "GET /notices (N+1)" do
     def query_count
       count = 0
       sub = ActiveSupport::Notifications.subscribe("sql.active_record") do |_, _, _, _, payload|
@@ -89,7 +88,7 @@ RSpec.describe "Notices", type: :request do
       create(:notice, created_by: staff, content: ActionText::Content.new.append_attachables(blob))
     end
 
-    it "お知らせが増えてもクエリ数が増えない" do
+    it "공지가 늘어도 쿼리 수가 늘지 않는다" do
       sign_in(staff)
       notice_with_photo
       few = query_count { get notices_path }
@@ -102,55 +101,55 @@ RSpec.describe "Notices", type: :request do
   end
 
   describe "GET /notices/new" do
-    context "未ログイン" do
+    context "비로그인" do
       before { get new_notice_path }
-      it_behaves_like "ログインが必要"
+      it_behaves_like "로그인이 필요하다"
     end
 
-    context "ログイン済み" do
+    context "로그인 상태" do
       before { sign_in(staff); get new_notice_path }
       it { expect(response).to have_http_status(:ok) }
     end
   end
 
   describe "POST /notices" do
-    let(:valid_params) { { notice: { category: "general", title: "テスト題名", content: "<div>テストお知らせ</div>" } } }
+    let(:valid_params) { { notice: { category: "general", title: "테스트 제목", content: "<div>테스트 공지</div>" } } }
 
-    context "未ログイン" do
+    context "비로그인" do
       before { post notices_path, params: valid_params }
-      it_behaves_like "ログインが必要"
+      it_behaves_like "로그인이 필요하다"
     end
 
-    context "Staffが作成" do
+    context "Staff 가 작성" do
       before { sign_in(staff) }
 
-      it "created_byが自分のIDで保存されて一覧ページにリダイレクトする" do
+      it "created_by 가 자기 ID 로 저장되고 목록으로 보낸다" do
         post notices_path, params: valid_params
         expect(response).to redirect_to(notices_path)
         expect(Notice.last.created_by).to eq(staff)
       end
 
-      it "本文がリッチテキストとして保存される" do
+      it "본문이 리치텍스트로 저장된다" do
         post notices_path, params: valid_params
-        expect(Notice.last.content.to_s).to include("テストお知らせ")
+        expect(Notice.last.content.to_s).to include("테스트 공지")
       end
     end
   end
 
   describe "GET /notices/:id/edit" do
-    context "本人のお知らせ" do
+    context "본인 공지" do
       let(:notice) { create(:notice, created_by: staff) }
       before { sign_in(staff); get edit_notice_path(notice) }
       it { expect(response).to have_http_status(:ok) }
     end
 
-    context "他人のお知らせ" do
+    context "타인 공지" do
       let(:notice) { create(:notice, created_by: other) }
       before { sign_in(staff); get edit_notice_path(notice) }
-      it_behaves_like "アクセス拒否"
+      it_behaves_like "접근이 거부된다"
     end
 
-    context "Adminが他人のお知らせにアクセス" do
+    context "Admin 이 타인 공지에 접근" do
       let(:notice) { create(:notice, created_by: staff) }
       before { sign_in(admin); get edit_notice_path(notice) }
       it { expect(response).to have_http_status(:ok) }
@@ -158,54 +157,54 @@ RSpec.describe "Notices", type: :request do
   end
 
   describe "PATCH /notices/:id" do
-    let(:valid_params) { { notice: { title: "更新された題名", content: "<div>更新されたお知らせ</div>" } } }
+    let(:valid_params) { { notice: { title: "수정된 제목", content: "<div>수정된 공지</div>" } } }
 
-    context "本人が更新" do
+    context "본인이 수정" do
       let(:notice) { create(:notice, created_by: staff) }
       before { sign_in(staff) }
 
-      it "お知らせを更新して一覧ページにリダイレクトする" do
+      it "공지를 수정하고 목록으로 보낸다" do
         patch notice_path(notice), params: valid_params
         expect(response).to redirect_to(notices_path)
-        expect(notice.reload.content.to_s).to include("更新されたお知らせ")
+        expect(notice.reload.content.to_s).to include("수정된 공지")
       end
 
-      it "題名だけを変えても反映される" do
+      it "제목만 바꿔도 반영된다" do
         patch notice_path(notice), params: { notice: { title: "바뀐 제목" } }
         expect(notice.reload.title).to eq("바뀐 제목")
       end
     end
 
-    context "他人のお知らせを更新しようとする" do
+    context "타인 공지 수정을 시도" do
       let(:notice) { create(:notice, created_by: other) }
       before { sign_in(staff); patch notice_path(notice), params: valid_params }
-      it_behaves_like "アクセス拒否"
+      it_behaves_like "접근이 거부된다"
     end
   end
 
   describe "DELETE /notices/:id" do
-    context "本人が削除" do
+    context "본인이 삭제" do
       let(:notice) { create(:notice, created_by: staff) }
       before { sign_in(staff) }
 
-      it "お知らせを削除して一覧ページにリダイレクトする" do
+      it "공지를 삭제하고 목록으로 보낸다" do
         delete notice_path(notice)
         expect(response).to redirect_to(notices_path)
         expect { notice.reload }.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
 
-    context "他人のお知らせを削除しようとする" do
+    context "타인 공지 삭제를 시도" do
       let(:notice) { create(:notice, created_by: other) }
       before { sign_in(staff); delete notice_path(notice) }
-      it_behaves_like "アクセス拒否"
+      it_behaves_like "접근이 거부된다"
     end
 
-    context "Adminが他人のお知らせを削除" do
+    context "Admin 이 타인 공지를 삭제" do
       let(:notice) { create(:notice, created_by: staff) }
       before { sign_in(admin) }
 
-      it "お知らせを削除して一覧ページにリダイレクトする" do
+      it "공지를 삭제하고 목록으로 보낸다" do
         delete notice_path(notice)
         expect(response).to redirect_to(notices_path)
         expect { notice.reload }.to raise_error(ActiveRecord::RecordNotFound)

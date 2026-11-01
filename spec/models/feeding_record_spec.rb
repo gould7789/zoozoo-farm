@@ -1,19 +1,19 @@
 require "rails_helper"
 
 RSpec.describe FeedingRecord, type: :model do
-  describe "バリデーション" do
+  describe "검증" do
     it { is_expected.to validate_presence_of(:fed_at) }
     it { is_expected.to validate_presence_of(:food_type) }
     it { is_expected.to validate_numericality_of(:amount_g).only_integer.is_greater_than_or_equal_to(0).is_less_than_or_equal_to(99_999).allow_nil }
   end
 
-  describe "アソシエーション" do
+  describe "연관" do
     it { is_expected.to belong_to(:animal) }
     it { is_expected.to belong_to(:created_by).class_name("User") }
   end
 
-  describe "スコープ" do
-    it ".recentは給餌日時の降順で返す" do
+  describe "스코프" do
+    it ".recent 는 급여 일시 내림차순으로 반환한다" do
       animal = create(:animal)
       user   = create(:user)
       older  = create(:feeding_record, animal: animal, created_by: user, fed_at: 3.days.ago)

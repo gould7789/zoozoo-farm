@@ -1,4 +1,4 @@
-<%# お知らせフォーム（new/edit共用） %>
+<%# 공지 폼 (new/edit 공용) — 판단 근거는 notes/notice.md %>
 <%= form_with model: notice, data: { controller: "form", action: "submit->form#submit" } do |f| %>
 
   <% if notice.errors.any? %>
@@ -40,11 +40,10 @@
 
     <div>
       <%= f.label :content, "내용", class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%# Trixのツールバーとエディタ本体の見た目は app/assets/tailwind/application.css 側で整える。
-          ここでclassを足してもTrixが生成するシャドウ要素には届かない %>
-      <%# blob_url_template の既定は rails_service_blob_url、つまりリダイレクト経路で、
-          本番ではSupabaseへ302する。CSPはリダイレクト先のホストも照合するので
-          img_src :self に弾かれる。アプリの他の画像と同じくproxy経路に揃える %>
+      <%# Trix 툴바와 에디터 본체의 모양은 app/assets/tailwind/application.css 에서 맞춘다 —
+          여기에 class 를 더해도 Trix 가 만드는 내부 요소에는 닿지 않는다 %>
+      <%# blob_url_template 의 기본값은 리다이렉트 경로라 img_src :self 에 막힌다.
+          다른 이미지와 같이 proxy 경로로 맞춘다 (notes/notice.md) %>
       <%= f.rich_text_area :content,
           placeholder: "공지 내용을 입력하세요",
           data: {

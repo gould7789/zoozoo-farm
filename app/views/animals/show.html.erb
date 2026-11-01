@@ -1,17 +1,16 @@
-<%# 動物詳細ページ — 個体プロフィールを表示 %>
-<%# 編集・削除ボタンはAdmin専用 %>
+<%# 동물 상세 — 개체 프로필 %>
+<%# 수정과 삭제 버튼은 Admin 전용 %>
 <% content_for(:title) { @animal.species } %>
 
 <div class="max-w-2xl mx-auto">
 
-  <%# ヘッダー — 戻るリンク %>
   <div class="flex items-center gap-3 mb-6 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
     <%= link_to zone_path(@zone), class: "text-gray-500 hover:text-gray-700 transition-colors shrink-0" do %>
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 19.5L8.25 12l7.5-7.5" />
       </svg>
     <% end %>
-    <%# プロフィール写真 — タップで原寸表示。未登録なら出さない %>
+    <%# 프로필 사진 — 누르면 원본 크기로 띄운다. 없으면 내지 않는다 %>
     <% if @animal.photo.attached? %>
       <button type="button"
               data-controller="modal-opener"
@@ -30,13 +29,12 @@
       <h1 class="text-xl font-bold text-gray-900">
         <%= @animal.species %>
         <% if @animal.name.present? %>
-          <span class="text-base font-normal text-gray-500">（<%= @animal.name %>）</span>
+          <span class="text-base font-normal text-gray-500">(<%= @animal.name %>)</span>
         <% end %>
       </h1>
     </div>
   </div>
 
-  <%# プロフィールカード %>
   <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
     <dl class="grid grid-cols-2 gap-x-4 gap-y-4">
 
@@ -102,7 +100,6 @@
     <% end %>
   </div>
 
-  <%# 記録ナビゲーション — 健康記録・給餌記録 %>
   <div class="grid grid-cols-2 gap-3 mb-3">
     <%= link_to zone_animal_health_logs_path(@zone, @animal),
         class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all text-center block" do %>
@@ -116,7 +113,7 @@
     <% end %>
   </div>
 
-  <%# 編集・削除はAdmin専用 — Staffには非表示 %>
+  <%# 수정과 삭제는 Admin 전용 — Staff 에게는 숨긴다 %>
   <% if current_user.admin? %>
     <div class="grid grid-cols-2 gap-3 mb-6">
       <%= link_to "수정", edit_zone_animal_path(@zone, @animal),
@@ -130,7 +127,7 @@
 
 </div>
 
-<%# 写真の原寸表示モーダル — body直下にレンダする（fixedをビューポート基準にするため） %>
+<%# 사진 원본 모달 — body 직하에 렌더한다 (common/views.md) %>
 <% if @animal.photo.attached? %>
   <% content_for :modal do %>
     <div data-controller="modal" id="photo-modal">

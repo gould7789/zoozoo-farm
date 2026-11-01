@@ -1,6 +1,5 @@
-// 動物リストをリアルタイムでフィルタリングするコントローラー
-// 種名・個体名の部分一致で絞り込む
-// カテゴリ内の全アイテムが非表示になった場合はカテゴリブロック（details要素）も非表示にする
+// 동물 목록을 입력 중에 거른다 — 종명·개체명 부분 일치
+// 서버를 거치지 않는다. 관 하나의 동물은 전부 이미 그려져 있다 (notes/zone-accordion.md)
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
@@ -17,15 +16,14 @@ export default class extends Controller {
       if (match) visibleCount++
     })
 
-    // カテゴリブロック（details要素）単位で表示を制御
-    // カテゴリ内に表示中のアイテムが1件もなければカテゴリごと非表示にする
+    // 카테고리 안에 보이는 항목이 하나도 없으면 카테고리(details)째로 숨긴다
     this.element.querySelectorAll("details").forEach((details) => {
       const hasVisible = [ ...details.querySelectorAll("[data-search-target='item']") ]
         .some((item) => !item.classList.contains("hidden"))
       details.classList.toggle("hidden", !hasVisible)
     })
 
-    // 検索結果が0件の場合は「見つかりません」メッセージを表示
+    // 결과가 0건이면 안내 문구를 띄운다
     if (this.hasEmptyTarget) {
       this.emptyTarget.classList.toggle("hidden", visibleCount > 0)
     }

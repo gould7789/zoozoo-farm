@@ -1,4 +1,4 @@
-// パスワードの表示・非表示を切り替えるコントローラー
+// 비밀번호 표시·숨김 전환
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {

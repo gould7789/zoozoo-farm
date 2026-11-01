@@ -1,5 +1,5 @@
-// テーブル行クリックでページ遷移するコントローラー
-// インラインonclick属性を排除し、CSP準拠のイベント処理に変更
+// 테이블 행을 눌러 페이지를 옮긴다
+// 인라인 onclick 을 쓰지 않는 이유는 CSP 때문이다
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {

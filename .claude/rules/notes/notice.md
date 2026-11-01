@@ -82,6 +82,23 @@ POST /notices  url="https://evil.example/track.png"
 
 **문서화된 보장이 아니라 Rails 내부 동작**이라 위장 파일 spec으로 고정해뒀다.
 
+## CSP 가 업로드를 막았던 이유
+
+운영에서 이미지 업로드가 전부 실패했다. 개발에서는 멀쩡했다 — **개발은 Disk 서비스라 같은 오리진이어서 CSP 를 타지 않는다.**
+
+원인은 `connect_src` 에 **경로를 넣은 것**이었다.
+
+```
+허용한 값   https://xxx.supabase.co/storage/v1/s3
+실제 PUT   https://xxx.supabase.co/storage/v1/s3/<버킷>/<키>?X-Amz-...
+```
+
+**CSP 소스에 경로가 있고 끝이 `/` 가 아니면, URL 의 경로는 완전 일치가 요구된다.** 접두사 일치가 아니다. 그래서 오리진까지만 허용한다. `URI.parse(origin).path == ""` 를 spec 으로 고정해뒀다.
+
+같은 함정이 `img_src` 에도 있다. **CSP 는 리다이렉트 뒤의 호스트를 본다.** `rails_service_blob_url` 은 스토리지로 리다이렉트하는 라우트라 `img_src 'self'` 아래에서 깨진다. 같은 오리진으로 중계하는 `rails_service_blob_proxy_url` 을 쓴다.
+
+`connect_src` 를 전체가 아니라 `NoticesController` 에만 붙인 이유는, 전체에 두면 **비로그인으로 보이는 로그인 화면에도 스토리지 호스트명이 실리기** 때문이다.
+
 ## `excerpt`가 `to_plain_text`를 안 쓰는 이유
 
 `to_plain_text`는 첨부를 1건씩 sgid로 다시 끌어와 평문 표현을 만든다. 목록에서 쓰면 **공지 수만큼 쿼리가 는다**(실측 1건당 2쿼리, 9 → 15).

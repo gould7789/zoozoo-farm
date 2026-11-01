@@ -1,27 +1,26 @@
-# 全コントローラーの基底クラス — 認証ヘルパーを定義
+# 전체 컨트롤러의 기반 클래스 — 인증 헬퍼와 xlsx 공통 스타일
+# 판단 근거는 .claude/rules/notes/auth.md, notes/xlsx-export.md
 class ApplicationController < ActionController::Base
-  # 最新ブラウザのみ許可
   allow_browser versions: :modern
 
-  # importmapの変更時にHTMLレスポンスのetagを無効化
+  # importmap 이 바뀌면 HTML 응답의 etag 를 무효화한다 — 캐시된 페이지가 낡은 JS 를 물지 않게
   stale_when_importmap_changes
 
   before_action :require_login
 
   helper_method :current_user, :logged_in?
 
-  # 範囲外の数値がDBに渡された場合（integer overflow等）
+  # DB 컬럼 범위를 넘는 수치가 들어온 경우 (integer overflow 등)
   rescue_from ActiveRecord::RangeError do
     redirect_back fallback_location: root_path,
                   alert: "입력값이 허용 범위를 초과했습니다. 숫자를 확인해주세요."
   end
 
-  # 存在しないレコードへのアクセス
   rescue_from ActiveRecord::RecordNotFound do
     redirect_to root_path, alert: "요청한 데이터를 찾을 수 없습니다."
   end
 
-  # Strong Parametersの必須キーが欠落している場合
+  # Strong Parameters 의 필수 키가 빠진 경우
   rescue_from ActionController::ParameterMissing do
     redirect_back fallback_location: root_path,
                   alert: "필수 항목이 누락됐습니다."
@@ -45,9 +44,9 @@ class ApplicationController < ActionController::Base
       redirect_to root_path, alert: "권한이 없습니다." unless current_user&.admin?
     end
 
-    # 全xlsxエクスポートで共有するセルスタイル群を返す
-    # 自由記述列（特異事項・詳細内容）以外は中央寄せで揃え、可読性を高める
-    # 日付・金額は書式コードを付与してExcelの####・整列バラつきを防ぐ
+    # xlsx 내보내기 5개 컨트롤러가 공유하는 셀 스타일.
+    # 서식 코드를 주지 않으면 Excel 에서 날짜가 시리얼 숫자로 보인다.
+    # 자세한 것은 .claude/rules/notes/xlsx-export.md
     def xlsx_styles(workbook)
       {
         header:   workbook.styles.add_style(b: true, bg_color: "F3F4F6", border: { style: :thin, color: "D1D5DB" }, alignment: { horizontal: :center, vertical: :center }),

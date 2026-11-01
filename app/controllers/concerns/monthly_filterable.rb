@@ -1,11 +1,11 @@
-# 年月フィルタ付き一覧の共通処理 — 売上・支出の両画面で使う
-# 対象モデルに in_month スコープと available_year_months が実装されていることを前提とする
+# 연월 필터가 붙은 목록의 공통 처리 — 매출·지출 두 화면에서 쓴다
+# 대상 모델에 in_month 스코프와 available_year_months 가 있어야 한다
 module MonthlyFilterable
   extend ActiveSupport::Concern
 
   private
 
-    # 年月の選択状態をインスタンス変数に設定し、対象月のレコードを返す
+    # 연월 선택 상태를 인스턴스 변수에 담고 해당 월의 레코드를 돌려준다
     def load_monthly_records(model)
       year_months = model.available_year_months
 
@@ -16,20 +16,20 @@ module MonthlyFilterable
       @selected_year  = resolve_year(params[:year], @all_years)
       @selected_month = resolve_month(params[:month], @months_by_year[@selected_year])
 
-      # 記録が1件もない、または年月が確定できない場合は空のリレーションを返す
+      # 기록이 0건이거나 연월을 확정할 수 없으면 빈 릴레이션을 돌려준다
       return model.none if @selected_year.nil? || @selected_month.nil?
 
       model.in_month(@selected_year, @selected_month).recent.includes(:created_by)
     end
 
-    # 存在しない年が指定された場合は最新年にフォールバックする
-    # 不正な値がDate.newに渡ってArgumentErrorになるのを防ぐ役割も持つ
+    # 없는 연도가 지정되면 최신 연도로 떨어뜨린다.
+    # 부정한 값이 Date.new 에 넘어가 ArgumentError 가 되는 것도 여기서 막는다
     def resolve_year(param, years)
       year = param.presence&.to_i
       years.include?(year) ? year : years.first
     end
 
-    # 存在しない月が指定された場合はその年の最新月にフォールバックする
+    # 없는 월이 지정되면 그 해의 최신 월로 떨어뜨린다
     def resolve_month(param, months)
       months = months.to_a
       month  = param.presence&.to_i

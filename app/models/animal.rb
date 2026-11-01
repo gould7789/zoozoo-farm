@@ -1,11 +1,10 @@
 # 동물 개체 모델
 # 사망·방출 시 active = false 로 논리 삭제한다
+# 사진 관련 판단은 .claude/rules/notes/animal-photo.md
 class Animal < ApplicationRecord
-  # Render의 libvips는 HEIC를 읽지 못해 variant 생성이 실패한다.
-  # 브라우저에서 JPEG로 바꿔 보내지만, 변환이 실패했을 때의 최종 방어선
+  # 브라우저에서 JPEG 로 바꿔 보내지만, 그 변환이 실패했을 때의 최종 방어선
   ALLOWED_PHOTO_TYPES = %w[ image/jpeg image/png image/webp ].freeze
-  # 축소를 강제하는 장치가 아니라 안전망이다. 브라우저에서 1600px로 줄이면
-  # 수백KB로 도착한다. JS가 실패하면 원본은 통과시키고 비정상적으로 큰 것만 막는다
+  # 축소를 강제하는 장치가 아니라 안전망 — JS 가 들으면 수백KB 로 도착한다
   MAX_PHOTO_BYTES = 15.megabytes
 
   belongs_to :zone
@@ -13,12 +12,10 @@ class Animal < ApplicationRecord
   has_many :health_records,  dependent: :destroy
   has_many :feeding_records, dependent: :destroy
 
-  # 잡 워커가 없는 환경이라 preprocessed: true 를 쓸 수 없다.
-  # variant는 처음 참조할 때 만들어지고 그 뒤로는 저장된 것을 재사용한다
+  # 잡 워커가 없어 preprocessed: true 를 쓰지 않는다 — variant 는 처음 참조할 때 만들어진다
   has_one_attached :photo do |attachable|
-    # 아바타는 원형으로 보여주므로 정사각형으로 자른다.
-    # 브라우저에서 이미 잘랐으면 사실상 no-op이지만, JS가 실패해
-    # 원래 비율로 도착해도 아바타 모양을 맞출 수 있다
+    # 아바타는 원형이라 정사각형으로 자른다.
+    # 브라우저에서 이미 잘랐으면 사실상 no-op 이지만, JS 가 실패해도 모양을 맞출 수 있다
     attachable.variant :thumb,  resize_to_fill: [ 320, 320 ]
     attachable.variant :detail, resize_to_limit: [ 1200, 1200 ]
   end

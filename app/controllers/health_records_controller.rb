@@ -1,5 +1,6 @@
-# 健康記録のCRUDを担当するコントローラー
-# 全アクションにログイン必須、編集・削除は本人記録のみ（Adminは他者記録も操作可能）
+# 건강 기록 CRUD
+# xlsx 내보내기 판단은 .claude/rules/notes/xlsx-export.md
+# 전체 액션에 로그인 필수, 수정·삭제는 본인 기록만 (Admin 은 타인 기록도 조작 가능)
 class HealthRecordsController < ApplicationController
   include AnimalScoped
   include OwnerRestriction
@@ -8,7 +9,7 @@ class HealthRecordsController < ApplicationController
   before_action -> { require_owner(@health_record) },  only: [ :edit, :update, :destroy ]
 
   def index
-    # 最新の観察日順に表示
+    # 최신 관찰일 순
     @health_records = @animal.health_records.recent.includes(:created_by)
     respond_to do |format|
       format.html
@@ -79,7 +80,7 @@ class HealthRecordsController < ApplicationController
             r.created_at
           ], style: row_styles
         end
-        # 列幅を明示してExcelの####表示を防ぎ、ヘッダー行を固定・フィルタを付与
+        # 폭을 명시하지 않으면 Excel 이 #### 로 가린다
         sheet.column_widths 13, 10, 10, 36, 14, 18
         sheet.auto_filter = "A1:F1"
         sheet.sheet_view.pane do |pane|

@@ -1,4 +1,5 @@
-# Admin専用ユーザー管理コントローラー — Staffアカウントの作成・編集・退職処理を担当
+# Admin 전용 사용자 관리 — Staff 계정 생성·수정·퇴사 처리
+# 판단 근거는 .claude/rules/notes/auth.md
 class Admin::UsersController < ApplicationController
   before_action :require_admin
   before_action :set_user, only: [ :edit, :update, :destroy ]
@@ -9,7 +10,7 @@ class Admin::UsersController < ApplicationController
     @staffs         = User.staff.where(active: true).order(:name)
     @inactive_users = User.where(active: false).order(:name)
 
-    # 記録を持つユーザーのIDを事前に集計する — 削除ボタンの出し分けに使う
+    # 기록을 가진 사용자 ID 를 미리 모은다 — 삭제 버튼을 보일지 가르는 데 쓴다
     @user_ids_with_records = collect_user_ids_with_records(@admins + @staffs + @inactive_users)
   end
 
@@ -30,14 +31,14 @@ class Admin::UsersController < ApplicationController
   end
 
   def destroy
-    # 自分自身は削除不可
+    # 자기 자신은 지울 수 없다
     if @user == current_user
       redirect_to admin_members_path, alert: "자기 자신은 삭제할 수 없습니다."
       return
     end
 
-    # 記録を持つユーザーはrestrict_with_errorで削除が拒否され、例外なくfalseが返る
-    # 画面上は一覧のボタン出し分けで防いでいるが、直接リクエストや競合への最終防衛線として残す
+    # restrict_with_error 라 예외 없이 false 가 돌아온다.
+    # 화면에서도 버튼을 감추지만, 직접 요청과 경합에 대한 최종 방어선으로 남긴다
     if @user.destroy
       redirect_to admin_members_path, notice: "계정을 삭제했습니다."
     else
@@ -60,8 +61,8 @@ class Admin::UsersController < ApplicationController
       @user = User.find(params[:id])
     end
 
-    # 記録を1件以上持つユーザーのIDをSetで返す
-    # ユーザーごとに数えるとN+1になるため、テーブルごとに1クエリ（計5クエリ）でまとめて取得する
+    # 기록을 1건 이상 가진 사용자 ID 를 Set 으로 돌려준다.
+    # 사용자마다 세면 N+1 이라, 테이블마다 1쿼리(총 5쿼리)로 한 번에 모은다
     def collect_user_ids_with_records(users)
       ids = users.map(&:id)
       [ HealthRecord, FeedingRecord, Notice, SalesRecord, ExpenseRecord ]
@@ -69,27 +70,26 @@ class Admin::UsersController < ApplicationController
         .to_set
     end
 
-    # 新規作成用パラメータ — パスワード必須
+    # 신규 생성용 — 비밀번호 필수
     def user_params
       permitted = params.require(:user).permit(:name, :email, :password, :role, :position, :is_team_leader, :hired_on, :contract_ends_on)
-      # positionが空文字の場合はnilに変換（enumに空文字を渡すとArgumentErrorになるため）
+      # 빈 문자열은 nil 로 — enum 에 빈 문자열을 넘기면 ArgumentError 가 된다
       permitted[:position] = nil if permitted[:position].blank?
       permitted
     end
 
-    # 更新用パラメータ — パスワードは任意（空の場合は変更しない）、退職処理(active)も含む
+    # 수정용 — 비밀번호는 선택(비우면 변경 안 함), 퇴사 처리(active)도 포함한다
     def user_update_params
       permitted = params.require(:user).permit(:name, :email, :password, :role, :active,
                                                :position, :is_team_leader, :hired_on, :contract_ends_on)
-      # 自分自身の役割・在職状態は変更させない
-      # 最後の管理者が権限を失うと復旧手段がなくなるため（seedsでも復旧できない）
+      # 마지막 관리자가 자기 권한을 잃으면 화면에서 되돌릴 방법이 없다
       if @user == current_user
         permitted.delete(:role)
         permitted.delete(:active)
       end
-      # パスワードが空欄の場合は更新しない
+      # 비밀번호가 비어 있으면 갱신하지 않는다
       permitted.delete(:password) if permitted[:password].blank?
-      # positionが空文字の場合はnilに変換
+      # 빈 문자열은 nil 로
       permitted[:position] = nil if permitted[:position].blank?
       permitted
     end

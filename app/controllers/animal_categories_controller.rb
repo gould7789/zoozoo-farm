@@ -1,5 +1,5 @@
-# 動物カテゴリのCRUDを担当するコントローラー
-# 全アクションはAdmin専用 — Staffは参照のみ
+# 동물 카테고리 CRUD
+# 전체 액션이 Admin 전용 — Staff 는 조회만 한다
 class AnimalCategoriesController < ApplicationController
   before_action :set_zone
   before_action :require_admin
@@ -31,8 +31,8 @@ class AnimalCategoriesController < ApplicationController
       end
     else
       respond_to do |format|
-        # updateではなくreplaceを使う — updateはinnerHTMLだけを差し替えるため
-        # partialのルートdivが二重になり、paddingが重なって行がインデントされる
+        # update 가 아니라 replace — update 는 innerHTML 만 갈아끼우므로
+        # partial 의 루트 div 가 이중이 되고 padding 이 겹쳐 행이 들여쓰기된다
         format.turbo_stream { render turbo_stream: turbo_stream.replace("category_row_#{@category.id}", partial: "animal_categories/category_row", locals: { category: @category, zone: @zone, editing: true }) }
         format.html { redirect_to zone_path(@zone), alert: @category.errors.full_messages.to_sentence }
       end
@@ -42,11 +42,11 @@ class AnimalCategoriesController < ApplicationController
   def destroy
     @category = @zone.animal_categories.find(params[:id])
     @category.destroy!
-    # カテゴリ削除後、所属動物のanimal_category_idはDBのON DELETE NULLIFYで自動的にNULLになる
+    # 소속 동물의 animal_category_id 는 DB 의 ON DELETE NULLIFY 로 알아서 NULL 이 된다
     redirect_to zone_path(@zone), notice: "카테고리를 삭제했습니다. 해당 카테고리의 동물은 미분류로 이동되었습니다."
   end
 
-  # hiddenフラグをトグルする — Turbo Streamでモーダルを閉じずにDOM更新
+  # 숨김 플래그를 뒤집는다 — Turbo Stream 으로 모달을 닫지 않고 DOM 만 갱신한다
   def toggle
     @category = @zone.animal_categories.find(params[:id])
     @category.update!(hidden: !@category.hidden)
@@ -69,8 +69,8 @@ class AnimalCategoriesController < ApplicationController
       params.require(:animal_category).permit(:name)
     end
 
-    # アコーディオン再描画に必要なデータを揃える — create / update / toggle で共通
-    # includes(:health_records)はアコーディオンがlatest_conditionを呼ぶ際のN+1を防ぐ
+    # 아코디언을 다시 그리는 데 필요한 데이터 — create / update / toggle 공통.
+    # includes(:health_records) 는 아코디언이 latest_condition 을 부를 때의 N+1 을 막는다
     def load_accordion_data
       @categories = @zone.animal_categories.where(hidden: false).order(:name)
       @animals_by_category = @zone.animals.active

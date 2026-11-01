@@ -1,4 +1,5 @@
 # 사용자 모델 — 인증과 권한
+# 판단 근거는 .claude/rules/notes/auth.md
 class User < ApplicationRecord
   has_secure_password
 

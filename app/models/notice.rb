@@ -7,7 +7,6 @@ class Notice < ApplicationRecord
   # JSが失敗した場合の安全網
   MAX_EMBED_BYTES = 15.megabytes
 
-  # 作成者
   belongs_to :created_by, class_name: "User"
 
   # 本文のリッチテキスト。
@@ -16,7 +15,6 @@ class Notice < ApplicationRecord
   # 覆い隠してしまうからである。移行期間中は両方を独立して読む必要がある。
   has_rich_text :content
 
-  # カテゴリ enum（0=全体, 1=コザクラ館, 2=オウム館, 3=爬虫類館, 4=ミニ動物館, 5=屋外体験館, 6=隔離室）
   enum :category, {
     general:      0,
     lovebird:     1,
@@ -27,7 +25,6 @@ class Notice < ApplicationRecord
     isolation:    6
   }
 
-  # 題名・本文・カテゴリは必須
   validates :title,    presence: true, length: { maximum: 100 }
   validates :content,  presence: true
   validates :category, presence: true
@@ -35,7 +32,6 @@ class Notice < ApplicationRecord
   # 添付はvalidatesで扱えないのでカスタム検証で行う
   validate :embeds_must_be_supported_images
 
-  # 最新投稿順に並べるスコープ
   scope :recent, -> { order(created_at: :desc) }
 
   # 一覧に出す抜粋。見出しの下の2行なので、タグも画像も要らない。

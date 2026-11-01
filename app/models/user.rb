@@ -22,7 +22,6 @@ class User < ApplicationRecord
     general_manager:   5
   }
 
-  # アクティブなユーザーのみを返すスコープ（退職者除外）
   scope :active, -> { where(active: true) }
 
   validates :email, presence: true,

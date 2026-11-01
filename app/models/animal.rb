@@ -9,13 +9,9 @@ class Animal < ApplicationRecord
   # 数百KBで届く。JSが失敗した場合にスマホの原本は通し、異常に大きいものだけ弾く。
   MAX_PHOTO_BYTES = 15.megabytes
 
-  # 動物は必ずいずれかの館に所属する
   belongs_to :zone
-  # カテゴリは任意 — 未分類の動物はNULL
   belongs_to :animal_category, optional: true
-  # 健康記録
   has_many :health_records,  dependent: :destroy
-  # 給餌記録
   has_many :feeding_records, dependent: :destroy
 
   # プロフィール写真（1枚）。
@@ -36,15 +32,12 @@ class Animal < ApplicationRecord
   # 呼び出し方: animal.cites_none? / animal.cites_grade_i?
   enum :cites_grade, { none: 0, grade_i: 1, grade_ii: 2, grade_iii: 3 }, prefix: :cites
 
-  # 種名は必須、個体名は多頭種のためNULL許容
   validates :species, presence: true, length: { maximum: 100 }
   validates :name, length: { maximum: 100 }, allow_nil: true
-  # 個体数は1以上の整数（デフォルト1）
   validates :individual_count, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
   # 添付ファイルはvalidatesで扱えないためカスタム検証で行う
   validate :photo_must_be_supported_image
 
-  # 削除されていない動物のみを返すスコープ
   scope :active, -> { where(active: true) }
 
   # 最新の健康記録がcautionまたはdangerの動物を返すスコープ（ホーム画面アラート用）

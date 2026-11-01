@@ -1,12 +1,11 @@
-// 日付フィールドに今日の日付・日時をデフォルト値として設定するコントローラー
-// 新規作成フォームでのみ動作（編集フォームは既存値を保持）
+// 날짜 칸에 오늘 날짜·일시를 기본값으로 넣는다 — 작성 폼에서만 동작한다
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["field"]
 
   connect() {
-    // フィールドが空の場合のみセット（編集フォームの既存値を上書きしない）
+    // 비어 있을 때만 넣는다 — 수정 폼의 기존 값을 덮어쓰지 않는다
     this.fieldTargets.forEach((field) => {
       if (!field.value) {
         field.value = field.type === "datetime-local" ? this.nowDatetime() : this.today()
@@ -14,7 +13,7 @@ export default class extends Controller {
     })
   }
 
-  // YYYY-MM-DD形式（date型フィールド用）
+  // YYYY-MM-DD — date 칸용
   today() {
     const now = new Date()
     const year = now.getFullYear()
@@ -23,7 +22,7 @@ export default class extends Controller {
     return `${year}-${month}-${day}`
   }
 
-  // YYYY-MM-DDTHH:MM形式（datetime-local型フィールド用）
+  // YYYY-MM-DDTHH:MM — datetime-local 칸용
   nowDatetime() {
     const now = new Date()
     const year = now.getFullYear()

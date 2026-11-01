@@ -4,6 +4,7 @@ paths:
   - "app/controllers/notices_controller.rb"
   - "app/views/notices/**/*.erb"
   - "app/javascript/controllers/image_downscale_controller.js"
+  - "app/assets/tailwind/application.css"
   - "db/migrate/*_migrate_notice_body_to_rich_text.rb"
   - "db/migrate/*_add_title_to_notices.rb"
 ---
@@ -99,6 +100,38 @@ POST /notices  url="https://evil.example/track.png"
 
 `connect_src` 를 전체가 아니라 `NoticesController` 에만 붙인 이유는, 전체에 두면 **비로그인으로 보이는 로그인 화면에도 스토리지 호스트명이 실리기** 때문이다.
 
+## 본문 이미지는 올리기 전에 브라우저에서 줄인다
+
+무료 플랜은 메모리 512MB 에 잡 워커가 없다. 스마트폰 원본(수MB)이 그대로 도착하면 variant 생성이 무겁다. **현장의 주 경로가 카카오톡 → PC 다운로드 → 업로드**라 원본 크기 그대로 온다.
+
+### Action Text 의 기본 동작을 가로챈다
+
+```js
+// actiontext/index.js
+addEventListener("trix-attachment-add", event => { ... new AttachmentUpload(...) })
+```
+
+**bare 한 `addEventListener` 라 등록처가 `window` 다.** 이벤트는 `<trix-editor>` 에서 `window` 로 올라가므로 **에디터 요소에 붙인 리스너가 먼저 달린다.** 거기서 `stopPropagation()` 하면 기본 전송을 멈추고, 줄인 파일로 `AttachmentUpload` 를 다시 조립할 수 있다.
+
+**`stopPropagation()` 을 빼면 원본과 축소본이 두 벌 올라간다.**
+
+> 라이브러리 이벤트를 가로챌 때는 **그 리스너가 어디에 등록돼 있는지 먼저 소스로 확인한다.** 요소에 직접 등록돼 있으면 이 방법이 성립하지 않는다.
+
+### 줄일 때 걸리는 것
+
+| 처리 | 왜 |
+| --- | --- |
+| `imageOrientation: "from-image"` | 빼면 EXIF 회전이 날아가 사진이 눕는다 |
+| 축소가 필요 없으면 **JPEG 로 다시 굽지 않는다** | 로고·스크린샷 PNG 를 재인코딩하면 글자가 번지고 투명도 잃는데 크기는 거의 그대로다 |
+| JPEG 로 쓰기 전에 **흰색으로 칠한다** | JPEG 은 투명도를 못 가져, 안 칠하면 투명 부분이 **검게 가라앉는다** |
+| 디코드 실패 시 원본을 돌려준다 | Windows Chrome 의 HEIC 등. 여기서 멈추면 붙여넣기 자체가 안 된다 |
+
+`MAX_EDGE = 1600` 은 본문 표시 폭(`:detail` 의 1200px)보다 **조금 크게** 잡았다. 고해상도 화면에서 거칠어 보이지 않게.
+
+### 실패하면 본문에서 빼고 알린다
+
+조용히 `remove()` 만 하면 **이미지가 사라진 걸 모른 채 공지가 저장된다.** 기본 `alert(error)` 는 영어 스택을 내므로 한국어 문구로 갈아끼운다.
+
 ## `excerpt`가 `to_plain_text`를 안 쓰는 이유
 
 `to_plain_text`는 첨부를 1건씩 sgid로 다시 끌어와 평문 표현을 만든다. 목록에서 쓰면 **공지 수만큼 쿼리가 는다**(실측 1건당 2쿼리, 9 → 15).
@@ -125,3 +158,36 @@ HTML에서 만들되 두 가지를 처리한다.
 
 - `docs/active-storage.md` — 이미지 파이프라인 전체, 다이렉트 업로드와 폼 업로드의 차이
 - 노션 학습보고서 #91~#94
+
+## Trix 의 외형을 고칠 때
+
+**`app/assets/tailwind/application.css` 에서 고친다.** `_form.html.erb` 에 `class` 를 더해도 Trix 가 만드는 내부 요소에는 닿지 않는다.
+
+`actiontext.css` 를 덮을 때는 **명시도를 맞춰야 한다** — 자세한 것은 `.claude/rules/common/views.md`.
+
+### 툴바는 가로 스크롤이 아니라 줄바꿈
+
+버튼이 13개라 **어느 폭에서도 한 줄에 안 들어간다.** 가로 스크롤로 두면 화면 밖 버튼을 알아챌 수 없고, 실제로 **첨부 버튼이 보이지 않았다.**
+
+터치 영역(40px)은 남기고 아이콘만 작게·연하게 한다. 두 축을 나누는 이유는 `common/views.md`.
+
+### 첨부에서 숨기는 것
+
+| 숨긴 것 | 왜 |
+| --- | --- |
+| 파일명·용량 말풍선 (편집 중) | 캡션을 쓰는 동안 **이미지 위에 계속 겹쳐** 정작 사진이 가린다 |
+| 파일명·바이트 수 (편집·열람) | 개발자용 정보다. 사육사가 보고 판단할 것이 아니다 |
+
+**캡션 칸 자체는 남긴다** — 설명을 쓰면 그건 표시된다.
+
+### 첨부는 반드시 단독 행
+
+Trix 의 기본은 `inline-block` 이라 같은 행에 글자가 들어갈 수 있다. 이미지가 폭을 다 쓰면 **남는 자리가 몇 px 뿐이라, 한 글자 칠 때마다 줄바꿈된 것처럼 보인다.** `block` 으로 두면 글자가 옆으로 돌아 들어가는 일 자체가 없다.
+
+### 사진 2장 이상일 때
+
+Trix 는 `attachment-gallery` 를 만들어 **flex 로 가로에 놓고 1장당 50% 폭**으로 줄인다. 현장이 붙이는 건 카카오톡 스크린샷이라 **절반 폭에서는 글자가 안 읽힌다.** 1장씩 세로로 쌓는다.
+
+### 문단 사이 여백을 되돌린다
+
+`actiontext.css` 의 `.trix-content * { margin: 0 }` 이 문단 간격까지 지운다. **평문에서 이관한 공지는 개행이 `<p>` 의 연속**이라, 이걸 안 되돌리면 전문이 한 덩어리로 보인다.

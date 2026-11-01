@@ -1,22 +1,12 @@
-// プロフィール写真を円形に切り抜くための編集画面を出すコントローラー
-//
-// 写真を選ぶと<dialog>で切り抜き画面を開き、ドラッグで移動・スライダー/ホイール/
-// ピンチで拡大して見せたい部分を円の中に収めさせる。「완료」で円に外接する正方形を
-// JPEGに再エンコードし、inputのファイルを差し替える。
-//
-// 切り抜きと同時に3つの問題を片付けている。
-//   1. 転送量とサーバーのメモリ消費（無料プランは512MB、ジョブワーカーが無い）
-//   2. iPhoneのHEIC（RenderのlibvipsはHEICを読めない）
-//   3. アバターの構図（CSSの中央切り抜きでは頭が欠ける）
-//
-// 画面はすべてcanvasに描く。プレビューにblob: URLを使うと
-// CSPのimg_src（:self, :data）に阻まれるため。
+// 프로필 사진을 원형으로 자르는 편집 화면.
+// 자르기 하나로 전송량·HEIC·아바타 구도 세 가지를 같이 치운다.
+// 판단 근거는 .claude/rules/notes/animal-photo.md
 import { Controller } from "@hotwired/stimulus"
 
 const MAX_OUTPUT = 1600
 const JPEG_QUALITY = 0.85
 const MAX_ZOOM = 4
-// 切り抜き円の直径（編集キャンバスに対する比率）
+// 자르기 원의 지름 (편집 캔버스에 대한 비율)
 const CIRCLE_RATIO = 0.86
 
 export default class extends Controller {
@@ -31,7 +21,7 @@ export default class extends Controller {
     this.#releaseBitmap()
   }
 
-  // ファイル選択 → デコードできたら切り抜き画面を開く
+  // 파일 선택 → 디코드되면 자르기 화면을 연다
   async select() {
     const file = this.inputTarget.files[0]
     if (!file) return
@@ -40,22 +30,19 @@ export default class extends Controller {
     this.#releaseBitmap()
 
     try {
-      // imageOrientationを指定しないとEXIFの回転情報が失われ、
-      // スマホで撮った写真が横倒しになる
+      // imageOrientation 을 빼면 EXIF 회전이 날아가 사진이 옆으로 눕는다
       this.bitmap = await createImageBitmap(file, { imageOrientation: "from-image" })
     } catch {
-      // デコードできない形式（WindowsのChromeでのHEIC等）は原本のまま送り、
-      // サーバー側の検証に委ねる。
-      // ただし表示は戻す — 前の切り抜きが残っていると別の写真を選んだように見え、
-      // さらにサーバー削除ボタンが再び出ると「選択の取り消し」のつもりで
-      // 保存済みの写真を消してしまう
+      // 디코드 못 하는 형식(Windows Chrome 의 HEIC 등)은 원본 그대로 보내고
+      // 서버 검증에 맡긴다. 다만 표시는 되돌린다 — 지난 자르기가 남아 있으면
+      // 다른 사진을 고른 것처럼 보인다
       this.#showState({ selected: true, previewed: false })
       return
     }
 
     const stage = this.stageTarget
     this.diameter = stage.width * CIRCLE_RATIO
-    // 拡大率1のとき、円が写真の短辺にちょうど収まる
+    // 확대율 1 일 때 원이 사진의 짧은 변에 꼭 들어간다
     this.minScale = this.diameter / Math.min(this.bitmap.width, this.bitmap.height)
     this.zoom = 1
     this.zoomTarget.value = 1
@@ -63,15 +50,12 @@ export default class extends Controller {
     this.centerY = this.bitmap.height / 2
 
     this.#draw()
-    // スクロールバーを先に消してから開く。順序が逆だと、ダイアログを描画した直後に
-    // ビューポート幅が変わってw-[92vw]と中央寄せが再計算され、レイアウトがもう一度動く。
-    // 利用者には開いた瞬間のがたつきとして見え、自動テストではその隙間に
-    // クリックが入って隣の要素を押してしまう
+    // 스크롤바를 먼저 없애고 연다 — 순서가 반대면 열린 순간 레이아웃이 한 번 더 움직인다
     document.body.classList.add("overflow-hidden")
     this.dialogTarget.showModal()
   }
 
-  // 「완료」— 円に外接する正方形を切り出してinputに反映する
+  // 「완료」— 원에 외접하는 정사각형을 잘라 input 에 반영한다
   async confirm() {
     const half = this.#halfSide()
     const side = Math.min(Math.round(half * 2), MAX_OUTPUT)
@@ -97,15 +81,14 @@ export default class extends Controller {
     this.#close()
   }
 
-  // 「취소」またはESC — 選択自体を取り消す
+  // 「취소」 또는 ESC — 선택 자체를 취소한다
   cancel() {
     this.inputTarget.value = ""
     this.#showState({ selected: false, previewed: false })
     this.#close()
   }
 
-  // 未保存の選択を取り消し、保存済みの写真があればその表示に戻す。
-  // サーバーには何も送らないので確認モーダルは出さない
+  // 미저장 선택분만 취소한다. 서버에는 아무것도 보내지 않으므로 확인 모달을 내지 않는다
   clear() {
     this.inputTarget.value = ""
     this.#showState({ selected: false, previewed: false })
@@ -120,8 +103,7 @@ export default class extends Controller {
     this.#setZoom(this.zoom * Math.exp(-event.deltaY * 0.002))
   }
 
-  // pointerイベントでマウス・タッチ・ペンを一括で扱う。
-  // 指1本ならドラッグ移動、2本ならピンチ拡大
+  // pointer 이벤트로 마우스·터치·펜을 한 번에 다룬다. 손가락 1개면 이동, 2개면 확대
   pointerDown(event) {
     event.preventDefault()
     this.stageTarget.setPointerCapture(event.pointerId)
@@ -138,7 +120,7 @@ export default class extends Controller {
     this.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
 
     if (this.pointers.size === 1) {
-      // 表示サイズとキャンバスの内部解像度の差を補正してから元画像の座標に換算する
+      // 표시 크기와 캔버스 내부 해상도의 차를 보정한 뒤 원본 좌표로 환산한다
       const ratio = this.stageTarget.width / this.stageTarget.clientWidth
       const scale = this.minScale * this.zoom
       this.centerX -= (event.clientX - previous.x) * ratio / scale
@@ -162,12 +144,12 @@ export default class extends Controller {
     this.#draw()
   }
 
-  // 円に外接する正方形の半辺（元画像のピクセル単位）
+  // 원에 외접하는 정사각형의 반변 (원본 픽셀 단위)
   #halfSide() {
     return this.diameter / (2 * this.minScale * this.zoom)
   }
 
-  // 切り抜き範囲が写真の外にはみ出さないよう中心を制限する
+  // 자르기 범위가 사진 밖으로 나가지 않도록 중심을 제한한다
   #clampCenter() {
     const half = this.#halfSide()
     this.centerX = Math.min(Math.max(this.centerX, half), this.bitmap.width - half)
@@ -189,12 +171,12 @@ export default class extends Controller {
     context.fillStyle = "#111827"
     context.fillRect(0, 0, size, size)
 
-    // 円の中心に写真の(centerX, centerY)が来るように描く
+    // 원의 가운데에 사진의 (centerX, centerY) 가 오도록 그린다
     context.setTransform(scale, 0, 0, scale, size / 2 - this.centerX * scale, size / 2 - this.centerY * scale)
     context.drawImage(this.bitmap, 0, 0)
     context.setTransform(1, 0, 0, 1, 0, 0)
 
-    // 円の外側を暗くする（evenoddで円をくり抜く）
+    // 원 바깥을 어둡게 한다 (evenodd 로 원을 뚫는다)
     const radius = this.diameter / 2
     context.beginPath()
     context.rect(0, 0, size, size)
@@ -209,24 +191,23 @@ export default class extends Controller {
     context.stroke()
   }
 
-  // フォーム上の円形プレビューに切り抜き結果を写す
+  // 폼의 원형 미리보기에 자르기 결과를 옮긴다
   #showPreview(source) {
     const preview = this.previewTarget
     preview.getContext("2d").drawImage(source, 0, 0, preview.width, preview.height)
     this.#showState({ selected: true, previewed: true })
   }
 
-  // 表示は「ファイルを選んでいるか」と「プレビューを作れたか」の2軸で決まる。
-  // 1つの真偽値にまとめると、デコードに失敗した時に
-  // 「選択済みなのにプレビューが無い」状態を表現できない。
+  // 표시는 「파일을 골랐나」와 「미리보기를 만들었나」 2축으로 정해진다 —
+  // 하나로 합치면 디코드 실패 상태를 표현할 수 없다 (notes/animal-photo.md)
   //
-  //   選択あり・プレビューあり … 切り抜き完了
-  //   選択なし              … 保存済みの写真とサーバー削除を出す
-  //   選択あり・プレビューなし … デコード失敗。取り消しだけ出す
+  //   선택 O · 미리보기 O … 자르기 완료
+  //   선택 X             … 저장된 사진과 서버 삭제를 낸다
+  //   선택 O · 미리보기 X … 디코드 실패. 취소만 낸다
   #showState({ selected, previewed }) {
     this.previewTarget.hidden = !previewed
     this.clearTarget.hidden = !selected
-    // 選択中にサーバー削除を出すと、取り消しのつもりで保存済みの写真を消してしまう
+    // 선택 중에 서버 삭제를 내면, 취소하려다 저장된 사진을 지운다
     if (this.hasCurrentTarget) this.currentTarget.hidden = selected
     if (this.hasDestroyTarget) this.destroyTarget.hidden = selected
   }

@@ -154,6 +154,40 @@ spec/
 「アクションが50行を超える」「同じロジックが3箇所以上に現れる」「外部API連携が発生する」の
 いずれかに達した時点で切り出す方針にしています。
 
+### AIコーディング支援の設定
+
+Claude Code を使って開発しているため、その設定もリポジトリに入れて管理しています。
+読み込まれるタイミングが違うので、役割ごとに置き場所を分けました。
+
+```
+.claude/
+├── settings.json          # フックと権限。ハーネスが読む
+├── rules/                 # 変えない規則
+│   ├── domain.md              常に読み込む（ドメイン・言語・権限）
+│   ├── rails.md               app/models, app/controllers を開いた時
+│   ├── views.md               app/views, app/assets, app/javascript
+│   ├── migrations.md          db/migrate
+│   └── testing.md             spec
+├── skills/                # 呼ばれた時だけ読み込む作業手順
+│   ├── dev-flow/              課題作成からPR・学習記録まで
+│   ├── grill/                 実装前に設計を攻める
+│   ├── walkthrough/           変更を読めるように説明する
+│   └── qa/                    コミット前の手動確認リスト
+└── hooks/
+    └── block-git-write.sh     git の状態変更を遮断する
+```
+
+`rules/` は `paths` フロントマターでファイル種別ごとに絞っています。
+全部を常に読ませると、肝心な時に必要な規則が埋もれるためです。
+
+`block-git-write.sh` は「コミット・プッシュ・マージは人間が実行する」という
+運用ルールを、文書ではなく仕組みで強制するものです。規則は以前からありましたが
+守られず、実際に誤ってコミットしたことがありました。`PreToolUse` で `exit 2` を
+返すとツール実行前に遮断されます。読み取り専用のコマンドは通します。
+
+> フックで作業が止まった場合は `.claude/settings.json` の `hooks` を一時的に
+> 外してください。遮断条件は `.claude/hooks/block-git-write.sh` にあります。
+
 ---
 
 ## ERD

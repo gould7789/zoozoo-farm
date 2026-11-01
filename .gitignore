@@ -38,8 +38,8 @@
 /app/assets/builds/*
 !/app/assets/builds/.keep
 
-# Claude context document
-/CLAUDE.md
+# Claude 個人設定 — 共有するものは .claude/settings.json に置く
+/.claude/settings.local.json
 
 # Portfolio material notes (personal — not part of the project documentation)
 /docs/portfolio-notes.md

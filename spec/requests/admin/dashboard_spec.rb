@@ -1,4 +1,4 @@
-# Admin::DashboardControllerのリクエストテスト — Admin専用アクセス制御を検証する
+# Admin::DashboardController — Admin 전용 접근 제어
 require "rails_helper"
 
 RSpec.describe "Admin::Dashboard", type: :request do
@@ -6,29 +6,26 @@ RSpec.describe "Admin::Dashboard", type: :request do
   let(:staff) { create(:user) }
 
   describe "GET /admin/dashboard" do
-    # 未ログインはログインページへ強制リダイレクト
-    context "未ログイン" do
-      it "ログインページにリダイレクトする" do
+    context "비로그인" do
+      it "로그인 화면으로 보낸다" do
         get admin_dashboard_path
         expect(response).to redirect_to(login_path)
       end
     end
 
-    # StaffはAdmin専用ページにアクセス不可
-    context "Staffがアクセス" do
+    context "Staff 가 접근" do
       before { sign_in(staff) }
 
-      it "ルートにリダイレクトする" do
+      it "루트로 보낸다" do
         get admin_dashboard_path
         expect(response).to redirect_to(root_path)
       end
     end
 
-    # Adminは管理ハブを閲覧可能
-    context "Adminがアクセス" do
+    context "Admin 이 접근" do
       before { sign_in(admin) }
 
-      it "200を返す" do
+      it "200을 반환한다" do
         get admin_dashboard_path
         expect(response).to have_http_status(:ok)
       end

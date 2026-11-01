@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe User, type: :model do
-  describe "バリデーション" do
+  describe "검증" do
     subject { build(:user) }
 
     it { is_expected.to validate_presence_of(:email) }
@@ -14,8 +14,8 @@ RSpec.describe User, type: :model do
     it { is_expected.to define_enum_for(:role).with_values(admin: 0, staff: 1) }
   end
 
-  # 記録を持つユーザーは物理削除を禁止する — 監査証跡（作成者情報）を保持するため
-  describe "アソシエーション" do
+  # 기록을 가진 사용자는 물리 삭제를 막는다 — 감사 추적(작성자)을 보존해야 한다
+  describe "연관" do
     it { is_expected.to have_many(:health_records).with_foreign_key(:created_by_id).dependent(:restrict_with_error) }
     it { is_expected.to have_many(:feeding_records).with_foreign_key(:created_by_id).dependent(:restrict_with_error) }
     it { is_expected.to have_many(:notices).with_foreign_key(:created_by_id).dependent(:restrict_with_error) }
@@ -24,7 +24,7 @@ RSpec.describe User, type: :model do
   end
 
   describe ".active" do
-    it "アクティブなユーザーのみ返す" do
+    it "active 사용자만 반환한다" do
       active_user   = create(:user)
       inactive_user = create(:user, :inactive)
 
@@ -34,50 +34,49 @@ RSpec.describe User, type: :model do
   end
 
   describe "role" do
-    it "デフォルトはstaffである" do
+    it "기본값은 staff 다" do
       expect(build(:user).role).to eq("staff")
     end
 
-    it "adminロールを持てる" do
+    it "admin 역할을 가질 수 있다" do
       expect(build(:user, :admin)).to be_admin
     end
 
-    it "staffロールを持てる" do
+    it "staff 역할을 가질 수 있다" do
       expect(build(:user)).to be_staff
     end
   end
 
-  # フォームのプレースホルダー「8자 이상」とko.ymlのtoo_shortメッセージに
-  # モデル側の検証を一致させる
-  describe "パスワードの長さ" do
-    it "8文字未満は無効" do
+  # 폼의 placeholder 「8자 이상」과 ko.yml 의 too_short 메시지에 모델 검증을 맞춘다
+  describe "비밀번호 길이" do
+    it "8자 미만은 무효" do
       user = build(:user, password: "pass123")
       expect(user).to be_invalid
       expect(user.errors[:password]).to include("비밀번호는 8자 이상이어야 합니다.")
     end
 
-    it "8文字以上は有効" do
+    it "8자 이상은 유효" do
       expect(build(:user, password: "pass1234")).to be_valid
     end
 
-    # 編集画面でパスワード欄を空にした場合、コントローラーが:passwordをparamsから
-    # 除外するためpasswordはnilになる — そのケースで長さ検証に引っかからないこと
-    it "更新時にパスワードが空なら長さ検証をスキップする" do
+    # 수정 화면에서 비밀번호 칸을 비우면 컨트롤러가 :password 를 params 에서 빼
+    # password 가 nil 이 된다 — 그 경우 길이 검증에 걸리지 않아야 한다
+    it "수정 시 비밀번호가 비어 있으면 길이 검증을 건너뛴다" do
       user_id = create(:user, password: "password123").id
       user    = User.find(user_id)
 
       expect(user.password).to be_nil
-      expect(user.update(name: "山田太郎")).to be true
+      expect(user.update(name: "홍길동")).to be true
     end
   end
 
   describe "password authentication" do
-    it "正しいパスワードで認証できる" do
+    it "올바른 비밀번호로 인증된다" do
       user = create(:user, password: "secret123")
       expect(user.authenticate("secret123")).to eq(user)
     end
 
-    it "間違ったパスワードでは認証できない" do
+    it "틀린 비밀번호로는 인증되지 않는다" do
       user = create(:user, password: "secret123")
       expect(user.authenticate("wrongpassword")).to be false
     end

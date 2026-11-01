@@ -1,13 +1,10 @@
-# お知らせのテストデータファクトリー
+# Notice 테스트 데이터
 FactoryBot.define do
   factory :notice do
-    # 作成者
     association :created_by, factory: :user
-    # カテゴリ（デフォルトは全体通知）
     category { :general }
-    # 題名（一覧で内容を見分けるための見出し）
-    title { "テストお知らせ" }
-    # 本文（Action Textのリッチテキスト）
-    content { "テストお知らせ本文" }
+    # 제목 — 목록에서 내용을 가르는 머리
+    title { "테스트 공지" }
+    content { "테스트 공지 본문" }
   end
 end

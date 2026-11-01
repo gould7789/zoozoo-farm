@@ -1,4 +1,4 @@
-# AccountControllerのリクエストテスト — 認証制御とプロフィール表示を検証する
+# AccountsController — 인증 제어와 프로필 표시
 require "rails_helper"
 
 RSpec.describe "Account", type: :request do
@@ -6,29 +6,26 @@ RSpec.describe "Account", type: :request do
   let(:staff) { create(:user) }
 
   describe "GET /account" do
-    # 未ログインはログインページへ強制リダイレクト
-    context "未ログイン" do
-      it "ログインページにリダイレクトする" do
+    context "비로그인" do
+      it "로그인 화면으로 보낸다" do
         get account_path
         expect(response).to redirect_to(login_path)
       end
     end
 
-    # Staffはマイページを閲覧可能
-    context "Staffがアクセス" do
+    context "Staff 가 접근" do
       before { sign_in(staff) }
 
-      it "200を返す" do
+      it "200을 반환한다" do
         get account_path
         expect(response).to have_http_status(:ok)
       end
     end
 
-    # Adminもマイページを閲覧可能
-    context "Adminがアクセス" do
+    context "Admin 이 접근" do
       before { sign_in(admin) }
 
-      it "200を返す" do
+      it "200을 반환한다" do
         get account_path
         expect(response).to have_http_status(:ok)
       end

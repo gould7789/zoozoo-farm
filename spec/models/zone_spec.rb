@@ -1,23 +1,19 @@
-# Zoneモデルのバリデーション・アソシエーションをテストする
+# Zone 모델의 검증과 연관
 require "rails_helper"
 
 RSpec.describe Zone, type: :model do
-  # uniquenessテスト用にアルファ文字を含む有効なsubjectを用意する
+  # uniqueness 검증용 subject — 영문자를 포함한 유효한 이름이 필요하다
   subject { Zone.new(name: "Zone A") }
 
-  describe "バリデーション" do
-    # 館名は必須
+  describe "검증" do
     it { should validate_presence_of(:name) }
-    # 館名は一意（重複不可）
     it { should validate_uniqueness_of(:name) }
-    # 館名は100文字以内
     it { should validate_length_of(:name).is_at_most(100) }
   end
 
-  describe "アソシエーション" do
-    # 動物が紐づいている館は削除できない（論理削除のみ許容する設計のため）
+  describe "연관" do
+    # 동물이 붙어 있는 관은 삭제할 수 없다 (논리 삭제만 허용하는 설계)
     it { should have_many(:animals).dependent(:restrict_with_error) }
-    # 館削除時はカテゴリも削除
     it { should have_many(:animal_categories).dependent(:destroy) }
   end
 end

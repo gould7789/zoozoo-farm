@@ -1,14 +1,7 @@
-# system spec用のドライバ設定
-#
-# CIのubuntu-latestにはChromeが入っており、selenium-webdriver 4の
-# Selenium Managerがchromedriverを自動で用意するため追加の導入手順は要らない。
-#
-# 画面サイズは現場の主な利用環境（WindowsのデスクトップPC）に合わせる。
-# 写真のアップロードはカカオトークで受け取った画像をPCから上げる経路が主で、
-# モバイルは副次的な経路のため。
-# 既定の2秒では足りない。ブラウザ起動・ログイン・アップロード・canvas変換が
-# 連続するため、負荷が高い時に2秒を超えてログイン画面のまま判定されることがあった。
-# CIのランナーはローカルより遅いのでなおさら余裕が要る
+# system spec 드라이버 설정
+# CI 의 ubuntu-latest 에 Chrome 이 있고 Selenium Manager 가 chromedriver 를
+# 알아서 준비하므로 추가 설치 단계가 필요 없다.
+# 대기 시간과 화면 크기의 근거는 .claude/rules/common/testing.md
 Capybara.default_max_wait_time = 5
 
 RSpec.configure do |config|

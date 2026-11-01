@@ -1,36 +1,33 @@
-# AnimalCategoryモデルのバリデーション・アソシエーション・メソッドをテストする
+# AnimalCategory 모델의 검증·연관·메서드
 require "rails_helper"
 
 RSpec.describe AnimalCategory, type: :model do
-  describe "バリデーション" do
+  describe "검증" do
     it { should validate_presence_of(:name) }
     it { should validate_length_of(:name).is_at_most(100) }
 
-    # 同じ館内でカテゴリ名の重複を禁止する
     it "같은 관 안에서 같은 이름의 카테고리는 만들 수 없다" do
       zone = create(:zone)
-      create(:animal_category, zone: zone, name: "アルパカ")
-      duplicate = build(:animal_category, zone: zone, name: "アルパカ")
+      create(:animal_category, zone: zone, name: "알파카")
+      duplicate = build(:animal_category, zone: zone, name: "알파카")
       expect(duplicate).not_to be_valid
     end
 
-    # 異なる館なら同名カテゴリを作成できる
     it "다른 관이면 같은 이름의 카테고리를 만들 수 있다" do
-      zone1 = create(:zone, name: "館A")
-      zone2 = create(:zone, name: "館B")
-      create(:animal_category, zone: zone1, name: "アルパカ")
-      category2 = build(:animal_category, zone: zone2, name: "アルパカ")
+      zone1 = create(:zone, name: "가관")
+      zone2 = create(:zone, name: "나관")
+      create(:animal_category, zone: zone1, name: "알파카")
+      category2 = build(:animal_category, zone: zone2, name: "알파카")
       expect(category2).to be_valid
     end
   end
 
-  describe "アソシエーション" do
+  describe "연관" do
     it { should belong_to(:zone) }
     it { should have_many(:animals).with_foreign_key(:animal_category_id) }
   end
 
   describe "#total_count" do
-    # アクティブな動物のindividual_countの合計を返す
     it "active 동물의 individual_count 합계를 반환한다" do
       zone     = create(:zone)
       category = create(:animal_category, zone: zone)
@@ -40,8 +37,7 @@ RSpec.describe AnimalCategory, type: :model do
     end
   end
 
-  describe "カテゴリ削除時" do
-    # カテゴリを削除しても所属動物は削除されず、animal_category_idがNULLになる
+  describe "카테고리 삭제 시" do
     it "카테고리를 삭제해도 동물은 삭제되지 않고 미분류로 이동된다" do
       zone     = create(:zone)
       category = create(:animal_category, zone: zone)

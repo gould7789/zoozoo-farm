@@ -1,7 +1,7 @@
-# 健康記録モデル — 動物ごとの日々の健康観察データを管理する
-# 作成者は権限チェックと監査追跡に使用する
+# 건강 기록 모델 — 개체별 일일 건강 관찰 데이터
+# created_by 는 권한 체크와 감사 추적에 쓴다
 class HealthRecord < ApplicationRecord
-  # 対象動物（動物はactive=falseで論理削除）
+  # 동물은 논리 삭제라 belongs_to 가 끊기지 않는다
   belongs_to :animal
   belongs_to :created_by, class_name: "User"
 

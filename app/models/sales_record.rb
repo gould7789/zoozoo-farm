@@ -1,4 +1,4 @@
-# 売上記録モデル — Admin専用、日次売上データを管理する
+# 매출 기록 모델 — Admin 전용, 일별 매출 데이터
 class SalesRecord < ApplicationRecord
   belongs_to :created_by, class_name: "User"
 
@@ -15,25 +15,25 @@ class SalesRecord < ApplicationRecord
   validates :amount,  presence: true,
                       numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 9_999_999 }
 
-  # 同じ日・同じ販売先の重複を防ぐ
+  # 같은 날 같은 판매처가 두 번 들어가는 것을 막는다.
+  # DB 에도 UNIQUE (sold_on, source) 가 걸려 있다 — 이게 있어야
+  # "입력 누락"과 "진짜 0원"을 구분할 수 있다
   validates :source, uniqueness: { scope: :sold_on }
 
   scope :recent, -> { order(sold_on: :desc) }
 
-  # 指定した年月のレコードに絞る
-  # EXTRACT(YEAR FROM ...)ではなく範囲条件を使う
-  # — カラムに関数を適用するとインデックス(index_sales_records_on_sold_on)が効かないため
+  # 지정한 연월로 좁힌다.
+  # EXTRACT(YEAR FROM ...) 가 아니라 범위 조건을 쓰는 이유는, 컬럼에 함수를 씌우면
+  # 인덱스(index_sales_records_on_sold_on)가 먹지 않기 때문이다
   scope :in_month, ->(year, month) {
     first_day = Date.new(year, month, 1)
     where(sold_on: first_day..first_day.end_of_month)
   }
 
-  # 記録が存在する年月を新しい順で返す → [[2026, 8], [2026, 7], ...]
-  # 全件をRubyに読み込まず、月単位に丸めた重複なしの日付だけを取得する
-  # date_truncはPostgreSQL固有の関数
-  # reorder(nil) — 並び順が付いたリレーションから呼ばれると
-  #   SELECT DISTINCT と ORDER BY が衝突してPostgreSQLがエラーを返すため
-  # 並べ替えはRuby側で行う（月数分の小さな配列）
+  # 기록이 있는 연월을 최신순으로 — [[2026, 8], [2026, 7], ...]
+  #   date_trunc    PostgreSQL 고유 함수. 날짜를 월 단위로 자른다
+  #   reorder(nil)  정렬이 붙은 릴레이션이면 SELECT DISTINCT 와 ORDER BY 가 충돌한다
+  # 정렬은 Ruby 에서 한다 — 월 수만큼의 작은 배열이다
   def self.available_year_months
     reorder(nil)
       .distinct

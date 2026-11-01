@@ -1,6 +1,6 @@
-# 給餌記録モデル — 動物ごとの日々の給餌データを管理する
+# 먹이 급여 기록 모델 — 개체별 일일 급여 데이터
 class FeedingRecord < ApplicationRecord
-  # 対象動物（動物はactive=falseで論理削除）
+  # 동물은 논리 삭제라 belongs_to 가 끊기지 않는다
   belongs_to :animal
   belongs_to :created_by, class_name: "User"
 

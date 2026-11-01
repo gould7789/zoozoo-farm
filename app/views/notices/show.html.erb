@@ -1,4 +1,4 @@
-<%# お知らせ詳細ページ — 本文の全文と貼られた写真を出す %>
+<%# 공지 상세 — 본문 전문과 붙은 사진 %>
 <% content_for(:title, @notice.title) %>
 <% category_label = notice_category_label(@notice.category) %>
 
@@ -36,7 +36,7 @@
 
     <h2 class="text-lg font-bold text-gray-900 mb-3"><%= @notice.title %></h2>
 
-    <%# contentはActionText::RichTextで、描画時にサニタイズされる %>
+    <%# content 는 ActionText::RichText — 그릴 때 살균된다 %>
     <div class="text-sm text-gray-700"><%= @notice.content %></div>
   </article>
 

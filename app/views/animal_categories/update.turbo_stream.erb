@@ -1,13 +1,11 @@
 <%# 수정 성공 — 해당 행을 보기 모드로 교체 + 아코디언에도 새 이름 반영 %>
 
-<%# 1) 該当行を差し替え %>
-<%# updateではなくreplaceを使う — updateはinnerHTMLだけを差し替えるため %>
-<%# partialのルートdivが二重になり、paddingが重なって行がインデントされる %>
+<%# 1) 해당 행만 교체. update 가 아니라 replace 인 이유는 notes/zone-accordion.md %>
 <%= turbo_stream.replace "category_row_#{@category.id}" do %>
   <%= render "animal_categories/category_row", category: @category, zone: @zone, editing: false %>
 <% end %>
 
-<%# 2) モーダルの裏のアコーディオンを差し替え — 新しい名前を即座に反映 %>
+<%# 2) 모달 뒤의 아코디언 — 새 이름을 즉시 반영 %>
 <%= turbo_stream.update "category_accordion" do %>
   <%= render "zones/accordion",
       zone: @zone,

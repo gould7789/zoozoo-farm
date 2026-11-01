@@ -1,6 +1,6 @@
-<%# 削除ボタン — ユーザーの状況で3分岐する %>
-<%# ① 自分自身 → 表示しない  ② 記録あり → 案内アラートのみ（送信しない）  ③ 記録なし → 削除フォーム %>
-<%# variant: :card = モバイルカードリスト用 / :table = デスクトップテーブル用 %>
+<%# 삭제 버튼 — 사용자 상황에 따라 3가지로 갈린다 %>
+<%#   ① 자기 자신 → 내지 않는다  ② 기록 있음 → 안내만 (전송 안 함)  ③ 기록 없음 → 삭제 폼 %>
+<%# variant: :card = 모바일 카드용 / :table = 데스크톱 테이블용 %>
 <% btn_class = variant == :card ?
      "inline-flex items-center justify-center h-9 w-16 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" :
      "text-xs text-red-500 hover:underline" %>
@@ -18,9 +18,9 @@
           "반드시 삭제가 필요하면 시스템 관리자에게 문의해주세요."
       } %>
 <% else %>
-  <%# formはdisplay:contents — buttonを直接flexアイテムにして修正リンクと縦位置を揃える %>
-  <%# inlineだとform内に行ボックスができ、inline-blockのbuttonがベースラインに載って
-      ディセンダ分だけ背が高くなり、隣の修正リンクと数px縦にずれる %>
+  <%# form 에 display:contents — button 을 직접 flex 아이템으로 만들어 수정 링크와 세로를 맞춘다.
+      inline 이면 form 안에 행 박스가 생기고, inline-block 인 button 이 베이스라인에 올라
+      디센더만큼 키가 커져 옆의 수정 링크와 몇 px 어긋난다 %>
   <%= button_to "삭제", admin_member_path(user),
       method: :delete,
       data: { turbo_confirm: "이 계정을 삭제하시겠습니까?" },

@@ -1,4 +1,4 @@
-<%# お知らせ一覧ページ %>
+<%# 공지 목록 %>
 <% content_for(:title, "공지 목록") %>
 
 <div class="max-w-2xl md:max-w-4xl mx-auto">
@@ -14,12 +14,12 @@
     <% end %>
   </div>
 
-  <%# カテゴリ絞り込み — リンクで作る。
-      サーバー側で絞るので、リロードも戻るもURL共有も素直に動く。
-      横スクロールは館が7つあってモバイル幅に収まらないため %>
+  <%# 카테고리 필터를 링크로 만든다 — 서버에서 거르므로
+      새로고침·뒤로가기·URL 공유가 그대로 동작한다.
+      가로 스크롤은 관이 7개라 모바일 폭에 안 들어가기 때문 %>
   <nav class="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-1 px-1 [scrollbar-width:none]">
-    <%# generalのラベルは「전체」なので、絞り込み無しは「모두」にする。
-        並べると「전체」が2つ出て、どちらが絞り込み無しか分からなくなる %>
+    <%# general 의 라벨이 「전체」라 필터 없음은 「모두」로 둔다.
+        나란히 두면 「전체」가 두 개 떠서 어느 쪽이 필터 없음인지 모른다 %>
     <% categories = Notice.categories.keys.map { |key| [ key, key == "general" ? "전체 공지" : notice_category_label(key)[0] ] } %>
     <% [ [ nil, "모두" ] ].concat(categories).each do |key, label| %>
       <% selected = @category == key %>
@@ -33,7 +33,6 @@
       <p class="text-gray-400 text-sm"><%= @category ? "이 관의 공지가 없습니다." : "공지가 없습니다." %></p>
     </div>
   <% else %>
-    <%# カード形式（本文が長いためモバイル・デスクトップ共通） %>
     <div class="space-y-3">
       <% @notices.each do |notice| %>
         <% category_label = notice_category_label(notice.category) %>
@@ -59,8 +58,8 @@
               </div>
             <% end %>
           </div>
-          <%# 一覧は題名と抜粋だけにする。本文と写真は詳細ページで出す。
-              全文を並べると、お知らせが増えるほどカードの高さがばらついて読みにくい %>
+          <%# 목록은 제목과 발췌만. 본문과 사진은 상세에서 낸다 —
+              전문을 늘어놓으면 카드 높이가 들쭉날쭉해 읽기 어렵다 %>
           <%= link_to notice_path(notice), class: "block group" do %>
             <h2 class="text-base font-bold text-gray-900 mb-1 group-hover:text-green-700 transition-colors">
               <%= notice.title %>

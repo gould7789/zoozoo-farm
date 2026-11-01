@@ -1,9 +1,8 @@
-<%# 給餌記録一覧ページ %>
+<%# 먹이 급여 기록 목록 %>
 <% content_for(:title, "먹이 기록") %>
 
 <div class="max-w-2xl md:max-w-4xl mx-auto">
 
-  <%# ヘッダー %>
   <div class="flex items-center justify-between mb-6 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
     <div class="flex items-center gap-3 min-w-0">
       <%= link_to zone_animal_path(@zone, @animal), class: "text-gray-500 hover:text-gray-700 transition-colors shrink-0" do %>
@@ -42,7 +41,6 @@
     </div>
   <% else %>
 
-    <%# モバイルカードリスト %>
     <div class="space-y-3 md:hidden">
       <% @feeding_records.each do |fr| %>
         <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
@@ -76,7 +74,6 @@
       <% end %>
     </div>
 
-    <%# デスクトップテーブル %>
     <div class="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <table class="w-full text-sm">
         <thead class="bg-gray-50 border-b border-gray-200">

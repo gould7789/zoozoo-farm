@@ -1,6 +1,5 @@
-<%# 動物一覧のアバター — モバイルカードとデスクトップ行の両方から使う。
-    写真が無い個体も同じ大きさの枠を出し、行ごとに文字の開始位置がずれないようにする。
-    altを空にしているのは装飾だから — 隣に種名と個体名があり、読み上げが重複する %>
+<%# 동물 목록의 아바타 — 모바일 카드와 데스크톱 행 양쪽에서 쓴다.
+    사진이 없어도 같은 크기의 틀을 내는 이유는 notes/zone-accordion.md %>
 <% if animal.photo.attached? %>
   <%= image_tag animal.photo.variant(:thumb),
       class: "#{size} rounded-full object-cover border border-gray-200 shrink-0",
@@ -8,8 +7,7 @@
       loading: "lazy" %>
 <% else %>
   <div class="<%= size %> rounded-full bg-gray-100 border border-gray-200 shrink-0 flex items-center justify-center">
-    <%# 肉球 — 写真アイコンだと「画像が壊れている」ように見えるため、
-        未登録であることが分かる動物のマークにする %>
+    <%# 발바닥 — 사진 아이콘은 「이미지가 깨졌다」로 읽힌다 %>
     <svg class="w-3/5 h-3/5 text-gray-300" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <ellipse cx="6.6" cy="10" rx="2.1" ry="2.7" />
       <ellipse cx="10.3" cy="6.6" rx="2.2" ry="2.9" />

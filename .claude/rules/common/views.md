@@ -63,6 +63,30 @@ end
 
 > 개발·테스트는 Disk 서비스라 동일 오리진이어서 **CSP 문제가 재현되지 않는다.** 운영에서만 터진다.
 
+## 모달과 다이얼로그는 body 바로 아래에 둔다
+
+`fixed` 는 **뷰포트 기준으로 동작해야** 화면 가운데에 온다. 조상에 `transform` · `filter` · `contain` 이 걸려 있으면 그 요소가 기준이 되어 엉뚱한 자리에 뜬다. 레이아웃 안쪽에 두면 언제 그렇게 될지 알 수 없으므로 **`body` 직하에 렌더한다.**
+
+```erb
+<%# layouts/application.html.erb 의 끝, zones/show.html.erb 의 끝 %>
+<%= yield :modals %>
+```
+
+모달이 `body` 직하에 있고 조작하는 버튼이 본문에 있으면, Stimulus 는 **Outlet** 으로 잇는다.
+
+### `window.confirm()` 대신 `<dialog>`
+
+브라우저 표준 `<dialog>` 에는 **포커스 트랩·ESC·백드롭이 이미 들어 있다.** 직접 만들지 않는다. `showModal()` 은 top layer 에 올리므로 조상의 `z-index` 와 `overflow` 에 영향받지 않는다.
+
+`form method="dialog"` 는 누른 `button` 의 `value` 를 `returnValue` 에 넣고 닫는다 — 어느 버튼을 눌렀는지 JS 없이 알 수 있다.
+
+**두 가지가 Tailwind 와 부딪힌다.**
+
+| 함정 | 왜 |
+| --- | --- |
+| `m-auto` 를 꼭 넣는다 | `dialog:modal` 은 `inset: 0 + margin: auto` 로 가운데 오는데, preflight 의 `* { margin: 0 }` 이 덮어써서 **왼쪽 위에 붙는다** |
+| `padding` 은 안쪽 `form` 에 준다 | `dialog` 자신에 주면 그 영역이 백드롭으로 판정돼 **안을 눌러도 닫힌다** |
+
 ## Stimulus
 
 - 파일명 `foo_controller.js` → `data-controller="foo"`

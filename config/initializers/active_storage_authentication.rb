@@ -16,7 +16,7 @@
 #
 #   BaseController
 #   ├── DirectUploadsController          업로드 신청
-#   ├── DiskController                   개발·테스트의 Disk 서비스
+#   ├── DiskController                   개발과 테스트의 Disk 서비스
 #   ├── Blobs::ProxyController           원본 (proxy)
 #   ├── Blobs::RedirectController        원본 (redirect)
 #   └── Representations::BaseController

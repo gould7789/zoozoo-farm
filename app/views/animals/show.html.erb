@@ -1,5 +1,5 @@
 <%# 동물 상세 — 개체 프로필 %>
-<%# 수정·삭제 버튼은 Admin 전용 %>
+<%# 수정과 삭제 버튼은 Admin 전용 %>
 <% content_for(:title) { @animal.species } %>
 
 <div class="max-w-2xl mx-auto">
@@ -113,7 +113,7 @@
     <% end %>
   </div>
 
-  <%# 수정·삭제는 Admin 전용 — Staff 에게는 숨긴다 %>
+  <%# 수정과 삭제는 Admin 전용 — Staff 에게는 숨긴다 %>
   <% if current_user.admin? %>
     <div class="grid grid-cols-2 gap-3 mb-6">
       <%= link_to "수정", edit_zone_animal_path(@zone, @animal),

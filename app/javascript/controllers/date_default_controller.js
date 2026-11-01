@@ -1,4 +1,4 @@
-// 날짜 칸에 오늘 날짜·일시를 기본값으로 넣는다 — 작성 폼에서만 동작한다
+// 날짜 칸에 오늘 날짜나 일시를 기본값으로 넣는다 — 작성 폼에서만 동작한다
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {

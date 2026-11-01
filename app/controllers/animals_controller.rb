@@ -1,5 +1,5 @@
 # 동물 개체 CRUD
-# 조회(show)는 Staff·Admin 공통, 등록·수정·삭제는 Admin 전용
+# 조회(show)는 Staff 와 Admin 공통, 등록·수정과 삭제는 Admin 전용
 # 삭제는 active = false 논리 삭제 — 물리 삭제는 하지 않는다
 # 판단 근거는 .claude/rules/notes/animal-photo.md, notes/xlsx-export.md
 class AnimalsController < ApplicationController

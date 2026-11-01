@@ -13,7 +13,7 @@ class CreateSalesRecords < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    # 같은 날·같은 판매처의 중복을 막는 복합 UNIQUE
+    # 같은 날 같은 판매처의 중복을 막는 복합 UNIQUE
     add_index :sales_records, [ :sold_on, :source ], unique: true
     add_index :sales_records, :sold_on
   end

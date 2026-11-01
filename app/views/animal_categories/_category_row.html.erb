@@ -10,6 +10,7 @@
   <div data-category-row-target="view" class="<%= editing ? "hidden" : "" %> flex items-center justify-between w-full">
 
     <%# 체크박스 — 누르면 숨김이 뒤집힌다 %>
+    <%# form 에 display:contents — 행 전체가 button 이 되게 한다 (common/views.md) %>
     <%= button_to toggle_zone_animal_category_path(zone, category),
         method: :patch,
         form: { class: "contents" },
@@ -26,7 +27,6 @@
       </span>
     <% end %>
 
-    <%# 수정・삭제 %>
     <div class="flex items-center gap-3 shrink-0 ml-3">
       <button type="button"
               data-action="click->category-row#startEdit"

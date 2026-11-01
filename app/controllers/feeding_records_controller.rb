@@ -1,6 +1,6 @@
 # 먹이 급여 기록 CRUD
 # xlsx 내보내기 판단은 .claude/rules/notes/xlsx-export.md
-# 전체 액션에 로그인 필수, 수정·삭제는 본인 기록만 (Admin 은 타인 기록도 조작 가능)
+# 전체 액션에 로그인 필수, 수정과 삭제는 본인 기록만 (Admin 은 타인 기록도 조작 가능)
 class FeedingRecordsController < ApplicationController
   include AnimalScoped
   include OwnerRestriction

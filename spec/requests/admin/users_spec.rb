@@ -220,7 +220,7 @@ RSpec.describe "Admin::Users", type: :request do
       end
     end
 
-    # 기록이 0건인 사용자(하루 알바·잘못 만든 계정)는 지울 수 있다
+    # 기록이 0건인 사용자(하루 알바나 잘못 만든 계정)는 지울 수 있다
     context "기록이 없는 사용자를 지우는 경우" do
       before { sign_in(admin) }
 

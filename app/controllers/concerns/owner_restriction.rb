@@ -1,4 +1,4 @@
-# 본인 기록 또는 Admin 만 수정·삭제를 허용한다
+# 본인 기록 또는 Admin 만 수정과 삭제를 허용한다
 # HealthRecords / FeedingRecords / Notices 세 컨트롤러가 공유한다
 module OwnerRestriction
   extend ActiveSupport::Concern

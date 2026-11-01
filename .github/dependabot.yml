@@ -1,19 +1,19 @@
 version: 2
 updates:
-# セキュリティ更新は Dependabot alerts 側で処理するため、
-# ここではバージョン更新の頻度と範囲のみを制御する
+# 보안 갱신은 Dependabot alerts 쪽에서 처리하므로
+# 여기서는 버전 갱신의 빈도와 범위만 다룬다
 - package-ecosystem: bundler
   directory: "/"
   schedule:
     interval: monthly
   open-pull-requests-limit: 5
   groups:
-    # gem ごとに PR が乱立するのを防ぐため一つにまとめる
+    # gem 마다 PR 이 난립하는 것을 막으려 하나로 묶는다
     bundler:
       patterns:
         - "*"
   ignore:
-    # メジャー更新は互換性の検証が必要なため自動 PR の対象外とする
+    # 메이저 갱신은 호환성 확인이 필요하므로 자동 PR 대상에서 뺀다
     - dependency-name: "*"
       update-types: ["version-update:semver-major"]
 - package-ecosystem: github-actions

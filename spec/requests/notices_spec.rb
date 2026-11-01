@@ -1,5 +1,5 @@
 # NoticesController — 인증·권한 제어
-# Staff·Admin 모두 작성 가능, 수정·삭제는 본인 기록만 (Admin 은 타인 기록도 조작 가능)
+# Staff 와 Admin 모두 작성 가능, 수정과 삭제는 본인 기록만 (Admin 은 타인 기록도 조작 가능)
 require "rails_helper"
 
 RSpec.describe "Notices", type: :request do

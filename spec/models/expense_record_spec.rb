@@ -47,7 +47,7 @@ RSpec.describe ExpenseRecord, type: :model do
       expect(ExpenseRecord.in_month(2026, 4)).to contain_exactly(target)
     end
 
-    it "전월 말일·다음달 1일 레코드는 넣지 않는다" do
+    it "전월 말일과 다음달 1일 레코드는 넣지 않는다" do
       # 월 경계 — 범위 조건의 끝이 맞는지 확인한다
       create(:expense_record, created_by: user, spent_on: Date.new(2026, 3, 31))
       create(:expense_record, created_by: user, spent_on: Date.new(2026, 5, 1))
@@ -70,7 +70,7 @@ RSpec.describe ExpenseRecord, type: :model do
     end
 
     it "같은 월의 여러 레코드는 1건으로 묶는다" do
-      # 지출은 UNIQUE 제약이 없어 같은 날·같은 종류도 여러 건 넣을 수 있다
+      # 지출은 UNIQUE 제약이 없어 같은 날 같은 종류도 여러 건 넣을 수 있다
       create(:expense_record, created_by: user, spent_on: Date.new(2026, 4, 1),  category: :food)
       create(:expense_record, created_by: user, spent_on: Date.new(2026, 4, 1),  category: :food)
       create(:expense_record, created_by: user, spent_on: Date.new(2026, 4, 30), category: :medical)

@@ -1,5 +1,5 @@
 # 공지 CRUD
-# 전체 액션에 로그인 필수, 수정·삭제는 본인 기록만 (Admin 은 타인 기록도 조작 가능)
+# 전체 액션에 로그인 필수, 수정과 삭제는 본인 기록만 (Admin 은 타인 기록도 조작 가능)
 class NoticesController < ApplicationController
   include OwnerRestriction
 
@@ -11,7 +11,7 @@ class NoticesController < ApplicationController
   # 허용 범위는 오리진(scheme://host)까지이고 경로는 붙이지 않는다.
   # 경로를 붙이면 완전 일치가 요구된다 — 자세한 것은 .claude/rules/notes/notice.md
   #
-  # 개발·테스트는 Disk 서비스라 같은 오리진이므로 이게 없어도 안 떨어진다.
+  # 개발과 테스트는 Disk 서비스라 같은 오리진이므로 이게 없어도 안 떨어진다.
   # 운영에서만 듣는다. ENV 가 없는 환경(CI)에서는 빈 배열이 된다
   STORAGE_ORIGIN = begin
     endpoint = ENV["SUPABASE_S3_ENDPOINT"]

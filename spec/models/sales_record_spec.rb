@@ -52,7 +52,7 @@ RSpec.describe SalesRecord, type: :model do
       expect(SalesRecord.in_month(2026, 4)).to contain_exactly(target)
     end
 
-    it "전월 말일·다음달 1일 레코드는 넣지 않는다" do
+    it "전월 말일과 다음달 1일 레코드는 넣지 않는다" do
       # 월 경계 — 범위 조건의 끝이 맞는지 확인한다
       create(:sales_record, created_by: user, sold_on: Date.new(2026, 3, 31), source: :vending_1)
       create(:sales_record, created_by: user, sold_on: Date.new(2026, 5, 1),  source: :vending_2)

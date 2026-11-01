@@ -87,6 +87,24 @@ end
 | `m-auto` 를 꼭 넣는다 | `dialog:modal` 은 `inset: 0 + margin: auto` 로 가운데 오는데, preflight 의 `* { margin: 0 }` 이 덮어써서 **왼쪽 위에 붙는다** |
 | `padding` 은 안쪽 `form` 에 준다 | `dialog` 자신에 주면 그 영역이 백드롭으로 판정돼 **안을 눌러도 닫힌다** |
 
+## `button_to` 의 폼에 `display: contents`
+
+`button_to` 는 `<form>` 을 만들고 그 안에 `<button>` 을 넣는다. 그래서 **`<form>` 이 flex 아이템이 되고 `<button>` 은 손이 닿지 않는 자식**이 된다. 옆의 링크와 세로가 어긋나거나 `gap` 이 먹지 않는다.
+
+```erb
+<%= button_to "삭제", path, method: :delete,
+    form: { class: "contents" },        <%# 폼을 레이아웃에서 투명하게 만든다 %>
+    class: "text-xs text-red-400" %>
+```
+
+`display: contents` 는 그 요소의 박스를 없애고 **자식을 부모의 직접 자식처럼** 배치시킨다. `<button>` 이 그대로 flex 아이템이 된다.
+
+`inline` 으로 두면 폼 안에 행 박스가 생기고, `inline-block` 인 `<button>` 이 베이스라인에 올라 **디센더만큼 키가 커져** 옆 요소와 몇 px 어긋난다. 보고 알아채기 어려운 종류다.
+
+**앱에서 11곳이 이 형태다.** `button_to` 를 flex 안에 넣을 때는 늘 같이 붙인다.
+
+> 폼 안에 또 `<form>` 을 넣을 수는 없으므로, **이미 폼 안인 자리에서는 `button_to` 를 쓰지 않는다.** `link_to` + `turbo_method` 를 쓴다 — Turbo 가 누를 때 `body` 직하에 폼을 만든다 (`animals/_form.html.erb`).
+
 ## Stimulus
 
 - 파일명 `foo_controller.js` → `data-controller="foo"`

@@ -23,7 +23,7 @@ RSpec.describe "ExpenseRecords", type: :request do
 
     # 연월 필터 — params 를 그대로 믿지 않고 존재하는 연월인지 확인한다.
     # month=99 가 Date.new 에 넘어가면 ArgumentError 라 폴백이 필수다
-    context "없는 연·월을 지정한 경우" do
+    context "없는 연월을 지정한 경우" do
       before { sign_in(admin) }
 
       it "500 이 되지 않고 최신 월로 떨어진다" do

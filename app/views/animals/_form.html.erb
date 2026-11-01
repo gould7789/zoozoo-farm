@@ -117,7 +117,7 @@
           class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500 bg-white" %>
     </div>
 
-    <%# 개체 수 — 토끼·기니피그처럼 여러 마리를 한 기록으로 다루는 종 %>
+    <%# 개체 수 — 토끼나 기니피그처럼 여러 마리를 한 기록으로 다루는 종 %>
     <div>
       <%= f.label :individual_count, "개체 수", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.number_field :individual_count,
@@ -167,7 +167,7 @@
     </div>
 
     <div>
-      <%# 선천적 질환·성격처럼 바뀌지 않는 특이사항 %>
+      <%# 선천적 질환이나 성격처럼 바뀌지 않는 특이사항 %>
       <%= f.label :note, "특이사항 (선택)", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.text_area :note,
           rows: 3,

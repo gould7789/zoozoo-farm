@@ -111,7 +111,7 @@ git checkout develop && git pull origin develop && git checkout -b <타입>/<이
 
 ## ④ 구현 (TDD)
 
-TDD 규칙은 `.claude/rules/testing.md`에 있다. `spec/` 아래 파일을 열면 자동으로 올라온다.
+TDD 규칙은 `.claude/rules/common/testing.md`에 있다. `spec/` 아래 파일을 열면 자동으로 올라온다.
 
 ```
 spec 작성 → 실행해서 Red 확인 → 구현 → 실행해서 Green 확인
@@ -349,10 +349,11 @@ on:
 | 파일 | 내용 |
 | --- | --- |
 | `.claude/rules/domain.md` | 도메인, 언어, 권한, 위협 모델 (항상 로드) |
-| `.claude/rules/rails.md` | 모델·컨트롤러 (해당 파일을 열면 로드) |
-| `.claude/rules/views.md` | 화면·CSS·Stimulus·CSP |
-| `.claude/rules/migrations.md` | 마이그레이션 |
-| `.claude/rules/testing.md` | 테스트 |
+| `.claude/rules/common/rails.md` | 모델·컨트롤러 (해당 파일을 열면 로드) |
+| `.claude/rules/common/views.md` | 화면·CSS·Stimulus·CSP |
+| `.claude/rules/common/migrations.md` | 마이그레이션 |
+| `.claude/rules/common/testing.md` | 테스트 |
+| `.claude/rules/notes/*.md` | 기능 단위 설명 — 왜 이렇게 생겼나 (`paths` 로 좁혀 로드) |
 | `.claude/skills/grill` · `walkthrough` · `qa` | ①-b · ⑤-c · ⑤-d |
 | `.github/PULL_REQUEST_TEMPLATE.md` | PR 본문 구조 |
 | `.github/workflows/ci.yml` | CI job 구성과 실행 명령 |

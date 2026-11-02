@@ -8,6 +8,9 @@ paths:
   - "config/environments/production.rb"
   - "config/environments/test.rb"
   - "db/migrate/*_create_solid_cache_entries.rb"
+  - "config/puma.rb"
+  - "render.yaml"
+  - "Gemfile"
 ---
 
 # 배포 환경이 설정에 남긴 것
@@ -50,6 +53,16 @@ Active Job 은 Rails 기본 `:async` 그대로다. `solid_queue` 를 넣지 않�
 여기서 나오는 판단들 — variant 를 `preprocessed` 로 미리 만들지 않는 것, 사진 삭제를 `purge_later` 가 아니라 `purge` 로 하는 것(`notes/animal-photo.md`), 이미지를 브라우저에서 줄여 보내는 것(`notes/notice.md`).
 
 Action Cable 도 쓰는 곳이 0건이라(채널·broadcast·`turbo_stream_from` 전부 없음) `async` 로 둔다.
+
+## Puma 를 싱글 모드로 돌린다
+
+**Render 는 기본으로 `WEB_CONCURRENCY=1` 을 넣는다.** Puma 는 이 값이 1 이상이면 클러스터 모드로 뜨고, **워커가 하나뿐이어도 마스터 프로세스가 따로 상주해 메모리만 먹는다** (Puma 자신이 기동할 때 경고를 낸다).
+
+512MB 안에서 이미지 변환까지 해야 하므로 `render.yaml` 에서 **`0` 을 명시해** 싱글 모드로 돌린다.
+
+처리 능력은 바뀌지 않는다 — **스레드 3개는 그대로**다(`config/puma.rb`, `RAILS_MAX_THREADS` 기본값). 직원 10명 미만이라 동시 요청이 3을 넘을 일이 드물다.
+
+> `database.yml` 의 커넥션 풀은 이 스레드 수와 맞춰야 한다. 스레드를 늘리면 풀도 같이 늘린다.
 
 ## 타임존
 

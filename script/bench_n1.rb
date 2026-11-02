@@ -2,7 +2,7 @@
 
 # ─────────────────────────────────────────────────────────────
 # N+1 정량 측정 (★개발 환경 전용 / 데이터 변경 없음★)
-# 実行: bin/rails runner script/bench_n1.rb
+# 실행: bin/rails runner script/bench_n1.rb
 # 먼저 script/seed_bench.rb 로 더미 데이터를 넣어두면 유의미한 수치가 나온다.
 #
 # 시나리오 A: 공지 목록에서 작성자(created_by) 표시  ← 실제 수정 대상(커밋 532ce30)

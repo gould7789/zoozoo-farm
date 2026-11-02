@@ -17,11 +17,8 @@ services:
         sync: false
       - key: RAILS_LOG_TO_STDOUT
         value: "true"
-      # Renderは既定でWEB_CONCURRENCY=1を注入する。Pumaはこの値が1以上だと
-      # クラスターモードで起動し、ワーカーが1つでもマスタープロセスが常駐して
-      # メモリだけを消費する（Puma自身が起動時に警告を出す）。
-      # 無料プランの512MB内で画像変換を行うため0を明示してシングルモードにする。
-      # 処理能力はスレッド3本のままで変わらない。
+      # Render 는 기본으로 WEB_CONCURRENCY=1 을 넣는다. 0 을 명시해 싱글 모드로 돌린다.
+      # 왜 그래야 하는지는 .claude/rules/notes/infra.md
       - key: WEB_CONCURRENCY
         value: "0"
       - key: DATABASE_URL
@@ -30,8 +27,8 @@ services:
         sync: false
       - key: SEED_ADMIN_PASSWORD
         sync: false
-      # Supabase Storage（S3プロトコル）。値はRenderのダッシュボードで直接入力する。
-      # 未入力でもアプリは起動し、ファイル操作の時点で初めて認証に失敗する。
+      # Supabase Storage(S3 프로토콜). 값은 Render 대시보드에서 직접 넣는다.
+      # 비어 있어도 앱은 뜨고, 파일을 다루는 시점에야 인증이 실패한다.
       - key: SUPABASE_S3_ENDPOINT
         sync: false
       - key: SUPABASE_S3_ACCESS_KEY_ID

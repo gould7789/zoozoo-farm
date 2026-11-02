@@ -2,7 +2,7 @@
 
 # ─────────────────────────────────────────────────────────────
 # 벤치용 더미 데이터 전체 삭제 (★개발 환경 전용★)
-# 実行: bin/rails runner script/cleanup_bench.rb
+# 실행: bin/rails runner script/cleanup_bench.rb
 # ─────────────────────────────────────────────────────────────
 abort("⚠ 개발 환경에서만 실행하세요 (현재: #{Rails.env})") unless Rails.env.development?
 

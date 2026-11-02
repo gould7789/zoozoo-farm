@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_30_020000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -80,13 +80,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_020000) do
     t.integer "individual_count", default: 1, null: false
     t.index ["animal_category_id"], name: "index_animals_on_animal_category_id"
     t.index ["zone_id"], name: "index_animals_on_zone_id"
+    t.check_constraint "cites_grade = ANY (ARRAY[0, 1, 2, 3])", name: "chk_animals_cites_grade"
+    t.check_constraint "gender = ANY (ARRAY[0, 1, 2])", name: "chk_animals_gender"
     t.check_constraint "individual_count >= 1", name: "chk_animals_individual_count"
   end
 
   create_table "expense_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "created_by_id"
     t.date "spent_on", null: false
-    t.integer "category", null: false
+    t.integer "category", limit: 2, null: false
     t.integer "amount", null: false
     t.text "description", null: false
     t.datetime "created_at", null: false
@@ -95,6 +97,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_020000) do
     t.index ["created_by_id"], name: "index_expense_records_on_created_by_id"
     t.index ["spent_on"], name: "index_expense_records_on_spent_on"
     t.check_constraint "amount >= 0", name: "chk_expense_amount"
+    t.check_constraint "category = ANY (ARRAY[0, 1, 2, 3, 4, 5])", name: "chk_expense_category"
   end
 
   create_table "feeding_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -116,7 +119,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_020000) do
     t.uuid "created_by_id"
     t.date "recorded_on", null: false
     t.decimal "weight_kg", precision: 6, scale: 2
-    t.integer "condition", default: 0, null: false
+    t.integer "condition", limit: 2, default: 0, null: false
     t.text "note"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -128,19 +131,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_020000) do
 
   create_table "notices", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "created_by_id"
-    t.integer "category", default: 0, null: false
+    t.integer "category", limit: 2, default: 0, null: false
     t.text "body"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "title", limit: 100, null: false
     t.index ["category"], name: "index_notices_on_category"
     t.index ["created_by_id"], name: "index_notices_on_created_by_id"
+    t.check_constraint "category = ANY (ARRAY[0, 1, 2, 3, 4, 5, 6])", name: "chk_notices_category"
   end
 
   create_table "sales_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "created_by_id"
     t.date "sold_on", null: false
-    t.integer "source", null: false
+    t.integer "source", limit: 2, null: false
     t.integer "amount", null: false
     t.text "note"
     t.datetime "created_at", null: false
@@ -148,6 +152,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_020000) do
     t.index ["created_by_id"], name: "index_sales_records_on_created_by_id"
     t.index ["sold_on", "source"], name: "index_sales_records_on_sold_on_and_source", unique: true
     t.check_constraint "amount >= 0", name: "chk_sales_amount"
+    t.check_constraint "source = ANY (ARRAY[0, 1, 2, 3, 4])", name: "chk_sales_source"
   end
 
   create_table "solid_cache_entries", force: :cascade do |t|
@@ -174,6 +179,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_30_020000) do
     t.date "hired_on"
     t.date "contract_ends_on"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.check_constraint "\"position\" = ANY (ARRAY[0, 1, 2, 3, 4, 5])", name: "chk_users_position"
+    t.check_constraint "role = ANY (ARRAY[0, 1])", name: "chk_users_role"
   end
 
   create_table "zones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

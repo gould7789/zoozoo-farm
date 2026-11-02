@@ -33,6 +33,6 @@ RSpec.describe HealthRecord, type: :model do
   end
 
   describe "DB 제약" do
-    it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :condition, 9
+    it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :condition, 9, "chk_health_condition"
   end
 end

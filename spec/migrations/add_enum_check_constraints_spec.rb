@@ -51,7 +51,8 @@ RSpec.describe AddEnumCheckConstraints do
         .to raise_error(ActiveRecord::StatementInvalid, /chk_animals_gender/)
     end
 
-    # Staff 는 직급이 없다. IS NULL OR 를 빠뜨리면 계정 생성이 DB 에서 떨어진다
+    # Staff 는 직급이 없다. CHECK 가 NULL 을 막지 않는 것은 삼치논리 덕분이고
+    # (NULL IN (...) 은 FALSE 가 아니라 NULL), 그 성질에 기대고 있으므로 고정해둔다
     it "users.position 의 NULL 은 막지 않는다" do
       migration.up
       User.reset_column_information

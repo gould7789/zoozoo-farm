@@ -19,12 +19,15 @@ class AddEnumCheckConstraints < ActiveRecord::Migration[8.1]
     sales_records:   :source
   }.freeze
 
-  # 컬럼마다 허용하는 값. position 만 NULL 을 받는다 — Staff 는 직급이 없다
+  # 컬럼마다 허용하는 값.
+  # position 은 NULL 을 받는다(Staff 는 직급이 없다). 따로 적지 않아도 된다 —
+  # CHECK 는 식이 FALSE 일 때만 거부하는데, NULL IN (0,1,2) 는 FALSE 가 아니라
+  # NULL 로 평가되기 때문이다. NULL 을 막으려면 CHECK 가 아니라 NOT NULL 을 쓴다
   CONSTRAINTS = [
     [ :animals,         "gender IN (0,1,2)",                             "chk_animals_gender" ],
     [ :animals,         "cites_grade IN (0,1,2,3)",                      "chk_animals_cites_grade" ],
     [ :users,           "role IN (0,1)",                                 "chk_users_role" ],
-    [ :users,           "position IS NULL OR position IN (0,1,2,3,4,5)", "chk_users_position" ],
+    [ :users,           "position IN (0,1,2,3,4,5)",                     "chk_users_position" ],
     [ :notices,         "category IN (0,1,2,3,4,5,6)",                   "chk_notices_category" ],
     [ :expense_records, "category IN (0,1,2,3,4,5)",                     "chk_expense_category" ],
     [ :sales_records,   "source IN (0,1,2,3,4)",                         "chk_sales_source" ]

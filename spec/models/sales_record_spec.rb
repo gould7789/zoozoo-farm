@@ -88,6 +88,6 @@ RSpec.describe SalesRecord, type: :model do
   end
 
   describe "DB 제약" do
-    it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :source, 9
+    it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :source, 9, "chk_sales_source"
   end
 end

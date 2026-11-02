@@ -83,12 +83,17 @@ RSpec.describe User, type: :model do
   end
 
   describe "DB 제약" do
-    it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :role, 9
-    it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :position, 9
+    it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :role, 9, "chk_users_role"
+    it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :position, 9, "chk_users_position"
 
-    it "position 은 NULL 을 받는다 — Staff 는 직급이 없다" do
-      user = create(:user)
+    # 팩토리는 position 을 넣지 않으므로, 값이 있는 상태에서 NULL 로 바꿔야
+    # 전이를 확인한 것이 된다. CHECK 는 식이 FALSE 일 때만 거부하고
+    # NULL IN (...) 은 NULL 로 평가되므로 통과한다
+    it "position 은 값이 있다가 NULL 이 되는 것도 받는다 — Staff 는 직급이 없다" do
+      user = create(:user, position: :manager)
+
       expect { user.update_column(:position, nil) }.not_to raise_error
+      expect(user.reload.position).to be_nil
     end
   end
 end

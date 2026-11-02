@@ -179,7 +179,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
     t.date "hired_on"
     t.date "contract_ends_on"
     t.index ["email"], name: "index_users_on_email", unique: true
-    t.check_constraint "\"position\" IS NULL OR (\"position\" = ANY (ARRAY[0, 1, 2, 3, 4, 5]))", name: "chk_users_position"
+    t.check_constraint "\"position\" = ANY (ARRAY[0, 1, 2, 3, 4, 5])", name: "chk_users_position"
     t.check_constraint "role = ANY (ARRAY[0, 1])", name: "chk_users_role"
   end
 

@@ -5,7 +5,7 @@ paths:
 
 # 마이그레이션
 
-## ⚠️ 이 코드는 운영 DB에 실행된다
+## 이 코드는 운영 DB에 실행된다
 
 배포하면 Render가 `db:migrate`를 돌린다. 되돌릴 수 없는 변경을 하기 전에 멈춰 생각한다.
 
@@ -26,12 +26,12 @@ create_table :notices, id: :uuid, default: -> { "gen_random_uuid()" }
 ## 값을 보간하는 SQL에 `squish`를 쓰지 않는다
 
 ```ruby
-# ✗ 보간된 본문의 줄바꿈까지 뭉갠다
+# 이렇게 쓰면 보간된 본문의 줄바꿈까지 뭉갠다
 execute <<~SQL.squish
   UPDATE notices SET body = #{quote(plain)} WHERE id = #{quote(id)}
 SQL
 
-# ✓ 값을 보간하면 squish 없이
+# 값을 보간할 때는 squish 없이
 execute <<~SQL
   UPDATE notices SET body = #{quote(plain)} WHERE id = #{quote(id)}
 SQL

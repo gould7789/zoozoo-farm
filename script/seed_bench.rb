@@ -6,7 +6,7 @@
 #   옵션: ANIMALS=40 RECORDS=8 NOTICES=300 bin/rails runner script/seed_bench.rb
 # 측정이 끝나면 script/cleanup_bench.rb 로 전부 삭제할 수 있다.
 # ─────────────────────────────────────────────────────────────
-abort("⚠ 개발 환경에서만 실행하세요 (현재: #{Rails.env})") unless Rails.env.development?
+abort("개발 환경에서만 실행하세요 (현재: #{Rails.env})") unless Rails.env.development?
 
 ANIMALS_PER_ZONE = (ENV["ANIMALS"] || 40).to_i
 RECORDS_PER      = (ENV["RECORDS"] || 8).to_i
@@ -48,5 +48,5 @@ NOTICES.times do |i|
                  body: "벤치 공지 #{i} — 측정용 더미 데이터")
 end
 
-puts "✅ 시드 완료 — 동물 #{animals}마리 / 공지 #{NOTICES}건 (작성자 표시 화면 측정용)"
+puts "시드 완료 — 동물 #{animals}마리 / 공지 #{NOTICES}건 (작성자 표시 화면 측정용)"
 puts "   다음: bin/rails runner script/bench_n1.rb"

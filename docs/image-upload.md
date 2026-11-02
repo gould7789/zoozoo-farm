@@ -107,7 +107,7 @@ config.active_storage.service = :local
 - [ ] `config/application.rb`의 `variant_processor = :disabled` 줄 제거
 - [ ] `bin/rails -v` 및 `bundle exec rspec` 통과 확인
 - [ ] `.github/workflows/ci.yml`에 `libvips` 설치 스텝 추가 (현재 `libpq-dev`만 설치 중)
-- [ ] ⚠️ **Render 네이티브 ruby 런타임에 libvips가 존재하는지 확인.** `render.yaml`이 `runtime: ruby`라 Dockerfile을 타지 않습니다. 없다면 프로덕션에서만 터집니다.
+- [ ] **Render 네이티브 ruby 런타임에 libvips가 존재하는지 확인.** `render.yaml`이 `runtime: ruby`라 Dockerfile을 타지 않습니다. 없다면 프로덕션에서만 터집니다.
   - 없을 경우 임의로 결정하지 말고 사용자에게 보고 후 선택지 제시: (a) Docker 런타임 전환 (b) Cloudinary로 전환 (c) variant 미사용
 
 ### Phase 2 — Supabase Storage 연결
@@ -141,7 +141,7 @@ supabase:
 - [ ] 공지 모델에 첨부 추가 (단일/복수는 사용자 확인 후)
 - [ ] 첨부 검증: content_type 화이트리스트, 파일 크기 상한
 - [ ] 폼 / 상세 뷰 / 삭제 시 purge 정책
-- [ ] ⚠️ **기존 CSP 설정과 충돌 확인.** PR #89에서 인라인 스크립트를 제거하고 CSP를 활성화했습니다. 이미지 소스 도메인(Supabase)이 CSP에 허용되어 있는지 반드시 확인하세요.
+- [ ] **기존 CSP 설정과 충돌 확인.** PR #89에서 인라인 스크립트를 제거하고 CSP를 활성화했습니다. 이미지 소스 도메인(Supabase)이 CSP에 허용되어 있는지 반드시 확인하세요.
 - [ ] N+1 방지: 목록에서 `with_attached_photo` 사용 (과거 PR #47에서 N+1 수정 이력 있음)
 
 ### Phase 4 — 테스트 / 배포

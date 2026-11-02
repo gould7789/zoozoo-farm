@@ -82,4 +82,8 @@ RSpec.describe ExpenseRecord, type: :model do
       expect(ExpenseRecord.available_year_months).to eq([])
     end
   end
+
+  describe "DB 제약" do
+    it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :category, 9, "chk_expense_category"
+  end
 end

@@ -31,4 +31,8 @@ RSpec.describe HealthRecord, type: :model do
       expect(HealthRecord.recent.last).to eq(older)
     end
   end
+
+  describe "DB 제약" do
+    it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :condition, 9
+  end
 end

@@ -81,4 +81,14 @@ RSpec.describe User, type: :model do
       expect(user.authenticate("wrongpassword")).to be false
     end
   end
+
+  describe "DB 제약" do
+    it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :role, 9
+    it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :position, 9
+
+    it "position 은 NULL 을 받는다 — Staff 는 직급이 없다" do
+      user = create(:user)
+      expect { user.update_column(:position, nil) }.not_to raise_error
+    end
+  end
 end

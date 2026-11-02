@@ -38,12 +38,12 @@
 /app/assets/builds/*
 !/app/assets/builds/.keep
 
-# Claude 個人設定 — 共有するものは .claude/settings.json に置く
+# Claude 개인 설정 — 공유할 것은 .claude/settings.json 에 둔다
 /.claude/settings.local.json
 
 # Portfolio material notes (personal — not part of the project documentation)
 /docs/portfolio-notes.md
-# 作業中のメモ — 内容はノーションと PR 本文に移すのでリポジトリには残さない
+# 작업 중 메모 — 내용은 노션과 PR 본문으로 옮기므로 저장소에는 남기지 않는다
 /docs/checklist.md
 /docs/context-notes.md
 

@@ -23,20 +23,17 @@ gem "jbuilder"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
-# Excel(.xlsx)生成 — 列幅・整列・書式を制御し、CSVの####・整列・可読性問題を解消する
+# Excel(.xlsx) 생성 — 열 폭·정렬·서식을 다룬다 (.claude/rules/notes/xlsx-export.md)
 gem "caxlsx"
-gem "caxlsx_rails" # xlsx MIMEタイプを自動登録し、send_dataでの配信を可能にする
+gem "caxlsx_rails" # xlsx MIME 타입을 등록해 send_data 로 내보낼 수 있게 한다
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
-# Rails.cacheのDBバックエンド。rate_limitがincrementの戻り値で判定するため必須
+# Rails.cache 의 DB 백엔드. rate_limit 이 increment 의 반환값으로 판정하므로 필수다
 gem "solid_cache"
-# solid_queue / solid_cable は導入しない。
-# Active Jobの用途が無く（画像のvariantは転送前にブラウザ側で縮小して同期生成）、
-# Action Cableも使用箇所が0件。Render無料プランはworkerサービスを立てられず
-# ジョブがPuma内で動くため、バックグラウンド化してもメモリ問題は解決しない。
-# 必要になった時点でgemとマイグレーションを追加する。
+# solid_queue / solid_cable 은 넣지 않는다 — 근거는 .claude/rules/notes/infra.md.
+# 필요해지는 시점에 gem 과 마이그레이션을 더한다.
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
@@ -49,11 +46,11 @@ gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 2.2"
-# image_processing 2.0がruby-vipsをランタイム依存から外したため明示的に追加する。
-# 無いとActive Storageの初期化がLoadErrorで落ちる（詳細はdocs/oss-candidates.md）。
+# image_processing 2.0 이 ruby-vips 를 런타임 의존에서 빼서 직접 적어준다.
+# 없으면 Active Storage 초기화가 LoadError 로 떨어진다 (docs/oss-candidates.md).
 gem "ruby-vips", "~> 2.3", require: false
-# S3プロトコルのクライアント。AWSではなくSupabase Storageに接続するために使う。
-# Active StorageがS3サービスを構築する時点で読み込むため require: false。
+# S3 프로토콜 클라이언트 — AWS 가 아니라 Supabase Storage 에 붙으려고 쓴다.
+# Active Storage 가 S3 서비스를 만드는 시점에 읽으므로 require: false.
 gem "aws-sdk-s3", require: false
 
 group :development, :test do

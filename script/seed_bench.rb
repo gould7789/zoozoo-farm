@@ -2,7 +2,7 @@
 
 # ─────────────────────────────────────────────────────────────
 # N+1 측정용 더미 데이터 시드 (★개발 환경 전용★)
-# 実行: bin/rails runner script/seed_bench.rb
+# 실행: bin/rails runner script/seed_bench.rb
 #   옵션: ANIMALS=40 RECORDS=8 NOTICES=300 bin/rails runner script/seed_bench.rb
 # 측정이 끝나면 script/cleanup_bench.rb 로 전부 삭제할 수 있다.
 # ─────────────────────────────────────────────────────────────

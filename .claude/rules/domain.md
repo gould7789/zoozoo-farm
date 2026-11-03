@@ -24,6 +24,7 @@
 | --- | --- | --- |
 | `notes/notice.md` | 리치텍스트 이름 충돌, 2단계 이관, CSP, 발췌, 임베드 검증 | `notice.rb`, `notices_controller`, `views/notices`, 이관 마이그레이션 |
 | `notes/auth.md` | 이메일 기준 rate limit, `reset_session` 순서, 마지막 관리자 보호 | `sessions_controller`, `application_controller`, `admin/users_controller`, `user.rb` |
+| `notes/animal-lifecycle.md` | 폐사·분양·입력 실수의 분리, CHECK 정합성, 군집 제약, 보관 화면 | `animal.rb`, `animals_controller`, `animal_archives_controller`, `animal_scoped`, `views/animal_archives` |
 | `notes/animal-photo.md` | HEIC·libvips, `purge` vs `purge_later`, 검증 에러 때 사진 | `animal.rb`, `animal_photos_controller`, 사진 JS 2개 |
 | `notes/xlsx-export.md` | Excel `####`, 서식 코드, 고정 행, 분류 칸 비우기 | 내보내기 컨트롤러 5개 + base |
 

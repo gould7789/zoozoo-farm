@@ -1,0 +1,58 @@
+<%# 내보낸 개체 보관 — 사진 카드가 곧 갤러리다. 갤러리를 따로 두지 않는 이유는
+    같은 데이터를 두 화면이 보여주면 한쪽을 고칠 때 다른 쪽을 빠뜨리기 때문이다
+    (notes/animal-lifecycle.md) %>
+<% content_for(:title, "내보낸 개체") %>
+
+<div class="max-w-2xl md:max-w-4xl mx-auto">
+
+  <div class="flex items-center gap-3 mb-4 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
+    <%= link_to zones_path, class: "text-gray-400 hover:text-gray-600 transition-colors shrink-0" do %>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 19.5L8.25 12l7.5-7.5" />
+      </svg>
+    <% end %>
+    <div class="min-w-0">
+      <h1 class="text-xl font-bold text-gray-800">내보낸 개체</h1>
+      <p class="text-sm text-gray-600 mt-0.5">폐사하거나 분양한 동물의 기록</p>
+    </div>
+  </div>
+
+  <%# 필터 — 선택된 것만 색을 채운다 %>
+  <div class="flex gap-2 mb-4">
+    <% [ [ nil, "전체" ], [ "deceased", "폐사" ], [ "transferred", "분양" ] ].each do |value, label| %>
+      <% selected = @reason == value %>
+      <%= link_to label, archive_path(reason: value),
+          class: "h-9 px-4 inline-flex items-center rounded-lg text-sm font-medium transition-colors #{selected ? 'bg-green-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
+    <% end %>
+  </div>
+
+  <% if @animals.any? %>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+      <% @animals.each do |animal| %>
+        <% label, badge = animal_exit_label(animal.exit_reason) %>
+        <%= link_to zone_animal_path(animal.zone, animal),
+            class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all flex flex-col items-center text-center" do %>
+          <%= render "zones/animal_avatar", animal: animal, size: "w-20 h-20" %>
+          <p class="mt-2.5 text-sm font-semibold text-gray-900 break-keep">
+            <%= animal.name.presence || animal.species %>
+          </p>
+          <% if animal.name.present? %>
+            <p class="text-xs text-gray-400 mt-0.5"><%= animal.species %></p>
+          <% end %>
+          <p class="text-xs text-gray-400 mt-0.5"><%= animal.zone.name %></p>
+          <div class="mt-2 flex items-center gap-1.5">
+            <span class="text-xs px-2 py-0.5 rounded-full font-medium <%= badge %>"><%= label %></span>
+            <span class="text-xs text-gray-500"><%= animal.exited_on.strftime("%Y-%m-%d") %></span>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="bg-white/80 backdrop-blur-sm rounded-xl px-5 py-12 shadow-sm text-center">
+      <p class="text-sm text-gray-400">
+        <%= @reason ? "해당하는 개체가 없습니다." : "내보낸 개체가 없습니다." %>
+      </p>
+    </div>
+  <% end %>
+
+</div>

@@ -18,6 +18,14 @@ module ApplicationHelper
     "#{base} #{color}"
   end
 
+  # 내보낸 사유의 화면 라벨과 배지 색
+  def animal_exit_label(reason)
+    {
+      "deceased"    => [ "폐사", "bg-gray-200 text-gray-700" ],
+      "transferred" => [ "분양", "bg-blue-100 text-blue-700" ]
+    }.fetch(reason.to_s, [ "내보냄", "bg-gray-200 text-gray-700" ])
+  end
+
   # 공지 카테고리의 라벨과 색 클래스 — [라벨, Tailwind 클래스]
   def notice_category_label(category)
     {

@@ -25,12 +25,16 @@
           Excel
         <% end %>
       <% end %>
-      <%= link_to new_zone_animal_health_log_path(@zone, @animal),
-          class: "inline-flex items-center gap-1.5 h-9 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
-        </svg>
-        추가
+      <%# 내보낸 개체에는 추가할 수 없다. 서버에서도 막지만(AnimalScoped),
+          누를 수 있는 버튼을 두면 막혔다는 사실을 눌러봐야 안다 %>
+      <% unless @animal.exited? %>
+        <%= link_to new_zone_animal_health_log_path(@zone, @animal),
+            class: "inline-flex items-center gap-1.5 h-9 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+          추가
+        <% end %>
       <% end %>
     </div>
   </div>

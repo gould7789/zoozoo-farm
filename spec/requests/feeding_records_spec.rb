@@ -21,6 +21,26 @@ RSpec.describe "FeedingRecords", type: :request do
     end
   end
 
+  # AnimalScoped 를 health_records 와 공유하지만, 공유한다는 이유로 한쪽만 검사하면
+  # 나중에 한쪽이 concern 을 벗어났을 때 드러나지 않는다
+  describe "내보낸 개체" do
+    let(:animal) { create(:animal, :exited, zone: zone) }
+
+    before { sign_in(staff) }
+
+    it "기록을 추가할 수 없다" do
+      expect {
+        post zone_animal_feeding_logs_path(zone, animal),
+             params: { feeding_record: { food_type: "건초", fed_at: Time.current } }
+      }.not_to change(FeedingRecord, :count)
+    end
+
+    it "목록은 볼 수 있다" do
+      get zone_animal_feeding_logs_path(zone, animal)
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "GET /zones/:zone_id/animals/:animal_id/feeding_records/new" do
     context "비로그인" do
       before { get new_zone_animal_feeding_log_path(zone, animal) }

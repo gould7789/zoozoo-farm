@@ -9,5 +9,12 @@ FactoryBot.define do
     active           { true }
     individual_count { 1 }
     animal_category  { nil }
+
+    # 내보낸 개체 — CHECK 제약이 active 와 exit_reason 을 함께 보므로 셋을 같이 준다
+    trait :exited do
+      active      { false }
+      exit_reason { :deceased }
+      exited_on   { Date.new(2026, 3, 14) }
+    end
   end
 end

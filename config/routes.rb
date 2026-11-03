@@ -16,12 +16,21 @@ Rails.application.routes.draw do
       end
     end
     resources :animals do
+      # 되돌릴 수 없는 조작은 라우트부터 나눈다 — destroy 에 플래그로 섞으면
+      # 파라미터 하나 차이로 복구 불가능한 일이 일어난다
+      member do
+        post   :restore
+        delete :purge
+      end
       # 프로필 사진 삭제 — 한 동물에 한 장이므로 단수 리소스
       resource  :photo, only: [ :destroy ], controller: "animal_photos"
       resources :health_logs,  except: [ :show ], controller: "health_records"
       resources :feeding_logs, except: [ :show ], controller: "feeding_records"
     end
   end
+
+  # 내보낸 개체 보관 — 관을 가로지르므로 zones 아래에 둘 수 없다
+  get "/archive", to: "animal_archives#index", as: :archive
 
   resources :notices
 

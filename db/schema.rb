@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_03_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -53,7 +53,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "animal_categories", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "animal_categories", id: :uuid, default: -> { "gen_random_uuid()" }, comment: "관 안에서 동물을 종류별로 묶는 분류. 숨김 토글이 있다", force: :cascade do |t|
     t.uuid "zone_id", null: false
     t.string "name", limit: 100, null: false
     t.datetime "created_at", null: false
@@ -63,7 +63,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
     t.index ["zone_id"], name: "index_animal_categories_on_zone_id"
   end
 
-  create_table "animals", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "animals", id: :uuid, default: -> { "gen_random_uuid()" }, comment: "동물 개체. 이름이 없는 종은 individual_count 에 마리 수를 넣는다", force: :cascade do |t|
     t.uuid "zone_id", null: false
     t.string "name", limit: 100
     t.string "species", limit: 100, null: false
@@ -78,14 +78,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
     t.datetime "updated_at", null: false
     t.uuid "animal_category_id"
     t.integer "individual_count", default: 1, null: false
+    t.integer "exit_reason", limit: 2
+    t.date "exited_on"
+    t.text "exit_note"
     t.index ["animal_category_id"], name: "index_animals_on_animal_category_id"
     t.index ["zone_id"], name: "index_animals_on_zone_id"
+    t.check_constraint "(active = false) = (exit_reason IS NOT NULL)", name: "chk_animals_exit_consistency"
+    t.check_constraint "(exit_reason IS NULL) = (exited_on IS NULL)", name: "chk_animals_exit_date"
     t.check_constraint "cites_grade = ANY (ARRAY[0, 1, 2, 3])", name: "chk_animals_cites_grade"
+    t.check_constraint "exit_reason = ANY (ARRAY[0, 1])", name: "chk_animals_exit_reason"
     t.check_constraint "gender = ANY (ARRAY[0, 1, 2])", name: "chk_animals_gender"
     t.check_constraint "individual_count >= 1", name: "chk_animals_individual_count"
   end
 
-  create_table "expense_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "expense_records", id: :uuid, default: -> { "gen_random_uuid()" }, comment: "지출 기록. Admin 전용", force: :cascade do |t|
     t.uuid "created_by_id"
     t.date "spent_on", null: false
     t.integer "category", limit: 2, null: false
@@ -100,7 +106,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
     t.check_constraint "category = ANY (ARRAY[0, 1, 2, 3, 4, 5])", name: "chk_expense_category"
   end
 
-  create_table "feeding_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "feeding_records", id: :uuid, default: -> { "gen_random_uuid()" }, comment: "개체의 먹이 급여 이력", force: :cascade do |t|
     t.uuid "animal_id", null: false
     t.uuid "created_by_id"
     t.datetime "fed_at", null: false
@@ -114,7 +120,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
     t.index ["fed_at"], name: "index_feeding_records_on_fed_at"
   end
 
-  create_table "health_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "health_records", id: :uuid, default: -> { "gen_random_uuid()" }, comment: "개체의 컨디션과 체중 관찰 기록", force: :cascade do |t|
     t.uuid "animal_id", null: false
     t.uuid "created_by_id"
     t.date "recorded_on", null: false
@@ -129,7 +135,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
     t.check_constraint "condition = ANY (ARRAY[0, 1, 2])", name: "chk_health_condition"
   end
 
-  create_table "notices", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "notices", id: :uuid, default: -> { "gen_random_uuid()" }, comment: "직원 공지. 본문은 Action Text 리치텍스트다", force: :cascade do |t|
     t.uuid "created_by_id"
     t.integer "category", limit: 2, default: 0, null: false
     t.text "body"
@@ -141,7 +147,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
     t.check_constraint "category = ANY (ARRAY[0, 1, 2, 3, 4, 5, 6])", name: "chk_notices_category"
   end
 
-  create_table "sales_records", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "sales_records", id: :uuid, default: -> { "gen_random_uuid()" }, comment: "매출 기록. Admin 전용", force: :cascade do |t|
     t.uuid "created_by_id"
     t.date "sold_on", null: false
     t.integer "source", limit: 2, null: false
@@ -166,7 +172,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
     t.index ["key_hash"], name: "index_solid_cache_entries_on_key_hash", unique: true
   end
 
-  create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, comment: "직원 계정. 회원가입이 없고 Admin 이 발급한다. 퇴사는 active = false", force: :cascade do |t|
     t.string "email", limit: 255, null: false
     t.string "password_digest", null: false
     t.string "name", limit: 100, null: false
@@ -183,7 +189,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_02_000001) do
     t.check_constraint "role = ANY (ARRAY[0, 1])", name: "chk_users_role"
   end
 
-  create_table "zones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+  create_table "zones", id: :uuid, default: -> { "gen_random_uuid()" }, comment: "동물을 두는 구역. 시드 고정이라 화면에서 만들지 않는다", force: :cascade do |t|
     t.string "name", limit: 100, null: false
     t.text "description"
     t.datetime "created_at", null: false

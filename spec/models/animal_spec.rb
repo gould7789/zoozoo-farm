@@ -142,7 +142,7 @@ RSpec.describe Animal, type: :model do
     it ".active 는 논리 삭제되지 않은 동물만 반환한다" do
       zone = Zone.create!(name: "테스트관")
       active_animal   = Animal.create!(zone: zone, species: "앵무새", active: true)
-      inactive_animal = Animal.create!(zone: zone, species: "큰앵무", active: false)
+      inactive_animal = create(:animal, :exited, zone: zone, species: "큰앵무")
 
       expect(Animal.active).to include(active_animal)
       expect(Animal.active).not_to include(inactive_animal)
@@ -195,7 +195,7 @@ RSpec.describe Animal, type: :model do
       end
 
       it "active = false 인 동물은 반환하지 않는다" do
-        animal = create(:animal, active: false)
+        animal = create(:animal, :exited)
         create(:health_record, animal: animal, created_by: user, condition: :danger, recorded_on: Date.today)
 
         expect(Animal.with_alert_condition).not_to include(animal)
@@ -203,8 +203,117 @@ RSpec.describe Animal, type: :model do
     end
   end
 
+  describe "내보내기" do
+    let(:animal) { create(:animal) }
+
+    it "사유·날짜·메모를 남기고 비활성으로 만든다" do
+      animal.update!(active: false, exit_reason: :deceased,
+                     exited_on: Date.new(2026, 3, 14), exit_note: "노령으로 인한 쇠약")
+
+      expect(animal).to have_attributes(
+        active: false, exit_reason: "deceased",
+        exited_on: Date.new(2026, 3, 14), exit_note: "노령으로 인한 쇠약"
+      )
+    end
+
+    # 사유 없이 비활성으로 만들면 DB 의 CHECK 에 닿기 전에 모델이 막아야 한다.
+    # 안 막으면 폼의 빈 값이 검증 에러가 아니라 500 으로 드러난다
+    it "사유 없이 비활성으로 만들면 검증에서 막힌다" do
+      animal.assign_attributes(active: false)
+
+      expect(animal).not_to be_valid
+      expect(animal.errors[:exit_reason]).to eq([ "폐사인지 분양인지 선택해주세요." ])
+    end
+
+    # 반대 조합. 화면에서 만들 수 있는 길은 없지만 검증이 한쪽만 보면 DB 에서 500 이 된다.
+    # 메시지를 문자열로 박는 이유는 번역이 빠져도 valid? 만으로는 드러나지 않기 때문이다
+    it "사육 중인데 사유가 들어 있으면 검증에서 막힌다" do
+      animal.assign_attributes(exit_reason: :deceased, exited_on: Date.current)
+
+      expect(animal).not_to be_valid
+      expect(animal.errors[:exit_reason]).to eq([ "사육 중인 개체에는 내보낸 사유를 남길 수 없습니다." ])
+    end
+
+    it "되돌리면 내보낸 흔적이 모두 지워진다" do
+      animal.update!(active: false, exit_reason: :transferred,
+                     exited_on: Date.current, exit_note: "○○동물원")
+
+      animal.restore!
+
+      expect(animal).to have_attributes(
+        active: true, exit_reason: nil, exited_on: nil, exit_note: nil
+      )
+    end
+
+    # 사인은 몰라도(갑자기 죽는 경우) 날짜는 모를 수 없다 — 모르면 발견일을 적는다.
+    # 날짜 없는 폐사 기록은 폐사보고서에 쓸 수 없으므로 있으나 마나다
+    it "날짜가 없으면 저장되지 않는다" do
+      animal.assign_attributes(active: false, exit_reason: :deceased, exited_on: nil)
+
+      expect(animal).not_to be_valid
+      expect(animal.errors[:exited_on]).to eq([ "날짜를 입력해주세요. 사망일을 모르면 발견한 날을 적습니다." ])
+    end
+
+    describe ".exited" do
+      it "내보낸 개체만 반환한다" do
+        exited = create(:animal, :exited)
+        create(:animal)
+
+        expect(Animal.exited).to contain_exactly(exited)
+      end
+    end
+  end
+
   describe "DB 제약" do
     it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :gender, 9, "chk_animals_gender"
     it_behaves_like "DB 가 범위 밖 enum 값을 거부한다", :cites_grade, 9, "chk_animals_cites_grade"
+    # 공용 shared example 을 못 쓴다. exit_reason 만 바꾸면 active 와 exited_on 이
+    # 어긋나 다른 제약이 먼저 걸려, 정작 보려는 제약에 닿지 못한다.
+    # 나머지 둘을 맞춰 둔 행에서 값만 범위 밖으로 민다
+    it "exit_reason 에 9 를 직접 넣으면 chk_animals_exit_reason 가 거부한다" do
+      animal = create(:animal, :exited)
+
+      expect {
+        animal.update_column(:exit_reason, 9)
+      }.to raise_error(ActiveRecord::StatementInvalid, /chk_animals_exit_reason/)
+    end
+
+    # update_column 으로 모델 검증을 건너뛴다. 검증이 막아주는 것과
+    # DB 가 막아주는 것은 다른 층이고, 여기서 보려는 것은 DB 쪽이다
+    describe "active 와 exit_reason 의 정합성" do
+      it "사유 없이 비활성으로 만들 수 없다" do
+        animal = create(:animal)
+
+        expect {
+          animal.update_column(:active, false)
+        }.to raise_error(ActiveRecord::StatementInvalid, /chk_animals_exit_consistency/)
+      end
+
+      it "내보낸 개체를 활성으로 되돌려 놓을 수 없다" do
+        animal = create(:animal, :exited)
+
+        expect {
+          animal.update_column(:active, true)
+        }.to raise_error(ActiveRecord::StatementInvalid, /chk_animals_exit_consistency/)
+      end
+    end
+
+    describe "사유와 날짜의 정합성" do
+      it "사유 없이 날짜만 넣을 수 없다" do
+        animal = create(:animal)
+
+        expect {
+          animal.update_column(:exited_on, Date.current)
+        }.to raise_error(ActiveRecord::StatementInvalid, /chk_animals_exit_date/)
+      end
+
+      it "내보낸 개체의 날짜를 지울 수 없다" do
+        animal = create(:animal, :exited)
+
+        expect {
+          animal.update_column(:exited_on, nil)
+        }.to raise_error(ActiveRecord::StatementInvalid, /chk_animals_exit_date/)
+      end
+    end
   end
 end

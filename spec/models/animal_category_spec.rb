@@ -32,7 +32,7 @@ RSpec.describe AnimalCategory, type: :model do
       zone     = create(:zone)
       category = create(:animal_category, zone: zone)
       create(:animal, zone: zone, animal_category: category, individual_count: 10, active: true)
-      create(:animal, zone: zone, animal_category: category, individual_count: 5,  active: false)
+      create(:animal, :exited, zone: zone, animal_category: category, individual_count: 5)
       expect(category.total_count).to eq(10)
     end
   end

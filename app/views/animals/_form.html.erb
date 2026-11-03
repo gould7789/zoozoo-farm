@@ -185,13 +185,8 @@
       <div class="pt-4 border-t border-gray-200">
         <p class="text-sm font-semibold text-gray-700 mb-3">내보낸 정보</p>
 
-        <div class="grid grid-cols-2 gap-2 mb-3">
-          <% [ [ "deceased", "폐사" ], [ "transferred", "분양" ] ].each do |value, text| %>
-            <label class="h-11 flex items-center justify-center gap-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 cursor-pointer has-[:checked]:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:text-green-700">
-              <%= f.radio_button :exit_reason, value, class: "accent-green-600" %>
-              <%= text %>
-            </label>
-          <% end %>
+        <div class="mb-3">
+          <%= render "animals/exit_reason_radios", f: f, required: false %>
         </div>
 
         <div class="mb-3">

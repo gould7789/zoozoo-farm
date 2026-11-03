@@ -212,14 +212,7 @@
           <%= form_with url: zone_animal_path(@zone, @animal), method: :delete, scope: :animal do |f| %>
             <div class="px-6 py-5 space-y-4">
 
-              <div class="grid grid-cols-2 gap-2">
-                <% [ [ "deceased", "폐사" ], [ "transferred", "분양" ] ].each do |value, text| %>
-                  <label class="h-11 flex items-center justify-center gap-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 cursor-pointer has-[:checked]:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:text-green-700">
-                    <%= f.radio_button :exit_reason, value, required: true, class: "accent-green-600" %>
-                    <%= text %>
-                  </label>
-                <% end %>
-              </div>
+              <%= render "animals/exit_reason_radios", f: f, required: true %>
 
               <div>
                 <%= f.label :exited_on, "날짜", class: "block text-sm font-medium text-gray-700 mb-1" %>

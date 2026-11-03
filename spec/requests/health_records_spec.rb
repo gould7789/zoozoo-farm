@@ -52,6 +52,40 @@ RSpec.describe "HealthRecords", type: :request do
     end
   end
 
+  # 내보낸 개체에 기록을 더하면 사망일 이후의 관찰 기록이 생긴다.
+  # 에러가 안 나고 그냥 저장되므로 폐사보고서를 쓸 때야 드러난다
+  describe "내보낸 개체" do
+    let(:animal) { create(:animal, :exited, zone: zone) }
+
+    before { sign_in(staff) }
+
+    it "추가 화면을 열 수 없다" do
+      get new_zone_animal_health_log_path(zone, animal)
+      expect(response).to redirect_to(zone_animal_path(zone, animal))
+    end
+
+    it "기록을 추가할 수 없다" do
+      expect {
+        post zone_animal_health_logs_path(zone, animal),
+             params: { health_record: { condition: "normal", recorded_on: Date.current } }
+      }.not_to change(HealthRecord, :count)
+    end
+
+    it "목록은 볼 수 있다" do
+      get zone_animal_health_logs_path(zone, animal)
+      expect(response).to have_http_status(:ok)
+    end
+
+    # 지난 기록의 오타를 고치는 것은 정당한 조작이다
+    it "기존 기록은 수정할 수 있다" do
+      record = create(:health_record, animal: animal, created_by: staff, recorded_on: Date.current)
+
+      get edit_zone_animal_health_log_path(zone, animal, record)
+
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "GET /zones/:zone_id/animals/:animal_id/health_records/:id/edit" do
     context "본인 기록" do
       let(:health_record) { create(:health_record, animal: animal, created_by: staff) }

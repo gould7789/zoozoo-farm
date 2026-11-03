@@ -1,5 +1,6 @@
 # 동물 개체 모델
-# 사망·방출 시 active = false 로 논리 삭제한다
+# 폐사·분양은 사유와 날짜를 남기는 논리 삭제, 입력 실수만 물리 삭제한다
+# 생애 관련 판단은 .claude/rules/notes/animal-lifecycle.md
 # 사진 관련 판단은 .claude/rules/notes/animal-photo.md
 class Animal < ApplicationRecord
   # 브라우저에서 JPEG 로 바꿔 보내지만, 그 변환이 실패했을 때의 최종 방어선
@@ -27,13 +28,28 @@ class Animal < ApplicationRecord
   # 호출은 animal.cites_none? / animal.cites_grade_i? 형태가 된다
   enum :cites_grade, { none: 0, grade_i: 1, grade_ii: 2, grade_iii: 3 }, prefix: :cites
 
+  # prefix: :exit — transferred? 만으로는 무엇의 상태인지 읽히지 않는다.
+  # 호출은 animal.exit_deceased? / animal.exit_transferred? 형태가 된다
+  enum :exit_reason, { deceased: 0, transferred: 1 }, prefix: :exit
+
   validates :species, presence: true, length: { maximum: 100 }
   validates :name, length: { maximum: 100 }, allow_nil: true
   validates :individual_count, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
   # 첨부 파일은 validates(복수)로 다룰 수 없어 validate(단수)로 커스텀 검증을 건다
   validate :photo_must_be_supported_image
+  # 사인은 몰라도(갑자기 죽는 경우) 날짜는 모를 수 없다 — 모르면 발견일을 적는다.
+  validates :exited_on, presence: true, if:     :exited?
+  validates :exited_on, absence:  true, unless: :exited?
+  # 날짜 입력은 연도 네 자리 오타가 쉽다. 2062 를 넣으면 보관 목록 맨 위에 영원히 박히고
+  # 폐사보고서에도 그 날짜가 들어간다. 람다인 이유는 상수로 쓰면 클래스 로드 시각에 굳어서다
+  # allow_nil — 비었을 때는 위의 presence 가 말한다. 안 붙이면 메시지가 두 번 뜬다
+  validates :exited_on, comparison: { less_than_or_equal_to: ->(_) { Date.current } },
+            allow_nil: true, if: :exited?
+  # DB 의 CHECK 가 active 와 exit_reason 을 함께 본다. 모델에서 먼저 막지 않으면 폼에서 사유를 비우고 보냈을 때 검증 에러가 아니라 500 으로 드러난다
+  validate :exit_state_must_be_consistent
 
   scope :active, -> { where(active: true) }
+  scope :exited, -> { where.not(exit_reason: nil) }
 
   # 홈 화면 알림용 — 가장 최근 건강 기록이 caution 이나 danger 인 동물.
   # 서브쿼리로 개체마다 최신 1건만 고른 뒤 그 조건으로 거른다
@@ -52,6 +68,15 @@ class Animal < ApplicationRecord
       .includes(:zone, :health_records)
       .order("health_records.condition DESC, animals.species ASC")
   }
+
+  def exited?
+    exit_reason.present?
+  end
+
+  # exit_* 를 한 번에 지운다. 따로 업데이트하면 중간 상태가 CHECK 에 걸린다
+  def restore!
+    update!(active: true, exit_reason: nil, exited_on: nil, exit_note: nil)
+  end
 
   # 한국식 나이 — 태어난 해를 1살로 보고 해가 바뀔 때 더한다
   def age
@@ -72,6 +97,13 @@ class Animal < ApplicationRecord
   end
 
   private
+
+    # DB 의 CHECK 는 양방향이다 — 한쪽만 보면 반대 조합이 검증을 통과해 500 이 된다
+    def exit_state_must_be_consistent
+      return if active? == exit_reason.blank?
+
+      errors.add(:exit_reason, active? ? :present : :blank)
+    end
 
     # 메시지는 ko.yml에 둔다 — errors.format이 %{message}라 문장으로 완결시켜야 한다
     def photo_must_be_supported_image

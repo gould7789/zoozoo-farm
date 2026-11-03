@@ -1,0 +1,11 @@
+<%# 폐사·분양 라디오 — 내보내기 모달(show)과 수정 폼(_form) 두 곳이 쓴다.
+    클래스 문자열을 복사해 두면 한쪽만 고쳤을 때 두 화면이 달라진다.
+    cursor-pointer 는 빼면 안 된다 — label 의 기본 커서가 default 라 눌리는 줄 모른다 %>
+<div class="grid grid-cols-2 gap-2">
+  <% [ [ "deceased", "폐사" ], [ "transferred", "분양" ] ].each do |value, text| %>
+    <label class="h-11 flex items-center justify-center gap-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 cursor-pointer has-[:checked]:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:text-green-700">
+      <%= f.radio_button :exit_reason, value, required: required, class: "accent-green-600" %>
+      <%= text %>
+    </label>
+  <% end %>
+</div>

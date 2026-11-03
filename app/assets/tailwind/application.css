@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Tailwind v4 의 preflight 에는 button { cursor: pointer } 가 없다 (v3 에서 빠졌다).
+   그대로 두면 앱의 버튼 34곳이 화살표 커서라 「눌리는 것」으로 보이지 않는다.
+   사무실 Windows PC 가 데스크톱 주 환경이라 마우스 커서가 유일한 단서다.
+   input[type=submit] 은 Tailwind 가 안내하는 스니펫에 없지만 f.submit 이 그걸 낸다.
+   @layer base 에 두어야 유틸리티(cursor-wait 등)가 이겨 개별 지정을 덮을 수 있다 */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  input[type="submit"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
 /* 모바일과 데스크톱에서 배경 이미지를 바꾼다 */
 /* CSP 가 인라인 <style> 을 거부하므로 레이아웃에서 여기로 옮겼다 */
 /*

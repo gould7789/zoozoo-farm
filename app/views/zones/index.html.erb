@@ -28,6 +28,19 @@
     <% end %>
   </div>
 
+  <%# 관 카드가 「지금 있는 동물들」이라 그 바로 아래가 같은 축의 과거다.
+      「주요 현황」은 현재형이므로 거기 섞지 않는다 (notes/animal-lifecycle.md).
+      숫자를 안 붙이는 이유는 줄지 않고 쌓이기만 해서 판단에 쓸 수 없기 때문이다 %>
+  <div class="mt-4 flex justify-end">
+    <%= link_to archive_path,
+        class: "inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors" do %>
+      내보낸 개체 보기
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+      </svg>
+    <% end %>
+  </div>
+
   <div class="mt-10 mb-4 flex items-center gap-3">
     <span class="text-base font-bold text-gray-600">주요 현황</span>
     <div class="flex-1 h-px bg-gray-300"></div>

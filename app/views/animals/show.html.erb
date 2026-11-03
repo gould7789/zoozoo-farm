@@ -1,5 +1,5 @@
 <%# 동물 상세 — 개체 프로필 %>
-<%# 수정과 삭제 버튼은 Admin 전용 %>
+<%# 수정·내보내기·완전 삭제는 Admin 전용. 판단은 notes/animal-lifecycle.md %>
 <% content_for(:title) { @animal.species } %>
 
 <div class="max-w-2xl mx-auto">
@@ -34,6 +34,19 @@
       </h1>
     </div>
   </div>
+
+  <% if @animal.exited? %>
+    <% label, badge = animal_exit_label(@animal.exit_reason) %>
+    <div class="bg-white rounded-xl border border-gray-300 p-5 shadow-sm mb-4">
+      <div class="flex items-center gap-2">
+        <span class="text-xs px-2 py-0.5 rounded-full font-medium <%= badge %>"><%= label %></span>
+        <span class="text-sm font-semibold text-gray-800"><%= @animal.exited_on.strftime("%Y-%m-%d") %></span>
+      </div>
+      <% if @animal.exit_note.present? %>
+        <p class="text-sm text-gray-600 mt-2 whitespace-pre-line"><%= @animal.exit_note %></p>
+      <% end %>
+    </div>
+  <% end %>
 
   <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
     <dl class="grid grid-cols-2 gap-x-4 gap-y-4">
@@ -113,15 +126,37 @@
     <% end %>
   </div>
 
-  <%# 수정과 삭제는 Admin 전용 — Staff 에게는 숨긴다 %>
+  <%# 수정·내보내기·되돌리기는 Admin 전용 — Staff 에게는 숨긴다 %>
   <% if current_user.admin? %>
     <div class="grid grid-cols-2 gap-3 mb-6">
       <%= link_to "수정", edit_zone_animal_path(@zone, @animal),
           class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all inline-flex items-center justify-center text-sm font-medium text-gray-700 hover:bg-gray-50" %>
-      <%= button_to "삭제", zone_animal_path(@zone, @animal), method: :delete,
-          data: { turbo_confirm: "정말 삭제하시겠습니까?" },
-          form: { class: "contents" },
-          class: "w-full bg-red-500 hover:bg-red-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-all inline-flex items-center justify-center text-sm font-medium text-white" %>
+
+      <% if @animal.exited? %>
+        <%= button_to "되돌리기", restore_zone_animal_path(@zone, @animal), method: :post,
+            form: { class: "contents" },
+            class: "w-full bg-white border border-gray-300 rounded-xl p-4 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all inline-flex items-center justify-center text-sm font-medium text-gray-700" %>
+      <% else %>
+        <%# 모달이 body 직하라 Outlet 으로 참조한다 (common/views.md) %>
+        <button type="button"
+                data-controller="modal-opener"
+                data-modal-opener-modal-outlet="#exit-modal"
+                data-action="click->modal-opener#open"
+                class="w-full bg-red-500 hover:bg-red-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-all inline-flex items-center justify-center text-sm font-medium text-white">
+          내보내기
+        </button>
+      <% end %>
+    </div>
+
+    <%# 입력 실수로 등록한 개체를 지우는 길. 평소에는 눈에 띄지 않게 둔다 %>
+    <div class="mb-6 text-center">
+      <button type="button"
+              data-controller="modal-opener"
+              data-modal-opener-modal-outlet="#purge-modal"
+              data-action="click->modal-opener#open"
+              class="text-xs text-gray-400 hover:text-red-500 underline transition-colors">
+        잘못 등록한 개체입니다 — 완전히 삭제
+      </button>
     </div>
   <% end %>
 
@@ -147,6 +182,126 @@
                 class="mt-3 w-full h-11 bg-white/90 hover:bg-white rounded-xl text-sm font-medium text-gray-700 transition-colors">
           닫기
         </button>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<%# 내보내기·완전 삭제 모달 — body 직하 (common/views.md) %>
+<% if current_user.admin? %>
+  <% unless @animal.exited? %>
+    <% content_for :modal do %>
+      <div data-controller="modal" id="exit-modal">
+        <div data-modal-target="overlay"
+             data-action="click->modal#closeOnOverlay"
+             class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"></div>
+
+        <div data-modal-target="panel"
+             class="hidden fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+          <div class="px-6 py-5 bg-gray-50 border-b border-gray-200">
+            <h2 class="text-base font-bold text-gray-900">어떻게 됐습니까</h2>
+            <p class="text-xs text-gray-500 mt-0.5">
+              <%= @animal.species %><%= " (#{@animal.name})" if @animal.name.present? %>
+            </p>
+          </div>
+
+          <%= form_with url: zone_animal_path(@zone, @animal), method: :delete, scope: :animal do |f| %>
+            <div class="px-6 py-5 space-y-4">
+
+              <div class="grid grid-cols-2 gap-2">
+                <% [ [ "deceased", "폐사" ], [ "transferred", "분양" ] ].each do |value, text| %>
+                  <label class="h-11 flex items-center justify-center gap-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 cursor-pointer has-[:checked]:bg-green-50 has-[:checked]:border-green-500 has-[:checked]:text-green-700">
+                    <%= f.radio_button :exit_reason, value, required: true, class: "accent-green-600" %>
+                    <%= text %>
+                  </label>
+                <% end %>
+              </div>
+
+              <div>
+                <%= f.label :exited_on, "날짜", class: "block text-sm font-medium text-gray-700 mb-1" %>
+                <%= f.date_field :exited_on, value: Date.current, required: true,
+                    class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500" %>
+                <p class="text-xs text-gray-400 mt-1">사망일을 모르면 발견한 날을 적습니다.</p>
+              </div>
+
+              <div>
+                <%# 라벨을 사유에 따라 바꾸려면 JS 가 하나 더 필요하다. 한 칸에 합쳐 둔다 %>
+                <%= f.label :exit_note, "사인 또는 분양처", class: "block text-sm font-medium text-gray-700 mb-1" %>
+                <%= f.text_area :exit_note, rows: 2,
+                    class: "w-full px-3 py-2 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500" %>
+              </div>
+
+              <% if @animal.individual_count > 1 %>
+                <p class="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  <%= @animal.individual_count %>마리 전체가 내보내집니다.
+                  일부만 줄이려면 수정 화면에서 개체 수를 고치세요.
+                </p>
+              <% end %>
+
+            </div>
+
+            <div class="flex gap-2 px-6 py-4 bg-gray-50 border-t border-gray-200">
+              <button type="button" data-action="click->modal#close"
+                      class="flex-1 h-11 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                취소
+              </button>
+              <%= f.submit "내보내기",
+                  class: "flex-1 h-11 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer" %>
+            </div>
+          <% end %>
+
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% content_for :modal do %>
+    <div data-controller="modal" id="purge-modal">
+      <div data-modal-target="overlay"
+           data-action="click->modal#closeOnOverlay"
+           class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"></div>
+
+      <div data-modal-target="panel"
+           class="hidden fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+        <div class="px-6 py-5 bg-red-50 border-b border-red-200">
+          <h2 class="text-base font-bold text-red-900">완전히 삭제합니다</h2>
+          <p class="text-xs text-red-600 mt-0.5">되돌릴 수 없습니다</p>
+        </div>
+
+        <%= form_with url: purge_zone_animal_path(@zone, @animal), method: :delete do |f| %>
+          <div class="px-6 py-5 space-y-4">
+
+            <%# 기록 건수가 안전장치다. 입력 실수한 개체는 0~2건, 실재한 개체는 수십 건이라
+                숫자가 눈에 들어오면 사람이 멈춘다 (notes/animal-lifecycle.md) %>
+            <div class="text-sm text-gray-700">
+              <p class="font-semibold"><%= @animal.species %><%= " (#{@animal.name})" if @animal.name.present? %></p>
+              <p class="mt-1 text-gray-500">
+                건강 기록 <%= @animal.health_records.size %>건 ·
+                먹이 기록 <%= @animal.feeding_records.size %>건이 함께 삭제됩니다.
+              </p>
+            </div>
+
+            <div>
+              <%= label_tag :confirm_species, "삭제하려면 종명을 입력하세요", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= text_field_tag :confirm_species, nil, required: true, autocomplete: "off",
+                  placeholder: @animal.species,
+                  class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-red-500" %>
+            </div>
+
+          </div>
+
+          <div class="flex gap-2 px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <button type="button" data-action="click->modal#close"
+                    class="flex-1 h-11 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+              취소
+            </button>
+            <%= f.submit "삭제",
+                class: "flex-1 h-11 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg transition-colors cursor-pointer" %>
+          </div>
+        <% end %>
+
       </div>
     </div>
   <% end %>

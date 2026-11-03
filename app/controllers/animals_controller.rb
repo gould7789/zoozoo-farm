@@ -1,11 +1,11 @@
 # 동물 개체 CRUD
-# 조회(show)는 Staff 와 Admin 공통, 등록·수정과 삭제는 Admin 전용
-# 삭제는 active = false 논리 삭제 — 물리 삭제는 하지 않는다
-# 판단 근거는 .claude/rules/notes/animal-photo.md, notes/xlsx-export.md
+# 조회(show)는 Staff 와 Admin 공통, 등록·수정과 내보내기는 Admin 전용
+# 폐사·분양은 사유와 날짜를 남기는 논리 삭제, 입력 실수만 purge 로 물리 삭제한다
+# 판단 근거는 .claude/rules/notes/animal-lifecycle.md, notes/animal-photo.md, notes/xlsx-export.md
 class AnimalsController < ApplicationController
   before_action :set_zone
-  before_action :require_admin, only: [ :index, :new, :create, :edit, :update, :destroy ]
-  before_action :set_animal,    only: [ :show, :edit, :update, :destroy ]
+  before_action :require_admin, only: [ :index, :new, :create, :edit, :update, :destroy, :restore, :purge ]
+  before_action :set_animal,    only: [ :show, :edit, :update, :destroy, :restore, :purge ]
 
   # xlsx 내보내기 전용 — HTML 요청은 관 상세로 돌려보낸다
   def index
@@ -59,10 +59,38 @@ class AnimalsController < ApplicationController
     end
   end
 
+  # 내보내기 — 폐사 또는 분양. 기록은 남는다
   def destroy
-    # 물리 삭제가 아니라 active = false — 기록을 남긴다
-    @animal.update!(active: false)
-    redirect_to zone_path(@zone), notice: "동물을 삭제했습니다."
+    # active 와 exit_* 를 한 번에 쓴다. 따로 쓰면 중간 상태가 CHECK 에 걸린다
+    @animal.assign_attributes(exit_params.merge(active: false))
+
+    if @animal.save
+      redirect_to zone_path(@zone), notice: "#{exit_label} 처리했습니다."
+    else
+      redirect_to zone_animal_path(@zone, @animal),
+                  alert: @animal.errors.full_messages.to_sentence
+    end
+  end
+
+  def restore
+    @animal.restore!
+    redirect_to zone_animal_path(@zone, @animal), notice: "다시 사육 중으로 되돌렸습니다."
+  end
+
+  # 입력 실수로 등록한 개체를 지운다. 되돌릴 수 없다
+  def purge
+    # 종명 확인을 서버에서 한다. 브라우저에서만 막으면 되돌릴 수 없는 조작이
+    # 폼을 거치지 않은 요청에 그대로 열린다
+    if params[:confirm_species] != @animal.species
+      return redirect_to zone_animal_path(@zone, @animal),
+                         alert: "종명이 일치하지 않아 삭제하지 않았습니다."
+    end
+
+    # 잡 워커가 없어 purge_later 의 잡이 사라진다 — 스토리지에 고아 파일이 남으므로
+    # 동기로 먼저 지운다 (notes/animal-photo.md)
+    @animal.photo.purge if @animal.photo.attached?
+    @animal.destroy!
+    redirect_to zone_path(@zone), notice: "동물을 완전히 삭제했습니다."
   end
 
   private
@@ -75,7 +103,19 @@ class AnimalsController < ApplicationController
       @animal = @zone.animals.find(params[:id])
     end
 
-    # active 는 폼에서 받지 않는다 — 삭제는 destroy 액션만 거친다
+    def exit_params
+      permitted = params.require(:animal).permit(:exit_reason, :exited_on, :exit_note)
+      # enum 에 없는 값을 대입하면 ArgumentError 로 떨어진다 (common/rails.md).
+      # nil 로 떨어뜨려 모델 검증이 사람이 읽을 메시지를 내게 한다
+      permitted[:exit_reason] = nil unless Animal.exit_reasons.key?(permitted[:exit_reason])
+      permitted
+    end
+
+    def exit_label
+      @animal.exit_transferred? ? "분양" : "폐사"
+    end
+
+    # active 와 exit_* 는 폼에서 받지 않는다 — 내보내기는 destroy 액션만 거친다
     def animal_params
       params.require(:animal).permit(
         :name, :species, :gender, :birth_date,

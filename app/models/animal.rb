@@ -40,6 +40,11 @@ class Animal < ApplicationRecord
   # 사인은 몰라도(갑자기 죽는 경우) 날짜는 모를 수 없다 — 모르면 발견일을 적는다.
   validates :exited_on, presence: true, if:     :exited?
   validates :exited_on, absence:  true, unless: :exited?
+  # 날짜 입력은 연도 네 자리 오타가 쉽다. 2062 를 넣으면 보관 목록 맨 위에 영원히 박히고
+  # 폐사보고서에도 그 날짜가 들어간다. 람다인 이유는 상수로 쓰면 클래스 로드 시각에 굳어서다
+  # allow_nil — 비었을 때는 위의 presence 가 말한다. 안 붙이면 메시지가 두 번 뜬다
+  validates :exited_on, comparison: { less_than_or_equal_to: ->(_) { Date.current } },
+            allow_nil: true, if: :exited?
   # DB 의 CHECK 가 active 와 exit_reason 을 함께 본다. 모델에서 먼저 막지 않으면 폼에서 사유를 비우고 보냈을 때 검증 에러가 아니라 500 으로 드러난다
   validate :exit_state_must_be_consistent
 

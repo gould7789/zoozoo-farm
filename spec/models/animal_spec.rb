@@ -234,6 +234,21 @@ RSpec.describe Animal, type: :model do
       expect(animal.errors[:exit_reason]).to eq([ "사육 중인 개체에는 내보낸 사유를 남길 수 없습니다." ])
     end
 
+    # 날짜 입력은 연도 오타가 쉽다. 2062 가 들어가면 보관 목록 맨 위에 영원히 박힌다
+    it "미래 날짜는 저장되지 않는다" do
+      animal.assign_attributes(active: false, exit_reason: :deceased,
+                               exited_on: Date.current + 1)
+
+      expect(animal).not_to be_valid
+      expect(animal.errors[:exited_on]).to eq([ "날짜가 오늘보다 뒤일 수 없습니다. 연도를 확인해주세요." ])
+    end
+
+    it "오늘은 저장된다" do
+      animal.assign_attributes(active: false, exit_reason: :deceased, exited_on: Date.current)
+
+      expect(animal).to be_valid
+    end
+
     it "되돌리면 내보낸 흔적이 모두 지워진다" do
       animal.update!(active: false, exit_reason: :transferred,
                      exited_on: Date.current, exit_note: "○○동물원")

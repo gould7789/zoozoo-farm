@@ -143,6 +143,113 @@ RSpec.describe "Animals", type: :request do
     end
   end
 
+  # 사인을 나중에 알게 되거나(부검) 분양처 이름을 잘못 적는 일이 있다.
+  # 내보내기 모달은 한 번만 거치므로 고칠 길이 수정 화면밖에 없다
+  describe "내보낸 정보 수정" do
+    before { sign_in(admin) }
+
+    it "사유·날짜·메모를 고칠 수 있다" do
+      animal = create(:animal, :exited, zone: zone, exit_note: "원인 불명")
+
+      patch zone_animal_path(zone, animal), params: { animal: {
+        species: animal.species, exit_reason: "transferred",
+        exited_on: "2026-05-01", exit_note: "○○동물원"
+      } }
+
+      expect(animal.reload).to have_attributes(
+        exit_reason: "transferred", exited_on: Date.new(2026, 5, 1), exit_note: "○○동물원"
+      )
+    end
+
+    # 사육 중인 개체의 폼에는 그 칸이 없다. 폼을 거치지 않고 보내도 무시해야 한다
+    it "사육 중인 개체에는 내보낸 정보를 심을 수 없다" do
+      animal = create(:animal, zone: zone)
+
+      patch zone_animal_path(zone, animal), params: { animal: {
+        species: animal.species, exit_reason: "deceased", exited_on: "2026-05-01"
+      } }
+
+      expect(animal.reload).to have_attributes(
+        active: true, exit_reason: nil, exited_on: nil
+      )
+    end
+
+    it "날짜를 비우면 저장되지 않는다" do
+      animal = create(:animal, :exited, zone: zone)
+
+      patch zone_animal_path(zone, animal), params: { animal: {
+        species: animal.species, exit_reason: "deceased", exited_on: ""
+      } }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(animal.reload.exited_on).to eq(Date.new(2026, 3, 14))
+    end
+
+    # enum 밖의 값을 대입하면 ArgumentError 로 떨어진다 (common/rails.md)
+    it "사유가 enum 밖이면 500 이 아니라 검증 에러로 돌려보낸다" do
+      animal = create(:animal, :exited, zone: zone)
+
+      patch zone_animal_path(zone, animal), params: { animal: {
+        species: animal.species, exit_reason: "교환", exited_on: "2026-05-01"
+      } }
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(animal.reload.exit_reason).to eq("deceased")
+    end
+
+    # 422 로 다시 그릴 때 @animal 은 폼에서 받은 값을 물고 있다. exited? 로 가르면
+    # 사유가 nil 로 떨어진 순간 「사유를 선택해주세요」만 뜨고 고칠 칸이 사라진다
+    it "검증 에러로 다시 그려도 고칠 칸이 남아 있다" do
+      animal = create(:animal, :exited, zone: zone)
+
+      patch zone_animal_path(zone, animal), params: { animal: {
+        species: animal.species, exit_reason: "교환", exited_on: "2026-05-01"
+      } }
+
+      expect(response.body).to include("animal[exit_note]")
+      expect(response.body).to include("animal[exit_reason]")
+    end
+
+    it "수정 화면에 내보낸 정보 칸이 나온다" do
+      animal = create(:animal, :exited, zone: zone)
+
+      get edit_zone_animal_path(zone, animal)
+
+      expect(response.body).to include("animal[exit_note]")
+    end
+
+    it "사육 중인 개체의 수정 화면에는 그 칸이 없다" do
+      animal = create(:animal, zone: zone)
+
+      get edit_zone_animal_path(zone, animal)
+
+      expect(response.body).not_to include("animal[exit_note]")
+    end
+  end
+
+  # 내보낸 개체는 관 아코디언에 없다. 관 화면으로 돌려보내면 왔던 곳도 아니고
+  # 그 동물도 없는 자리에 떨어진다 — 보관 페이지로 돌아가야 한다
+  describe "내보낸 개체의 돌아갈 곳" do
+    before { sign_in(staff) }
+
+    it "상세의 뒤로가기가 보관 페이지를 가리킨다" do
+      animal = create(:animal, :exited, zone: zone)
+
+      get zone_animal_path(zone, animal)
+
+      expect(response.body).to include(%(href="#{archive_path}"))
+    end
+
+    it "사육 중인 개체는 관 화면을 가리킨다" do
+      animal = create(:animal, zone: zone)
+
+      get zone_animal_path(zone, animal)
+
+      expect(response.body).to include(%(href="#{zone_path(zone)}"))
+      expect(response.body).not_to include(%(href="#{archive_path}"))
+    end
+  end
+
   describe "POST /zones/:zone_id/animals/:id/restore" do
     let(:animal) { create(:animal, :exited, zone: zone) }
 
@@ -180,6 +287,25 @@ RSpec.describe "Animals", type: :request do
       expect {
         delete purge_zone_animal_path(zone, animal), params: { confirm_species: animal.species }
       }.to change(Animal, :count).by(-1).and change(HealthRecord, :count).by(-1)
+    end
+
+    # 보관 페이지에서 들어와 지웠는데 관 화면으로 떨어지면 왔던 곳을 잃는다
+    it "내보낸 개체를 지우면 보관 페이지로 돌려보낸다" do
+      sign_in(admin)
+      exited = create(:animal, :exited, zone: zone)
+
+      delete purge_zone_animal_path(zone, exited), params: { confirm_species: exited.species }
+
+      expect(response).to redirect_to(archive_path)
+    end
+
+    it "사육 중인 개체를 지우면 관 화면으로 돌려보낸다" do
+      sign_in(admin)
+      animal
+
+      delete purge_zone_animal_path(zone, animal), params: { confirm_species: animal.species }
+
+      expect(response).to redirect_to(zone_path(zone))
     end
 
     # 브라우저에서만 막으면 폼을 거치지 않은 요청에 그대로 열린다

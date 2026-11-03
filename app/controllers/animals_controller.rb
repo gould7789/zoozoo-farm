@@ -86,11 +86,16 @@ class AnimalsController < ApplicationController
                          alert: "종명이 일치하지 않아 삭제하지 않았습니다."
     end
 
+    # 지우고 나면 물어볼 수 없으므로 먼저 어디서 왔는지 기억해 둔다
+    came_from_archive = @animal.exited?
+
     # 잡 워커가 없어 purge_later 의 잡이 사라진다 — 스토리지에 고아 파일이 남으므로
     # 동기로 먼저 지운다 (notes/animal-photo.md)
     @animal.photo.purge if @animal.photo.attached?
     @animal.destroy!
-    redirect_to zone_path(@zone), notice: "동물을 완전히 삭제했습니다."
+
+    redirect_to(came_from_archive ? archive_path : zone_path(@zone),
+                notice: "동물을 완전히 삭제했습니다.")
   end
 
   private
@@ -104,9 +109,14 @@ class AnimalsController < ApplicationController
     end
 
     def exit_params
-      permitted = params.require(:animal).permit(:exit_reason, :exited_on, :exit_note)
-      # enum 에 없는 값을 대입하면 ArgumentError 로 떨어진다 (common/rails.md).
-      # nil 로 떨어뜨려 모델 검증이 사람이 읽을 메시지를 내게 한다
+      sanitize_exit_reason(params.require(:animal).permit(:exit_reason, :exited_on, :exit_note))
+    end
+
+    # enum 에 없는 값을 대입하면 ArgumentError 로 떨어진다 (common/rails.md).
+    # nil 로 떨어뜨려 모델 검증이 사람이 읽을 메시지를 내게 한다
+    def sanitize_exit_reason(permitted)
+      return permitted unless permitted.key?(:exit_reason)
+
       permitted[:exit_reason] = nil unless Animal.exit_reasons.key?(permitted[:exit_reason])
       permitted
     end
@@ -117,11 +127,16 @@ class AnimalsController < ApplicationController
 
     # active 와 exit_* 는 폼에서 받지 않는다 — 내보내기는 destroy 액션만 거친다
     def animal_params
-      params.require(:animal).permit(
+      permitted = [
         :name, :species, :gender, :birth_date,
         :acquired_at, :acquisition_note, :cites_grade, :note,
         :animal_category_id, :individual_count, :photo
-      )
+      ]
+      # 내보낸 개체에만 연다. 사육 중인 개체의 폼에는 그 칸이 없으므로,
+      # 그래도 들어오면 폼을 거치지 않은 요청이라 무시한다
+      permitted += [ :exit_reason, :exited_on, :exit_note ] if @animal&.exited?
+
+      sanitize_exit_reason(params.require(:animal).permit(*permitted))
     end
 
     def animals_xlsx(animals)

@@ -14,6 +14,21 @@ module SystemHelpers
     expect(page).to have_current_path(root_path)
   end
 
+  # 모바일 폭을 만든다. screen_size 로는 안 된다 — headless Chrome 의 창 최소 폭이
+  # 500px 이라 clientWidth 가 500 으로 잡힌다. 반드시 visit 전에 부른다:
+  # 방문 뒤에 바꾸면 500 으로 그린 뒤 375 로 재배치되는 경합이 생긴다
+  def force_mobile_viewport(width: 375, height: 812)
+    page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride",
+      width: width, height: height, deviceScaleFactor: 2, mobile: true)
+  end
+
+  # 폭을 재는 단언에는 Capybara 의 재시도가 듣지 않으므로, 배치가 끝난 것을
+  # 눈에 보이는 요소로 먼저 확인한다
+  def visit_mobile(path)
+    visit path
+    expect(page).to have_css("h1", wait: 5)
+  end
+
   # 좌표를 거치지 않고 DOM 의 click 을 직접 일으킨다.
   # 실측 1~2할 유실 — 대기를 2초에서 5초로 늘려도 실패율이 같았다(3/15 그대로)
   def click_reliably(label)

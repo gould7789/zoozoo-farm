@@ -47,8 +47,8 @@
       <%= f.rich_text_area :content,
           placeholder: "공지 내용을 입력하세요",
           data: {
-            controller: "image-downscale",
-            action: "trix-attachment-add->image-downscale#attach",
+            controller: "image-downscale trix-toolbar",
+            action: "trix-attachment-add->image-downscale#attach trix-initialize->trix-toolbar#addToggle",
             blob_url_template: rails_service_blob_proxy_url(":signed_id", ":filename")
           } %>
     </div>

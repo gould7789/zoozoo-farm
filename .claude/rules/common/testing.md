@@ -131,6 +131,25 @@ page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride",
 조상에 `backdrop-filter` 가 걸리면 쌓임 맥락이 생겨 자식의 `z-index` 가 그 밖으로 못 나가는데,
 그 결함은 **스크린샷으로만 드러났다.**
 
+### CI 에는 빌드된 CSS 가 없었다
+
+`app/assets/builds/*` 가 `.gitignore` 대상(38행)이라 **체크아웃만으로는 스타일시트가 없다.**
+그 상태로 레이아웃을 보는 system spec 을 돌리면 화면이 통째로 무스타일이 되어 **전부 떨어진다.**
+`hidden` 하나 안 먹어서 「숨어 있어야 할 것」이 전부 보인다.
+
+```yaml
+- name: Build CSS          # system-test 잡, 테스트 실행 앞
+  env:
+    RAILS_ENV: test        # 이 태스크는 :environment 의존이라 Rails 를 부팅한다
+    DATABASE_URL: ...
+  run: bin/rails tailwindcss:build
+```
+
+로컬은 `bin/dev` 가 늘 빌드해둬서 **차이가 안 보인다.** 재현은 `rm app/assets/builds/tailwind.css`.
+
+> 「CI 가 CSS 를 검사하지 않는다」는 것을 알면서도 CSS 에 의존하는 스펙을 썼다.
+> **아는 것과 연결하는 것은 다르다.**
+
 ### 흔들리는 스펙은 환경 탓이 아닐 수 있다
 
 `style/mobile-layout` 에서 예제 셋이 돌아가며 떨어졌다. **값을 20회 찍어보고서야** 갈렸다.

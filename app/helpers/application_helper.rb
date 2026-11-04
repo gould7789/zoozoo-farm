@@ -18,6 +18,11 @@ module ApplicationHelper
     "#{base} #{color}"
   end
 
+  # shared/_action_menu 안 항목의 CSS 클래스 — 링크와 button_to 가 같은 모양이어야 한다
+  def menu_item_class
+    "flex items-center gap-2 w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 text-left transition-colors"
+  end
+
   # 내보낸 사유의 화면 라벨과 배지 색
   def animal_exit_label(reason)
     {

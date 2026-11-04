@@ -26,6 +26,7 @@
 | `notes/auth.md` | 이메일 기준 rate limit, `reset_session` 순서, 마지막 관리자 보호 | `sessions_controller`, `application_controller`, `admin/users_controller`, `user.rb` |
 | `notes/animal-lifecycle.md` | 폐사·분양·입력 실수의 분리, CHECK 정합성, 군집 제약, 보관 화면 | `animal.rb`, `animals_controller`, `animal_archives_controller`, `animal_scoped`, `views/animal_archives` |
 | `notes/animal-photo.md` | HEIC·libvips, `purge` vs `purge_later`, 검증 에러 때 사진 | `animal.rb`, `animal_photos_controller`, 사진 JS 2개 |
+| `notes/header-actions.md` | 헤더의 `⋯` 메뉴, truncate 가 제목을 먹는 문제, backdrop-blur 의 쌓임 맥락 | `menu_controller`, `shared/_action_menu`, 헤더를 가진 뷰 5개 |
 | `notes/xlsx-export.md` | Excel `####`, 서식 코드, 고정 행, 분류 칸 비우기 | 내보내기 컨트롤러 5개 + base |
 
 `common/` 은 레이어 축(지킬 규칙), `notes/` 는 도메인 축(왜 이렇게 생겼나)이다. **축을 섞지 않는다.**

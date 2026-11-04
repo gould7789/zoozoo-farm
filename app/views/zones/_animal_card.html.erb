@@ -8,13 +8,13 @@
     <div class="flex items-center gap-1.5 flex-wrap">
       <p class="text-sm font-semibold text-gray-900"><%= animal.name.presence || animal.species %></p>
       <% if animal.name.present? %>
-        <p class="text-xs text-gray-400">(<%= animal.species %>)</p>
+        <p class="text-xs text-gray-500">(<%= animal.species %>)</p>
       <% end %>
     </div>
     <div class="flex items-center gap-2 mt-1">
-      <span class="text-xs text-gray-400"><%= ({ "male" => "수컷", "female" => "암컷", "unknown" => "미확인" })[animal.gender] %></span>
+      <span class="text-xs text-gray-500"><%= ({ "male" => "수컷", "female" => "암컷", "unknown" => "미확인" })[animal.gender] %></span>
       <% if animal.age %>
-        <span class="text-xs text-gray-400"><%= animal.age %>살</span>
+        <span class="text-xs text-gray-500"><%= animal.age %>살</span>
       <% end %>
       <% if condition %>
         <%
@@ -28,7 +28,7 @@
       <% end %>
     </div>
   </div>
-  <svg class="w-4 h-4 text-gray-400 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg class="w-4 h-4 text-gray-500 shrink-0 ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
   </svg>
 <% end %>

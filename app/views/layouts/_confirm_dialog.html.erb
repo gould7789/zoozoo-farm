@@ -17,10 +17,13 @@
       <%# 안내 모드에서는 숨긴다 %>
       <button value="cancel"
               data-confirm-dialog-target="cancel"
-              class="flex-1 h-11 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+              class="flex-1 h-11 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
         취소
       </button>
+      <%# 안내 모드(취소 없음)에서는 중립색이 된다 — 아무 일도 일어나지 않는데
+          빨강이면 위험한 것을 승인하는 것처럼 보인다 (notes/color.md) %>
       <button value="confirm"
+              data-confirm-dialog-target="confirm"
               class="flex-1 h-11 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
         확인
       </button>

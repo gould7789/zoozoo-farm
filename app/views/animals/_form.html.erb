@@ -42,7 +42,7 @@
               저장된 사진   → 서버에서 삭제 (확인 모달 있음)
               미저장 선택분 → 선택만 취소 (잃을 게 없어 확인하지 않는다)
               어느 쪽을 낼지는 JS 가 가른다 %>
-          <% delete_button_class = "inline-flex items-center h-9 px-3 rounded-lg text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 transition-colors" %>
+          <% delete_button_class = "inline-flex items-center h-9 px-3 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors" %>
 
           <%# button_to 는 이 폼 안에 <form> 을 중첩시킨다.
               Turbo 가 누를 때 body 직하에 폼을 만드는 link_to + turbo_method 를 쓴다 %>
@@ -58,7 +58,7 @@
                   class="<%= delete_button_class %>">사진 삭제</button>
         </div>
       </div>
-      <p class="text-xs text-gray-400 mt-2">JPG · PNG · WEBP 형식만 등록할 수 있습니다.</p>
+      <p class="text-xs text-gray-500 mt-2">JPG · PNG · WEBP 형식만 등록할 수 있습니다.</p>
 
       <%# 자르기 화면 — showModal() 이 top layer 에 올려 조상 레이아웃에 영향받지 않는다 %>
       <dialog data-photo-crop-target="dialog"
@@ -72,7 +72,7 @@
                   class="w-full aspect-square rounded-xl touch-none cursor-move"></canvas>
 
           <div class="flex items-center gap-3 mt-4">
-            <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.2-5.2M10.5 7.5v6m-3-3h6M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
             </svg>
             <input type="range" min="1" max="4" step="0.01" value="1"
@@ -81,7 +81,7 @@
                    aria-label="확대"
                    class="w-full accent-green-500">
           </div>
-          <p class="text-xs text-gray-400 text-center mt-2">드래그로 위치를 옮기고, 슬라이더나 휠로 확대하세요.</p>
+          <p class="text-xs text-gray-500 text-center mt-2">드래그로 위치를 옮기고, 슬라이더나 휠로 확대하세요.</p>
 
           <div class="grid grid-cols-2 gap-3 mt-4">
             <button type="button" data-action="photo-crop#cancel"
@@ -123,7 +123,7 @@
       <%= f.number_field :individual_count,
           min: 1,
           class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500" %>
-      <p class="text-xs text-gray-400 mt-1">개별 이름이 없는 동물 종의 경우 총 마리 수를 입력해주세요.</p>
+      <p class="text-xs text-gray-500 mt-1">개별 이름이 없는 동물 종의 경우 총 마리 수를 입력해주세요.</p>
     </div>
 
     <div>
@@ -139,7 +139,7 @@
       <%= f.label :birth_date, "생년월일 (선택)", class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.date_field :birth_date,
           class: "w-full h-11 px-3 border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-green-500" %>
-      <p class="text-xs text-gray-400 mt-1">생년월일을 모르는 경우 입수일을 참고해 입력해주세요.</p>
+      <p class="text-xs text-gray-500 mt-1">생년월일을 모르는 경우 입수일을 참고해 입력해주세요.</p>
     </div>
 
     <div>

@@ -63,7 +63,7 @@ trix-toolbar .trix-button {
   min-height: 40px;
   border-bottom: 0;
   border-left-color: var(--color-gray-200);
-  color: var(--color-gray-400);
+  color: var(--color-gray-500);
 }
 trix-toolbar .trix-button--icon {
   height: 40px;
@@ -204,7 +204,7 @@ trix-toolbar .trix-toolbar-toggle {
   padding: 0 0.75rem;
   line-height: 1;
   font-size: 1.125rem;
-  color: var(--color-gray-400);
+  color: var(--color-gray-500);
 }
 trix-toolbar .trix-toolbar-toggle:hover {
   background: var(--color-gray-50);

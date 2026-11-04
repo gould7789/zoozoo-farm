@@ -95,6 +95,74 @@ Selenium의 좌표 클릭이 이 구성(Turbo + Stimulus)에서 **1~2할 확률�
 
 대기는 `page.all` 이 아니라 `have_css` / `have_no_css` 를 쓴다. `page.all` 은 **재시도 없이 즉시 반환**해서 느린 CI 에서 깨진다.
 
+### Trix 버튼은 click 으로 눌리지 않는다
+
+`trix.js` 의 `ToolbarController` 는 서식·동작 버튼에 **`mousedown`** 을 건다(`handleEvent("mousedown", ...)`).
+`click` 은 다이얼로그 버튼에만 쓴다. 그래서 `click_reliably` 도 `this.click()` 도 **그 핸들러에 영원히 닿지 않는다.**
+
+```js
+el.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }))
+```
+
+실제로 「서식이 안 걸린다」로 보여 코드를 의심했지만 **눈금이 틀린 것**이었다. 선택 범위도 찍어보고
+`editor.activateAttribute("italic")` 로는 걸리는 것을 확인한 뒤에야 이벤트 종류가 원인이라는 데 닿았다.
+
+에디터에 **포커스를 주지 않으면** `setSelectedRange` 가 내부 값만 바꿔 서식이 아무 데도 안 걸린다.
+
+### 모바일 폭은 screen_size 로 만들어지지 않는다
+
+headless Chrome 은 **창 최소 폭이 500px** 이라 `screen_size: [375, 812]` 로 띄워도 `clientWidth` 가 500 이 된다.
+그 상태로 「모바일에서 겹치는가」를 재면 **엉뚱한 결과가 나온다.**
+
+```ruby
+page.driver.browser.execute_cdp("Emulation.setDeviceMetricsOverride",
+  width: 375, height: 812, deviceScaleFactor: 2, mobile: true)
+```
+
+### 가로 넘침 검출은 truncate 를 못 본다
+
+`min-w-0` + `truncate` 가 걸린 제목은 폭이 모자라면 **넘치지 않고 0px 로 수축한다.**
+`scrollWidth > clientWidth` 도, 사각형 교차 검사도 **둘 다 0건**을 낸다. 글자가 다 보이는지는
+`scrollWidth <= getBoundingClientRect().width` 로 따로 봐야 한다.
+
+### 보이는 것과 위에 그려지는 것은 다르다
+
+`have_link("Excel")` 은 CSS 상 visible 이면 통과한다. **다른 요소에 덮여 있어도 통과한다.**
+조상에 `backdrop-filter` 가 걸리면 쌓임 맥락이 생겨 자식의 `z-index` 가 그 밖으로 못 나가는데,
+그 결함은 **스크린샷으로만 드러났다.**
+
+### CI 에는 빌드된 CSS 가 없었다
+
+`app/assets/builds/*` 가 `.gitignore` 대상(38행)이라 **체크아웃만으로는 스타일시트가 없다.**
+그 상태로 레이아웃을 보는 system spec 을 돌리면 화면이 통째로 무스타일이 되어 **전부 떨어진다.**
+`hidden` 하나 안 먹어서 「숨어 있어야 할 것」이 전부 보인다.
+
+```yaml
+- name: Build CSS          # system-test 잡, 테스트 실행 앞
+  env:
+    RAILS_ENV: test        # 이 태스크는 :environment 의존이라 Rails 를 부팅한다
+    DATABASE_URL: ...
+  run: bin/rails tailwindcss:build
+```
+
+로컬은 `bin/dev` 가 늘 빌드해둬서 **차이가 안 보인다.** 재현은 `rm app/assets/builds/tailwind.css`.
+
+> 「CI 가 CSS 를 검사하지 않는다」는 것을 알면서도 CSS 에 의존하는 스펙을 썼다.
+> **아는 것과 연결하는 것은 다르다.**
+
+### 흔들리는 스펙은 환경 탓이 아닐 수 있다
+
+`style/mobile-layout` 에서 예제 셋이 돌아가며 떨어졌다. **값을 20회 찍어보고서야** 갈렸다.
+
+| 흔들림 | 정체 |
+| --- | --- |
+| 폭 단언 | `visit` 뒤에 뷰포트를 바꿔 재배치 경합 — **방문 전에 고정**한다 |
+| 툴바 버튼이 가끔 없음 | **제품 버그.** `trix-initialize` 가 Stimulus 연결보다 먼저 나서 `data-action` 이 놓친다 |
+| ESC 가 가끔 안 먹음 | Selenium 의 키 전달 유실 — `keydown` 을 DOM 에 직접 일으킨다 |
+
+가운데가 중요하다. **「환경 탓」으로 넘겼으면 제품 버그를 그대로 배포했다.**
+`connect()` 에서 이미 초기화됐는지(`element.editor`) 보고 직접 부르면 양쪽이 덮인다.
+
 ### 대기 시간은 5초다
 
 기본 2초로는 부족하다. 브라우저 기동 → 로그인 → 업로드 → canvas 변환이 연달아 일어나므로, 부하가 높을 때 2초를 넘겨 **로그인 화면 그대로 판정**된 적이 있다. CI 러너는 로컬보다 느리다.

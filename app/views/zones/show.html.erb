@@ -3,7 +3,9 @@
 
 <div class="max-w-2xl md:max-w-4xl mx-auto">
 
-  <div class="flex items-center justify-between mb-4 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
+  <%# relative z-30 — backdrop-blur 가 쌓임 맥락을 만들어 메뉴 패널의 z-index 가
+    이 카드 밖으로 못 나간다. 카드째 올려야 뒤의 검색창 위에 그려진다 (common/views.md) %>
+  <div class="relative z-30 flex items-center justify-between mb-4 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
     <div class="flex items-center gap-3 min-w-0">
       <%= link_to zones_path, class: "text-gray-400 hover:text-gray-600 transition-colors shrink-0" do %>
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -18,28 +20,34 @@
       </div>
     </div>
     <% if current_user.admin? %>
+      <%# 주 동작(추가)만 밖에 두고 보조 동작은 메뉴로 접는다.
+          375px 에서 버튼 3개가 폭을 다 먹어 관 이름이 0px 로 눌렸다 %>
       <div class="flex items-center gap-2 shrink-0 ml-3">
-        <%= link_to zone_animals_path(@zone, format: :xlsx),
-            class: "inline-flex items-center gap-1.5 h-9 px-3 bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 text-sm font-medium rounded-lg transition-colors" do %>
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-          </svg>
-          Excel
-        <% end %>
-        <%# 모달이 body 직하라 Outlet 으로 참조한다 %>
-        <button type="button"
-                data-controller="modal-opener"
-                data-modal-opener-modal-outlet="#category-modal"
-                data-action="click->modal-opener#open"
-                class="inline-flex items-center h-9 px-3 bg-white border border-gray-300 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors">
-          카테고리 관리
-        </button>
         <%= link_to new_zone_animal_path(@zone),
             class: "inline-flex items-center gap-1.5 h-9 px-3 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors" do %>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
           추가
+        <% end %>
+
+        <%= render layout: "shared/action_menu" do %>
+          <%= link_to zone_animals_path(@zone, format: :xlsx), class: menu_item_class do %>
+            <%= render "shared/excel_icon" %>
+            Excel
+          <% end %>
+          <%# 모달이 body 직하라 Outlet 으로 참조한다 %>
+          <button type="button"
+                  data-controller="modal-opener"
+                  data-modal-opener-modal-outlet="#category-modal"
+                  data-action="click->modal-opener#open"
+                  class="<%= menu_item_class %>">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.559.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.272-.806.108-1.204-.165-.397-.506-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            카테고리 관리
+          </button>
         <% end %>
       </div>
     <% end %>

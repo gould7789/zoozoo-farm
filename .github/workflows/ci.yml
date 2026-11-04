@@ -137,6 +137,16 @@ jobs:
         with:
           bundler-cache: true
 
+      # app/assets/builds/* 는 .gitignore 대상이라 체크아웃만으로는 스타일시트가 없다.
+      # 없으면 화면이 통째로 무스타일이 되어 레이아웃을 보는 스펙이 전부 떨어진다
+      - name: Build CSS
+        env:
+          # 이 태스크는 :environment 의존이라 Rails 를 부팅한다.
+          # 테스트 단계와 같은 환경을 주지 않으면 development 로 떠서 접속처가 달라진다
+          RAILS_ENV: test
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432
+        run: bin/rails tailwindcss:build
+
       - name: Run System Tests
         env:
           RAILS_ENV: test

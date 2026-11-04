@@ -3,6 +3,8 @@
 # 알아서 준비하므로 추가 설치 단계가 필요 없다.
 # 대기 시간과 화면 크기의 근거는 .claude/rules/common/testing.md
 Capybara.default_max_wait_time = 5
+# 아이콘만 있는 버튼은 텍스트가 없어 aria-label 로 찾는다 (shared/_action_menu 의 「더보기」)
+Capybara.enable_aria_label = true
 
 RSpec.configure do |config|
   config.before(:each, type: :system) do

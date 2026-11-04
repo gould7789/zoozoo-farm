@@ -11,7 +11,7 @@
 <%# 2) 모달의 카테고리 목록 — 체크박스 상태와 순서 %>
 <%= turbo_stream.update "modal_category_list" do %>
   <% if @all_categories.empty? %>
-    <p class="px-6 py-8 text-center text-sm text-gray-400">등록된 카테고리가 없습니다.</p>
+    <p class="px-6 py-8 text-center text-sm text-gray-500">등록된 카테고리가 없습니다.</p>
   <% else %>
     <% @all_categories.sort_by { |c| [c.hidden? ? 1 : 0, c.name] }.each do |category| %>
       <%= render "animal_categories/category_row", category: category, zone: @zone %>

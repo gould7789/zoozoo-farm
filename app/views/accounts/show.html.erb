@@ -25,7 +25,7 @@
         </div>
         <div>
           <p class="text-lg font-bold text-gray-900"><%= @user.name %></p>
-          <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full <%= @user.admin? ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600' %>">
+          <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full <%= @user.admin? ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700' %>">
             <%= @user.admin? ? "관리자" : "스태프" %>
           </span>
         </div>
@@ -47,7 +47,7 @@
             <% if @user.position.present? %>
               <%= position_label[@user.position] || @user.position %>
             <% else %>
-              <span class="text-gray-300">-</span>
+              <span class="text-gray-500">-</span>
             <% end %>
           </dd>
         </div>
@@ -74,7 +74,7 @@
   <%# 로그아웃 버튼 — 모바일에서만 보인다 %>
   <div class="mt-6 md:hidden">
     <%= button_to "로그아웃", logout_path, method: :delete,
-        class: "w-full flex items-center justify-center gap-2 h-12 rounded-xl text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm transition-colors" %>
+        class: "w-full flex items-center justify-center gap-2 h-12 rounded-xl text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm transition-colors" %>
   </div>
 
 </div>

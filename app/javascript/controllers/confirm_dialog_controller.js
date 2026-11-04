@@ -5,7 +5,7 @@ import { Controller } from "@hotwired/stimulus"
 import { Turbo } from "@hotwired/turbo-rails"
 
 export default class extends Controller {
-  static targets = ["message", "cancel"]
+  static targets = ["message", "cancel", "confirm"]
 
   connect() {
     Turbo.config.forms.confirm = (message) => this.open(message)
@@ -19,6 +19,12 @@ export default class extends Controller {
   open(message, { cancellable = true } = {}) {
     this.messageTarget.textContent = message
     this.cancelTarget.classList.toggle("hidden", !cancellable)
+    // 안내 모드에서는 누를 수 있는 것이 「확인」 하나뿐이고 아무 일도 일어나지 않는다.
+    // 빨강으로 두면 위험한 조작을 승인하는 것처럼 보인다 (notes/color.md)
+    this.confirmTarget.classList.toggle("bg-red-600", cancellable)
+    this.confirmTarget.classList.toggle("hover:bg-red-700", cancellable)
+    this.confirmTarget.classList.toggle("bg-gray-700", !cancellable)
+    this.confirmTarget.classList.toggle("hover:bg-gray-800", !cancellable)
     // returnValue 는 닫은 뒤에도 남으므로 매번 비운다.
     // 빠뜨리면 지난번 "confirm" 이 남아, 다음에 ESC 로 닫아도 전송된다
     this.element.returnValue = ""

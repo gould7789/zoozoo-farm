@@ -8,7 +8,9 @@
 <% else %>
   <div class="<%= size %> rounded-full bg-gray-100 border border-gray-200 shrink-0 flex items-center justify-center">
     <%# 발바닥 — 사진 아이콘은 「이미지가 깨졌다」로 읽힌다 %>
-    <svg class="w-3/5 h-3/5 text-gray-300" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <%# opacity-30 — 읽는 글자가 아니라 「사진 없음」 표시다. 같은 농도로 두면
+        실제 썸네일과 무게가 같아져 빈 자리라는 신호를 잃는다 (notes/color.md) %>
+    <svg class="w-3/5 h-3/5 text-gray-500 opacity-30" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
       <ellipse cx="6.6" cy="10" rx="2.1" ry="2.7" />
       <ellipse cx="10.3" cy="6.6" rx="2.2" ry="2.9" />
       <ellipse cx="14.5" cy="6.6" rx="2.2" ry="2.9" />

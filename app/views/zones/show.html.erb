@@ -7,7 +7,7 @@
     이 카드 밖으로 못 나간다. 카드째 올려야 뒤의 검색창 위에 그려진다 (common/views.md) %>
   <div class="relative z-30 flex items-center justify-between mb-4 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
     <div class="flex items-center gap-3 min-w-0">
-      <%= link_to zones_path, class: "text-gray-400 hover:text-gray-600 transition-colors shrink-0" do %>
+      <%= link_to zones_path, class: "text-gray-500 hover:text-gray-700 transition-colors shrink-0" do %>
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 19.5L8.25 12l7.5-7.5" />
         </svg>
@@ -57,7 +57,7 @@
   <div data-controller="search">
 
     <div class="relative mb-4">
-      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
       </svg>
       <input type="text"
@@ -75,7 +75,7 @@
           animals_by_category: @animals_by_category %>
     </div><%# / #category_accordion %>
 
-    <p data-search-target="empty" class="hidden text-center text-gray-400 text-sm py-8">검색 결과가 없습니다.</p>
+    <p data-search-target="empty" class="hidden text-center text-gray-500 text-sm py-8">검색 결과가 없습니다.</p>
 
   </div><%# / data-controller="search" %>
 
@@ -126,7 +126,7 @@
           <%# id 는 turbo_stream 의 교체 대상이다 %>
           <div id="modal_category_list" class="max-h-80 overflow-y-auto divide-y divide-gray-100">
             <% if @all_categories.empty? %>
-              <p class="px-6 py-8 text-center text-sm text-gray-400">등록된 카테고리가 없습니다.</p>
+              <p class="px-6 py-8 text-center text-sm text-gray-500">등록된 카테고리가 없습니다.</p>
             <% else %>
               <% @all_categories.sort_by { |c| [c.hidden? ? 1 : 0, c.name] }.each do |category| %>
                 <%= render "animal_categories/category_row", category: category, zone: @zone %>

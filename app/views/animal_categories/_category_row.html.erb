@@ -22,7 +22,7 @@
           </svg>
         <% end %>
       </span>
-      <span class="text-sm font-medium truncate text-left <%= category.hidden? ? "text-gray-400 line-through" : "text-gray-800" %>">
+      <span class="text-sm font-medium truncate text-left <%= category.hidden? ? "text-gray-500 line-through" : "text-gray-900" %>">
         <%= category.name %>
       </span>
     <% end %>
@@ -56,7 +56,7 @@
             class: "h-8 px-3 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold rounded-md transition-colors cursor-pointer" %>
         <button type="button"
                 data-action="click->category-row#cancelEdit"
-                class="h-8 px-3 bg-white border border-gray-300 text-gray-600 text-xs font-medium rounded-md hover:bg-gray-50 transition-colors">
+                class="h-8 px-3 bg-white border border-gray-300 text-gray-700 text-xs font-medium rounded-md hover:bg-gray-50 transition-colors">
           취소
         </button>
       </div>

@@ -11,7 +11,7 @@
         </svg>
       <% end %>
       <div class="min-w-0">
-        <p class="text-xs text-gray-400 truncate"><%= @zone.name %> · <%= @animal.species %></p>
+        <p class="text-xs text-gray-500 truncate"><%= @zone.name %> · <%= @animal.species %></p>
         <h1 class="text-xl font-bold text-gray-900">먹이 기록</h1>
       </div>
     </div>
@@ -40,7 +40,7 @@
 
   <% if @feeding_records.empty? %>
     <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
-      <p class="text-gray-400 text-sm">먹이 기록이 없습니다.</p>
+      <p class="text-gray-500 text-sm">먹이 기록이 없습니다.</p>
     </div>
   <% else %>
 
@@ -58,19 +58,19 @@
               </span>
             <% end %>
           </div>
-          <p class="text-xs text-gray-400 mt-0.5">작성자: <%= fr.created_by&.name || "—" %></p>
+          <p class="text-xs text-gray-500 mt-0.5">작성자: <%= fr.created_by&.name || "—" %></p>
           <% if fr.note.present? %>
-            <p class="text-sm text-gray-600 line-clamp-2"><%= fr.note %></p>
+            <p class="text-sm text-gray-700 line-clamp-2"><%= fr.note %></p>
           <% end %>
           <% if current_user.admin? || fr.created_by_id == current_user.id %>
             <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
               <%= link_to "수정", edit_zone_animal_feeding_log_path(@zone, @animal, fr),
-                  class: "flex-1 inline-flex items-center justify-center h-9 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
+                  class: "flex-1 inline-flex items-center justify-center h-9 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
               <%= button_to "삭제", zone_animal_feeding_log_path(@zone, @animal, fr),
                   method: :delete,
                   data: { turbo_confirm: "정말 삭제하시겠습니까?" },
                   form: { class: "flex-1" },
-                  class: "w-full inline-flex items-center justify-center h-9 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" %>
+                  class: "w-full inline-flex items-center justify-center h-9 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors" %>
             </div>
           <% end %>
         </div>
@@ -101,7 +101,7 @@
                     <%= fr.amount_g %>g
                   </span>
                 <% else %>
-                  <span class="text-gray-400">—</span>
+                  <span class="text-gray-500">—</span>
                 <% end %>
               </td>
               <td class="px-5 py-3.5 text-left text-gray-500 truncate"><%= fr.note.presence || "—" %></td>

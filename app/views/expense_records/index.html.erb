@@ -35,7 +35,7 @@
       <% @all_years.each do |year| %>
         <% year_active = (year == @selected_year) %>
         <%= link_to expenses_path(year: year),
-            class: "inline-flex items-center h-8 px-4 rounded-lg text-xs font-bold transition-colors #{year_active ? 'bg-red-500 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}" do %>
+            class: "inline-flex items-center h-8 px-4 rounded-lg text-xs font-bold transition-colors #{year_active ? 'bg-red-500 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'}" do %>
           <%= year %>
         <% end %>
       <% end %>
@@ -53,7 +53,7 @@
 
   <% if @all_years.empty? %>
     <div class="bg-white rounded-xl border border-gray-200 p-12 text-center">
-      <p class="text-gray-400 text-sm">지출 기록이 없습니다.</p>
+      <p class="text-gray-500 text-sm">지출 기록이 없습니다.</p>
     </div>
   <% else %>
 
@@ -61,7 +61,7 @@
       "animal_purchase" => [ "동물 구매비", "bg-purple-100 text-purple-700" ],
       "food"            => [ "먹이 구매비", "bg-green-100 text-green-700" ],
       "medical"         => [ "병원비", "bg-blue-100 text-blue-700" ],
-      "disposal"        => [ "시체 처리비", "bg-gray-100 text-gray-600" ],
+      "disposal"        => [ "시체 처리비", "bg-gray-100 text-gray-700" ],
       "maintenance"     => [ "시설 유지보수", "bg-yellow-100 text-yellow-700" ],
       "other"           => [ "기타", "bg-orange-100 text-orange-700" ]
     } %>
@@ -75,13 +75,13 @@
 
     <% if @expense_records.empty? %>
       <div class="bg-white rounded-xl border border-gray-200 p-8 text-center">
-        <p class="text-gray-400 text-sm">해당 월의 지출 기록이 없습니다.</p>
+        <p class="text-gray-500 text-sm">해당 월의 지출 기록이 없습니다.</p>
       </div>
     <% else %>
 
       <div class="space-y-3 md:hidden">
         <% @expense_records.each do |er| %>
-          <% label = category_label[er.category] || [ er.category, "bg-gray-100 text-gray-600" ] %>
+          <% label = category_label[er.category] || [ er.category, "bg-gray-100 text-gray-700" ] %>
           <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
             <div class="flex items-start justify-between mb-2">
               <div>
@@ -92,16 +92,16 @@
               </div>
               <p class="text-lg font-bold text-gray-900"><%= number_with_delimiter(er.amount) %>원</p>
             </div>
-            <p class="text-sm text-gray-600"><%= er.description %></p>
-            <p class="text-xs text-gray-400 mt-1">작성자 · <%= er.created_by&.name || "—" %></p>
+            <p class="text-sm text-gray-700"><%= er.description %></p>
+            <p class="text-xs text-gray-500 mt-1">작성자 · <%= er.created_by&.name || "—" %></p>
             <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
               <%= link_to "수정", edit_expense_path(er),
-                  class: "flex-1 inline-flex items-center justify-center h-9 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
+                  class: "flex-1 inline-flex items-center justify-center h-9 text-xs font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors" %>
               <%= button_to "삭제", expense_path(er),
                   method: :delete,
                   data: { turbo_confirm: "정말 삭제하시겠습니까?" },
                   form: { class: "flex-1" },
-                  class: "w-full inline-flex items-center justify-center h-9 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" %>
+                  class: "w-full inline-flex items-center justify-center h-9 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors" %>
             </div>
           </div>
         <% end %>
@@ -121,7 +121,7 @@
           </thead>
           <tbody class="divide-y divide-gray-100">
             <% @expense_records.each do |er| %>
-              <% label = category_label[er.category] || [ er.category, "bg-gray-100 text-gray-600" ] %>
+              <% label = category_label[er.category] || [ er.category, "bg-gray-100 text-gray-700" ] %>
               <tr class="hover:bg-gray-50">
                 <td class="px-5 py-3.5 text-center font-medium text-gray-900"><%= er.spent_on.strftime("%Y-%m-%d") %></td>
                 <td class="px-5 py-3.5 text-center">

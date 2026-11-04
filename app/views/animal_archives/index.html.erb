@@ -6,14 +6,14 @@
 <div class="max-w-2xl md:max-w-4xl mx-auto">
 
   <div class="flex items-center gap-3 mb-4 bg-white/80 backdrop-blur-sm rounded-xl px-5 py-4 shadow-sm">
-    <%= link_to zones_path, class: "text-gray-400 hover:text-gray-600 transition-colors shrink-0" do %>
+    <%= link_to zones_path, class: "text-gray-500 hover:text-gray-700 transition-colors shrink-0" do %>
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 19.5L8.25 12l7.5-7.5" />
       </svg>
     <% end %>
     <div class="min-w-0">
-      <h1 class="text-xl font-bold text-gray-800">내보낸 개체</h1>
-      <p class="text-sm text-gray-600 mt-0.5">폐사하거나 분양한 동물의 기록</p>
+      <h1 class="text-xl font-bold text-gray-900">내보낸 개체</h1>
+      <p class="text-sm text-gray-700 mt-0.5">폐사하거나 분양한 동물의 기록</p>
     </div>
   </div>
 
@@ -22,7 +22,7 @@
     <% [ [ nil, "전체" ], [ "deceased", "폐사" ], [ "transferred", "분양" ] ].each do |value, label| %>
       <% selected = @reason == value %>
       <%= link_to label, archive_path(reason: value),
-          class: "h-9 px-4 inline-flex items-center rounded-lg text-sm font-medium transition-colors #{selected ? 'bg-green-600 text-white' : 'bg-white border border-gray-300 text-gray-600 hover:bg-gray-50'}" %>
+          class: "h-9 px-4 inline-flex items-center rounded-lg text-sm font-medium transition-colors #{selected ? 'bg-green-600 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'}" %>
     <% end %>
   </div>
 
@@ -37,9 +37,9 @@
             <%= animal.name.presence || animal.species %>
           </p>
           <% if animal.name.present? %>
-            <p class="text-xs text-gray-400 mt-0.5"><%= animal.species %></p>
+            <p class="text-xs text-gray-500 mt-0.5"><%= animal.species %></p>
           <% end %>
-          <p class="text-xs text-gray-400 mt-0.5"><%= animal.zone.name %></p>
+          <p class="text-xs text-gray-500 mt-0.5"><%= animal.zone.name %></p>
           <div class="mt-2 flex items-center gap-1.5">
             <span class="text-xs px-2 py-0.5 rounded-full font-medium <%= badge %>"><%= label %></span>
             <span class="text-xs text-gray-500"><%= animal.exited_on.strftime("%Y-%m-%d") %></span>
@@ -49,7 +49,7 @@
     </div>
   <% else %>
     <div class="bg-white/80 backdrop-blur-sm rounded-xl px-5 py-12 shadow-sm text-center">
-      <p class="text-sm text-gray-400">
+      <p class="text-sm text-gray-500">
         <%= @reason ? "해당하는 개체가 없습니다." : "내보낸 개체가 없습니다." %>
       </p>
     </div>

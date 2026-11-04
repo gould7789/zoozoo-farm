@@ -171,6 +171,24 @@ HTML에서 만들되 두 가지를 처리한다.
 
 터치 영역(40px)은 남기고 아이콘만 작게·연하게 한다. 두 축을 나누는 이유는 `common/views.md`.
 
+### 모바일에서는 1줄로 접는다
+
+줄바꿈으로 두니 **모바일에서 3줄 138px** 을 먹어 입력창이 접힌 선 아래로 밀렸다(실측).
+현장에서 쓰는 **굵게 · 목록 · 첨부**만 남기고 나머지는 `⋯` 뒤로 보낸다 — 42px 이 된다.
+
+**Trix 의 기본 HTML 은 건드리지 않는다.** `Trix.config.toolbar.getDefaultHTML()` 을 갈아끼우는 길도
+있지만 링크 버튼이 쓰는 `trix-dialogs` HTML 까지 베껴 와야 하고 Trix 가 올라갈 때마다 어긋난다.
+`app/assets/tailwind/application.css` 에서 버튼을 숨기고 `trix_toolbar_controller.js` 가
+`trix-initialize` 에서 펼침 버튼을 넣는다.
+
+숨김 규칙을 `:not(.trix-toolbar--expanded)` 로 좁힌 이유는, 펼친 상태에 규칙을 따로 주려면
+**Trix 가 각 요소에 준 `display` 값을 알아야 하기** 때문이다. 규칙이 아예 안 걸리면 Trix 것이 산다.
+
+`history-tools` 는 **그룹째 숨긴다** — 안의 버튼만 숨기면 빈 테두리 상자가 남는다.
+
+> **버튼을 팝업으로 빼낼 수 없다.** Trix 는 `<trix-toolbar>` 안의 요소에만 핸들러를 건다.
+> 밖으로 꺼내면 눌러도 서식이 안 걸린다. 그래서 `⋯` 는 팝업이 아니라 **제자리 펼침**이다.
+
 ### 첨부에서 숨기는 것
 
 | 숨긴 것 | 왜 |

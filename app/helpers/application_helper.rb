@@ -31,6 +31,15 @@ module ApplicationHelper
     }.fetch(reason.to_s, [ "내보냄", "bg-gray-200 text-gray-700" ])
   end
 
+  # 건강 기록 컨디션의 라벨과 배지 색 — [라벨, Tailwind 클래스]
+  def health_condition_label(condition)
+    {
+      "normal"  => [ "정상", "bg-green-100 text-green-800" ],
+      "caution" => [ "주의", "bg-yellow-100 text-yellow-800" ],
+      "danger"  => [ "위험", "bg-red-100 text-red-800" ]
+    }.fetch(condition.to_s, [ "—", "bg-gray-100 text-gray-700" ])
+  end
+
   # 공지 카테고리의 라벨과 색 클래스 — [라벨, Tailwind 클래스]
   def notice_category_label(category)
     {

@@ -1,0 +1,24 @@
+<%# 동물 상세의 최근 기록 카드 — 건강·먹이가 같은 껍데기를 쓴다 %>
+<%# 행의 모양은 둘이 달라서 블록으로 받는다 (shared/_action_menu 와 같은 방식) %>
+<%# 기록이 0건이어도 카드는 낸다 — 빼면 화면 구조가 개체마다 달라진다 %>
+<div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+  <%# 제목 줄 전체를 링크로 만든다. 「전체 보기」 글자만 링크면 터치 영역이 45x16px 이라
+      44px 규칙에 못 미치고, 전에 카드 전체가 링크였던 것보다 누르기 어려워진다 %>
+  <%# 카드가 둘이라 「전체 보기」만으로는 어느 쪽인지 알 수 없다 — 스크린 리더에 제목을 붙인다 %>
+  <%= link_to path, "aria-label": "#{title} 전체 보기",
+      class: "flex items-center justify-between gap-2 -m-1 mb-1 p-1 rounded-lg hover:bg-gray-50 transition-colors" do %>
+    <span class="min-w-0">
+      <span class="block text-sm font-semibold text-gray-900"><%= title %></span>
+      <span class="block text-xs text-gray-500 mt-0.5"><%= subtitle %></span>
+    </span>
+    <span class="shrink-0 text-xs font-medium text-green-600">전체 보기</span>
+  <% end %>
+
+  <% if records.any? %>
+    <div class="divide-y divide-gray-100 border-t border-gray-100">
+      <%= yield %>
+    </div>
+  <% else %>
+    <p class="text-xs text-gray-500 pt-2 border-t border-gray-100">아직 기록이 없습니다.</p>
+  <% end %>
+</div>

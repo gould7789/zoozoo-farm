@@ -31,8 +31,9 @@ module SystemHelpers
 
   # 좌표를 거치지 않고 DOM 의 click 을 직접 일으킨다.
   # 실측 1~2할 유실 — 대기를 2초에서 5초로 늘려도 실패율이 같았다(3/15 그대로)
+  # 링크도 같다. 링크를 Capybara 의 click 으로 누르면 전체 실행 8회 중 2회 유실됐다
   def click_reliably(label)
-    find(:button, label).execute_script("this.click()")
+    find(:link_or_button, label).execute_script("this.click()")
   end
 
   # 다이얼로그 안의 버튼을 누르고, 결과가 나오고 닫히기까지 확인한다.

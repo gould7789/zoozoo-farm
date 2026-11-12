@@ -24,7 +24,11 @@ class AnimalsController < ApplicationController
     end
   end
 
+  # 2건인 이유는 「오늘 줬나」와 「어제보다 어떤가」가 둘 다 읽히는 최소값이기 때문이다.
+  # 카드당 2건씩, 합계 4건이 늘어난다 (실측)
   def show
+    @recent_health_records  = @animal.health_records.recent.limit(2).to_a
+    @recent_feeding_records = @animal.feeding_records.recent.limit(2).to_a
   end
 
   def new

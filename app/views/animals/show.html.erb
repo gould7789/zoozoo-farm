@@ -115,16 +115,41 @@
     <% end %>
   </div>
 
-  <div class="grid grid-cols-2 gap-3 mb-3">
-    <%= link_to zone_animal_health_logs_path(@zone, @animal),
-        class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all text-center block" do %>
-      <p class="text-sm font-semibold text-gray-900">건강 기록</p>
-      <p class="text-xs text-gray-500 mt-0.5">컨디션 · 체중</p>
+  <%# 목록을 들어갔다 나오는 왕복을 없애려고 카드 안에 최근 2건을 그대로 낸다. %>
+  <div class="space-y-3 mb-3">
+    <%= render layout: "animals/recent_records",
+        locals: { title: "건강 기록", subtitle: "컨디션 · 체중",
+                  path: zone_animal_health_logs_path(@zone, @animal),
+                  records: @recent_health_records } do %>
+      <% @recent_health_records.each do |hr| %>
+        <% badge = health_condition_label(hr.condition) %>
+        <%# 「무엇이 있었나 → 언제」 순서다. 먹이 행도 같은 순서를 쓴다 —
+            카드마다 순서가 다르면 눈이 카드를 옮길 때마다 다시 적응해야 한다 %>
+        <div class="flex items-center justify-between gap-2 py-2">
+          <div class="min-w-0 flex items-center gap-2">
+            <%# 색만으로는 컨디션이 전달되지 않는다. 배지가 색과 글자를 같이 낸다 (notes/color.md) %>
+            <span class="shrink-0 inline-block px-2 py-0.5 rounded-full text-xs font-medium <%= badge[1] %>"><%= badge[0] %></span>
+            <% if hr.weight_kg.present? %>
+              <span class="truncate text-sm text-gray-700">체중 <%= hr.weight_kg %>kg</span>
+            <% end %>
+          </div>
+          <p class="shrink-0 text-xs text-gray-500"><%= hr.recorded_on.strftime("%m-%d") %></p>
+        </div>
+      <% end %>
     <% end %>
-    <%= link_to zone_animal_feeding_logs_path(@zone, @animal),
-        class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all text-center block" do %>
-      <p class="text-sm font-semibold text-gray-900">먹이 기록</p>
-      <p class="text-xs text-gray-500 mt-0.5">급여 이력</p>
+
+    <%= render layout: "animals/recent_records",
+        locals: { title: "먹이 기록", subtitle: "급여 이력",
+                  path: zone_animal_feeding_logs_path(@zone, @animal),
+                  records: @recent_feeding_records } do %>
+      <% @recent_feeding_records.each do |fr| %>
+        <div class="flex items-center justify-between gap-2 py-2">
+          <p class="min-w-0 truncate text-sm text-gray-700">
+            <%= fr.food_type %><% if fr.amount_g.present? %> <span class="text-gray-500"><%= number_with_delimiter(fr.amount_g) %>g</span><% end %>
+          </p>
+          <p class="shrink-0 text-xs text-gray-500"><%= fr.fed_at.strftime("%m-%d %H:%M") %></p>
+        </div>
+      <% end %>
     <% end %>
   </div>
 

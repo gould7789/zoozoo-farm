@@ -26,6 +26,80 @@ RSpec.describe "Animals", type: :request do
     end
   end
 
+  describe "상세의 최근 기록" do
+    let(:animal) { create(:animal, zone: zone) }
+
+    def query_count
+      count = 0
+      sub = ActiveSupport::Notifications.subscribe("sql.active_record") do |_, _, _, _, payload|
+        count += 1 unless payload[:name].to_s =~ /SCHEMA|TRANSACTION/
+      end
+      begin
+        yield
+      ensure
+        # ensure 가 없으면 블록이 예외를 던질 때 구독이 남아 뒤 테스트의 측정값이 흐트러진다
+        ActiveSupport::Notifications.unsubscribe(sub)
+      end
+      count
+    end
+
+    it "건강 기록을 2건만 낸다" do
+      sign_in(staff)
+      3.downto(1) do |n|
+        create(:health_record, animal: animal, created_by: staff, recorded_on: n.days.ago, weight_kg: 60 + n)
+      end
+      get zone_animal_path(zone, animal)
+
+      expect(response.body).to include("61.0", "62.0")
+      expect(response.body).not_to include("63.0")
+    end
+
+    it "먹이 기록을 2건만 낸다" do
+      sign_in(staff)
+      3.downto(1) do |n|
+        create(:feeding_record, animal: animal, created_by: staff,
+               fed_at: n.days.ago, food_type: "먹이#{n}")
+      end
+      get zone_animal_path(zone, animal)
+
+      expect(response.body).to include("먹이1", "먹이2")
+      expect(response.body).not_to include("먹이3")
+    end
+
+    it "기록이 늘어도 쿼리 수가 늘지 않는다" do
+      sign_in(staff)
+      create(:health_record,  animal: animal, created_by: staff)
+      create(:feeding_record, animal: animal, created_by: staff)
+      few = query_count { get zone_animal_path(zone, animal) }
+
+      5.times do |i|
+        create(:health_record,  animal: animal, created_by: staff, recorded_on: i.days.ago)
+        create(:feeding_record, animal: animal, created_by: staff, fed_at: i.days.ago)
+      end
+      many = query_count { get zone_animal_path(zone, animal) }
+
+      expect(many).to eq(few)
+    end
+
+    it "기록이 없는 개체에서도 200 이고 빈 상태 문구가 보인다" do
+      sign_in(staff)
+      get zone_animal_path(zone, animal)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("아직 기록이 없습니다")
+    end
+
+    it "내보낸 개체에서도 보인다" do
+      sign_in(staff)
+      create(:health_record, animal: animal, created_by: staff, weight_kg: 58.5)
+      animal.update!(active: false, exit_reason: :deceased, exited_on: Date.current)
+
+      get zone_animal_path(zone, animal)
+
+      expect(response.body).to include("58.5")
+    end
+  end
+
   describe "GET /zones/:zone_id/animals/new" do
     context "Staff 가 접근" do
       before { sign_in(staff) }

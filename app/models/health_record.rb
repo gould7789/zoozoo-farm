@@ -10,5 +10,7 @@ class HealthRecord < ApplicationRecord
   validates :recorded_on, presence: true
   validates :weight_kg, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 9_999.99 }, allow_nil: true
 
-  scope :recent, -> { order(recorded_on: :desc) }
+  # recorded_on 은 date 라 하루에 두 번 적으면 동률이 난다.
+  # 동률의 순서는 SQL 에서 미정의라 조회마다 갈릴 수 있어 created_at 으로 끊는다
+  scope :recent, -> { order(recorded_on: :desc, created_at: :desc) }
 end

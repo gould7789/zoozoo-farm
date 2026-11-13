@@ -203,6 +203,38 @@ RSpec.describe Animal, type: :model do
     end
   end
 
+  # 「가장 최근 건강 기록」을 고르는 곳이 셋이다 — recent 스코프 · max_by · 서브쿼리.
+  # 셋이 같은 기록을 가리키지 않으면 홈·관 목록·동물 상세가 서로 다른 상태를 보여준다
+  describe "최신 건강 기록을 고르는 세 경로" do
+    let(:user)   { create(:user) }
+    let(:animal) { create(:animal) }
+
+    # 동률의 순서는 SQL 에서 미정의라, id 를 랜덤에 맡기면 고치기 전에도 우연히 통과한다.
+    # 아침 기록에 사전순으로 큰 id 를 직접 박아 「id 로 끊으면 반드시 틀리는」 상황을 만든다
+    before do
+      create(:health_record, id: "ffffffff-ffff-4fff-8fff-ffffffffffff",
+             animal: animal, created_by: user, condition: :normal,
+             recorded_on: Date.current, created_at: 8.hours.ago)
+      create(:health_record, id: "00000000-0000-4000-8000-000000000000",
+             animal: animal, created_by: user, condition: :danger,
+             recorded_on: Date.current, created_at: 2.hours.ago)
+    end
+
+    it "미로드 경로 — 같은 날이면 나중에 적은 기록을 낸다" do
+      expect(Animal.find(animal.id).latest_condition).to eq("danger")
+    end
+
+    it "로드 경로 — 미로드 경로와 같은 기록을 낸다" do
+      loaded = Animal.includes(:health_records).find(animal.id)
+
+      expect(loaded.latest_condition).to eq("danger")
+    end
+
+    it "서브쿼리 경로 — 나중에 적은 기록이 danger 면 주의 동물에 든다" do
+      expect(Animal.with_alert_condition).to include(animal)
+    end
+  end
+
   describe "내보내기" do
     let(:animal) { create(:animal) }
 

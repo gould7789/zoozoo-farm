@@ -53,6 +53,8 @@ class Animal < ApplicationRecord
 
   # 홈 화면 알림용 — 가장 최근 건강 기록이 caution 이나 danger 인 동물.
   # 서브쿼리로 개체마다 최신 1건만 고른 뒤 그 조건으로 거른다
+  # ORDER BY 가 HealthRecord.recent 와 같아야 한다 — 여기와 latest_condition 과
+  # 그 스코프, 셋이 「최신 1건」을 고른다. 하나만 고치면 화면마다 다른 기록이 보인다
   scope :with_alert_condition, -> {
     active
       .joins(:health_records)
@@ -60,7 +62,7 @@ class Animal < ApplicationRecord
         "health_records.id = (
           SELECT id FROM health_records hr
           WHERE hr.animal_id = animals.id
-          ORDER BY hr.recorded_on DESC, hr.id DESC
+          ORDER BY hr.recorded_on DESC, hr.created_at DESC
           LIMIT 1
         )"
       )
@@ -85,12 +87,12 @@ class Animal < ApplicationRecord
   end
 
   # 가장 최근 건강 기록의 condition. 기록이 없으면 nil.
-  #
   # loaded? 로 가르는 이유는 N+1 때문이다. 목록에서 includes 로 미리 읽어왔으면
-  # Ruby에서 고르고, 단건 조회처럼 안 읽어온 경우에만 쿼리를 날린다
+  # 두 가지가 HealthRecord.recent 와 같은 순서여야 한다 — recorded_on 은 date 라
+  # 같은 날 두 번 적으면 동률이 나고, 경로마다 다른 키로 끊으면 화면마다 다른 기록이 최신이 된다. id 는 UUID v4 라 시간순이 아니므로 쓸 수 없다
   def latest_condition
     if health_records.loaded?
-      health_records.max_by { |hr| [ hr.recorded_on, hr.id ] }&.condition
+      health_records.max_by { |hr| [ hr.recorded_on, hr.created_at ] }&.condition
     else
       health_records.recent.first&.condition
     end

@@ -29,7 +29,8 @@
       <% end %>
       <% if current_user.admin? %>
         <%= render layout: "shared/action_menu" do %>
-          <%= link_to zone_animal_feeding_logs_path(@zone, @animal, format: :xlsx), class: menu_item_class do %>
+          <%= link_to export_zone_animal_feeding_logs_path(@zone, @animal), class: menu_item_class,
+              data: { turbo: false } do %>
             <%= render "shared/excel_icon" %>
             Excel
           <% end %>

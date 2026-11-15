@@ -21,7 +21,8 @@
         추가
       <% end %>
       <%= render layout: "shared/action_menu" do %>
-        <%= link_to expenses_path(format: :xlsx, year: @selected_year, month: @selected_month), class: menu_item_class do %>
+        <%= link_to export_expenses_path(year: @selected_year, month: @selected_month), class: menu_item_class,
+              data: { turbo: false } do %>
           <%= render "shared/excel_icon" %>
           Excel
         <% end %>

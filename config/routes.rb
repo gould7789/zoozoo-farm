@@ -15,7 +15,12 @@ Rails.application.routes.draw do
         patch :toggle
       end
     end
-    resources :animals do
+    # index 가 없다 — 동물 목록 화면은 zones#show 의 아코디언이다
+    resources :animals, except: [ :index ] do
+      # 내보내기는 목록 액션에 얹지 않고 라우트로 드러낸다 — 판단은 notes/xlsx-export.md
+      collection do
+        get :export
+      end
       # 되돌릴 수 없는 조작은 라우트부터 나눈다 — destroy 에 플래그로 섞으면
       # 파라미터 하나 차이로 복구 불가능한 일이 일어난다
       member do
@@ -24,8 +29,16 @@ Rails.application.routes.draw do
       end
       # 프로필 사진 삭제 — 한 동물에 한 장이므로 단수 리소스
       resource  :photo, only: [ :destroy ], controller: "animal_photos"
-      resources :health_logs,  except: [ :show ], controller: "health_records"
-      resources :feeding_logs, except: [ :show ], controller: "feeding_records"
+      resources :health_logs,  except: [ :show ], controller: "health_records" do
+        collection do
+          get :export
+        end
+      end
+      resources :feeding_logs, except: [ :show ], controller: "feeding_records" do
+        collection do
+          get :export
+        end
+      end
     end
   end
 
@@ -35,8 +48,16 @@ Rails.application.routes.draw do
   resources :notices
 
   # 매출·지출 (Admin 전용)
-  resources :sales,    except: [ :show ], controller: "sales_records"
-  resources :expenses, except: [ :show ], controller: "expense_records"
+  resources :sales,    except: [ :show ], controller: "sales_records" do
+    collection do
+      get :export
+    end
+  end
+  resources :expenses, except: [ :show ], controller: "expense_records" do
+    collection do
+      get :export
+    end
+  end
 
   resource :account, only: [ :show ]
 

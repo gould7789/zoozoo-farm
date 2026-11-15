@@ -8,21 +8,21 @@ class ExpenseRecordsController < ApplicationController
 
   def index
     @expense_records = load_monthly_records(ExpenseRecord)
+  end
 
-    respond_to do |format|
-      format.html
-      format.xlsx do
-        filename = if @selected_year && @selected_month
-          "지출기록_#{@selected_year}년#{ "%02d" % @selected_month }월.xlsx"
-        else
-          "지출기록_#{Date.current}.xlsx"
-        end
-        send_data expense_records_xlsx(@expense_records),
-                  filename: filename,
-                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  disposition: "attachment"
-      end
+  # xlsx 내보내기 — Admin 전용.
+  # 화면에서 고른 연월을 그대로 받아 파일명에 넣는다. 연월이 안 잡히는 것은 기록이 0건일 때뿐이고 그때는 오늘 날짜를 쓴다
+  def export
+    records  = load_monthly_records(ExpenseRecord)
+    filename = if @selected_year && @selected_month
+      "지출기록_#{@selected_year}년#{ "%02d" % @selected_month }월.xlsx"
+    else
+      "지출기록_#{Date.current}.xlsx"
     end
+    send_data expense_records_xlsx(records),
+              filename: filename,
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              disposition: "attachment"
   end
 
   def new

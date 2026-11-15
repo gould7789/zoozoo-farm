@@ -32,7 +32,8 @@
         <% end %>
 
         <%= render layout: "shared/action_menu" do %>
-          <%= link_to zone_animals_path(@zone, format: :xlsx), class: menu_item_class do %>
+          <%= link_to export_zone_animals_path(@zone), class: menu_item_class,
+              data: { turbo: false } do %>
             <%= render "shared/excel_icon" %>
             Excel
           <% end %>

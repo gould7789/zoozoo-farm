@@ -5,22 +5,21 @@ class FeedingRecordsController < ApplicationController
   include AnimalScoped
   include OwnerRestriction
 
+  before_action :require_admin, only: [ :export ]
   before_action :set_feeding_record,                    only: [ :edit, :update, :destroy ]
   before_action -> { require_owner(@feeding_record) },  only: [ :edit, :update, :destroy ]
 
   def index
     # 최신 급여 일시 순
     @feeding_records = @animal.feeding_records.recent.includes(:created_by)
-    respond_to do |format|
-      format.html
-      format.xlsx do
-        return redirect_to root_path, alert: "권한이 없습니다." unless current_user.admin?
-        send_data feeding_records_xlsx(@feeding_records),
-                  filename: "먹이기록_#{@animal.name.presence || @animal.species}_#{Date.current}.xlsx",
-                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  disposition: "attachment"
-      end
-    end
+  end
+
+  # xlsx 내보내기 — Admin 전용. 목록과 같은 순서로 낸다
+  def export
+    send_data feeding_records_xlsx(@animal.feeding_records.recent.includes(:created_by)),
+              filename: "먹이기록_#{@animal.name.presence || @animal.species}_#{Date.current}.xlsx",
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              disposition: "attachment"
   end
 
   def new

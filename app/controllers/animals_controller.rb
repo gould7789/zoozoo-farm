@@ -4,24 +4,20 @@
 # 판단 근거는 .claude/rules/notes/animal-lifecycle.md, notes/animal-photo.md, notes/xlsx-export.md
 class AnimalsController < ApplicationController
   before_action :set_zone
-  before_action :require_admin, only: [ :index, :new, :create, :edit, :update, :destroy, :restore, :purge ]
+  before_action :require_admin, only: [ :export, :new, :create, :edit, :update, :destroy, :restore, :purge ]
   before_action :set_animal,    only: [ :show, :edit, :update, :destroy, :restore, :purge ]
 
-  # xlsx 내보내기 전용 — HTML 요청은 관 상세로 돌려보낸다
-  def index
-    respond_to do |format|
-      format.xlsx do
-        animals = @zone.animals.active
-                               .includes(:animal_category)
-                               .joins("LEFT JOIN animal_categories ON animal_categories.id = animals.animal_category_id")
-                               .order("animal_categories.name ASC NULLS LAST, animals.species ASC, animals.name ASC NULLS LAST")
-        send_data animals_xlsx(animals),
-                  filename: "동물목록_#{@zone.name}_#{Date.current}.xlsx",
-                  type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  disposition: "attachment"
-      end
-      format.html { redirect_to zone_path(@zone) }
-    end
+  # xlsx 내보내기 — Admin 전용. 분류 → 종 → 개체명 순으로 낸다.
+  # NULLS LAST 가 필요한 이유는 분류 미지정과 개체명 없음이 둘 다 흔하기 때문이다
+  def export
+    animals = @zone.animals.active
+                           .includes(:animal_category)
+                           .joins("LEFT JOIN animal_categories ON animal_categories.id = animals.animal_category_id")
+                           .order("animal_categories.name ASC NULLS LAST, animals.species ASC, animals.name ASC NULLS LAST")
+    send_data animals_xlsx(animals),
+              filename: "동물목록_#{@zone.name}_#{Date.current}.xlsx",
+              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              disposition: "attachment"
   end
 
   # 2건인 이유는 「오늘 줬나」와 「어제보다 어떤가」가 둘 다 읽히는 최소값이기 때문이다.

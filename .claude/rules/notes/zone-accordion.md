@@ -26,7 +26,7 @@ paths:
 body 직하 ─ 카테고리 관리 모달 (Admin 전용)
 ```
 
-**동물 목록 화면은 따로 없다.** `animals#index` 는 xlsx 전용이고, 목록은 이 아코디언이 전부다.
+**동물 목록 화면은 따로 없다.** `animals` 에는 `index` 액션이 없고(`except: [ :index ]`), 목록은 이 아코디언이 전부다. 내보내기는 `animals#export` 다 — `notes/xlsx-export.md`.
 
 ## 왜 partial 전체를 교체하나
 

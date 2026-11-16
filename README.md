@@ -58,8 +58,9 @@
 - 🔐 **ログイン** — 管理者が発行したアカウントでログイン（会員登録機能なし）
 - 🏛 **展示館一覧** — 6つの展示館をカードで表示。要注意の動物と最新のお知らせも集約
 - 🦜 **展示館詳細** — 館内の動物をカテゴリ別アコーディオンで表示。カテゴリの追加・表示切替はページ遷移なし（カテゴリの操作はAdmin専用）
-- 🐾 **動物詳細** — 個体情報（種・性別・CITES等級・入手経緯）と、健康記録・給餌記録の一覧と入力
-- 📢 **お知らせ** — 全体および館別の掲示板。自分の投稿のみ編集・削除可能
+- 🐾 **動物詳細** — 個体情報（種・性別・CITES等級・入手経緯）と、健康記録・給餌記録の一覧と入力。プロフィール写真はブラウザ側で正方形に切り抜いてから送るため、iPhoneのHEICでも登録できる
+- 🗄 **退出個体の保管** — 死亡・譲渡で一覧から外した個体を写真カードで振り返る。死亡日と死因が残るので死亡報告書に使える（復元・完全削除はAdmin専用）
+- 📢 **お知らせ** — 全体および館別の掲示板。Action Textのリッチテキストで書式と画像の添付に対応。自分の投稿のみ編集・削除可能
 - 💰 **売上・経費記録** — 自販機・売店別の売上と経費を月別に管理（Admin専用）
 - 📊 **管理者ダッシュボード** — 売上・経費・スタッフ管理への導線をまとめたハブ（Admin専用）
 - 👥 **スタッフ管理** — アカウントの発行・退職処理。記録を持つアカウントは削除できない
@@ -107,7 +108,7 @@ http://localhost:3000 で `.env` に設定したAdminアカウントからログ
 ### テスト・静的解析
 
 ```bash
-# RSpec — 257 examples
+# RSpec — 471 examples
 bundle exec rspec
 
 # コードスタイル（rubocop-rails-omakase）
@@ -125,8 +126,8 @@ bin/bundler-audit
 | `scan_ruby` | Brakeman でコードの脆弱性、bundler-audit でgemの既知の脆弱性を確認 |
 | `scan_js` | importmap audit でJavaScript依存の既知の脆弱性を確認 |
 | `lint` | RuboCop（rubocop-rails-omakase）でコードスタイルを統一 |
-| `test` | RSpec でモデルとリクエストのテストを実行（257 examples） |
-| `system-test` | ブラウザ操作のテスト用の枠（現時点ではケースなし） |
+| `test` | RSpec でモデルとリクエストのテストを実行（449 examples） |
+| `system-test` | Capybara + Selenium でブラウザ操作のテストを実行（22 examples） |
 
 ---
 
@@ -163,11 +164,22 @@ Claude Code を使って開発しているため、その設定もリポジト�
 .claude/
 ├── settings.json          # フックと権限。ハーネスが読む
 ├── rules/                 # 変えない規則
-│   ├── domain.md              常に読み込む（ドメイン・言語・権限）
-│   ├── rails.md               app/models, app/controllers を開いた時
-│   ├── views.md               app/views, app/assets, app/javascript
-│   ├── migrations.md          db/migrate
-│   └── testing.md             spec
+│   ├── domain.md              常に読み込む（ドメイン・言語・権限・脅威モデル）
+│   ├── common/                レイヤー軸 — 守るべき規則
+│   │   ├── rails.md               app/models, app/controllers を開いた時
+│   │   ├── views.md               app/views, app/assets, app/javascript
+│   │   ├── migrations.md          db/migrate
+│   │   └── testing.md             spec
+│   └── notes/                 ドメイン軸 — なぜこの形なのか
+│       ├── animal-lifecycle.md    死亡・譲渡・入力ミスの分離
+│       ├── animal-photo.md        HEIC変換とvariantの生成
+│       ├── auth.md                rate limitと最後の管理者の保護
+│       ├── color.md               グレー3段階と赤を使う場所
+│       ├── header-actions.md      ヘッダの「⋯」メニュー
+│       ├── infra.md               Render・Supabaseの構成
+│       ├── notice.md              リッチテキストとCSP
+│       ├── xlsx-export.md         Excel出力の書式と専用アクション
+│       └── zone-accordion.md      展示館詳細のアコーディオン
 ├── skills/                # 呼ばれた時だけ読み込む作業手順
 │   ├── dev-flow/              課題作成からPR・学習記録まで
 │   ├── grill/                 実装前に設計を攻める
@@ -179,6 +191,10 @@ Claude Code を使って開発しているため、その設定もリポジト�
 
 `rules/` は `paths` フロントマターでファイル種別ごとに絞っています。
 全部を常に読ませると、肝心な時に必要な規則が埋もれるためです。
+
+`common/` と `notes/` を分けたのは軸が違うからです。`common/` は「どう書くか」で、
+レイヤーごとに守る規則が入ります。`notes/` は「なぜこの形なのか」で、捨てた代案と
+その理由が入ります。混ぜると、規則を探しに来た人が設計の経緯を読まされることになります。
 
 `block-git-write.sh` は「コミット・プッシュ・マージは人間が実行する」という
 運用ルールを、文書ではなく仕組みで強制するものです。規則は以前からありましたが

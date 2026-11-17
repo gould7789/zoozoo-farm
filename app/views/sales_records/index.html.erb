@@ -21,11 +21,7 @@
         추가
       <% end %>
       <%= render layout: "shared/action_menu" do %>
-        <%= link_to export_sales_path(year: @selected_year, month: @selected_month), class: menu_item_class,
-              data: { turbo: false } do %>
-          <%= render "shared/excel_icon" %>
-          Excel
-        <% end %>
+        <%= render "shared/excel_link", path: export_sales_path(year: @selected_year, month: @selected_month) %>
       <% end %>
     </div>
   </div>

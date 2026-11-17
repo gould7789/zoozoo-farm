@@ -31,7 +31,7 @@
       <% @animals.each do |animal| %>
         <% label, badge = animal_exit_label(animal.exit_reason) %>
         <%= link_to zone_animal_path(animal.zone, animal),
-            class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition-all flex flex-col items-center text-center" do %>
+            class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md hover:border-gray-300 transition flex flex-col items-center text-center" do %>
           <%= render "zones/animal_avatar", animal: animal, size: "w-20 h-20" %>
           <p class="mt-2.5 text-sm font-semibold text-gray-900 break-keep">
             <%= animal.name.presence || animal.species %>

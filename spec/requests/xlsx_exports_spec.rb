@@ -123,7 +123,7 @@ RSpec.describe "Xlsx 내보내기", type: :request do
     ]
 
     screens.each do |screen|
-      it "#{screen[:label]} — data-turbo=false 가 붙어 있다" do
+      it "#{screen[:label]} — data-turbo=false 와 누름 표시가 붙어 있다" do
         get instance_exec(&screen[:page])
 
         # 정규식으로 보면 속성 순서와 &amp; 이스케이프에 걸린다. 쿼리는 붙을 수
@@ -132,6 +132,12 @@ RSpec.describe "Xlsx 내보내기", type: :request do
 
         expect(link.size).to eq(1)
         expect(link.first["data-turbo"]).to eq("false")
+
+        # 누른 뒤 화면이 그대로라 또 누르게 된다 — download 컨트롤러가 문구를 바꾸고
+        # 잠근다. 5화면이 한 파셜을 쓰므로 한 곳만 빠지는 일은 없지만,
+        # 파셜을 안 거치는 링크가 새로 생기면 여기서 걸린다
+        expect(link.first["data-controller"]).to eq("download")
+        expect(link.first["data-action"]).to eq("click->download#start")
       end
     end
   end

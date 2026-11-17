@@ -157,20 +157,20 @@
   <% if current_user.admin? %>
     <div class="grid grid-cols-2 gap-3 mb-6">
       <%= link_to "수정", edit_zone_animal_path(@zone, @animal),
-          class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all inline-flex items-center justify-center text-sm font-medium text-gray-700 hover:bg-gray-50" %>
+          class: "bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition inline-flex items-center justify-center text-sm font-medium text-gray-700 hover:bg-gray-50" %>
 
       <% if @animal.exited? %>
         <%= button_to "되돌리기", restore_zone_animal_path(@zone, @animal), method: :post,
             data: { turbo_confirm: "사유와 날짜, 사인 기록이 지워집니다. 되돌릴까요?" },
             form: { class: "contents" },
-            class: "w-full bg-white border border-gray-300 rounded-xl p-4 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all inline-flex items-center justify-center text-sm font-medium text-gray-700" %>
+            class: "w-full bg-white border border-gray-300 rounded-xl p-4 shadow-sm hover:shadow-md hover:bg-gray-50 transition inline-flex items-center justify-center text-sm font-medium text-gray-700" %>
       <% else %>
         <%# 모달이 body 직하라 Outlet 으로 참조한다 (common/views.md) %>
         <button type="button"
                 data-controller="modal-opener"
                 data-modal-opener-modal-outlet="#exit-modal"
                 data-action="click->modal-opener#open"
-                class="w-full bg-red-500 hover:bg-red-600 rounded-xl p-4 shadow-sm hover:shadow-md transition-all inline-flex items-center justify-center text-sm font-medium text-white">
+                class="w-full bg-red-500 hover:bg-red-600 rounded-xl p-4 shadow-sm hover:shadow-md transition inline-flex items-center justify-center text-sm font-medium text-white">
           내보내기
         </button>
       <% end %>

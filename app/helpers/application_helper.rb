@@ -1,21 +1,32 @@
 module ApplicationHelper
-  # 하단 탭 네비게이션 링크의 CSS 클래스
+  # 하단 탭 네비게이션 링크의 속성
   # also_active_on: 하위 페이지에서도 활성으로 보일 경로 배열 (관리 허브용)
-  def nav_link_class(path, also_active_on: [])
-    active = request.path == path ||
-             request.path.start_with?("#{path}/") ||
-             also_active_on.any? { |p| request.path == p || request.path.start_with?("#{p}/") }
-    base = "flex flex-col items-center gap-0.5 flex-1 py-2 text-xs font-medium transition-colors"
-    color = active ? "text-green-600" : "text-gray-500 hover:text-gray-700"
-    "#{base} #{color}"
+  # 클래스만 돌려주지 않는 이유 — aria-current 와 클래스가 같은 active 판정에서 나와야 한다. 따로 두면 한쪽만 고쳐져 「색은 켜졌는데 스크린리더는 모르는」 상태가 된다
+  def nav_link_attrs(path, also_active_on: [])
+    active = nav_active?(path, also_active_on)
+    # border-t-2 를 base 에 둔다. 활성에만 주면 전환할 때 2px 밀린다
+    base = "flex flex-col items-center justify-center gap-0.5 flex-1 py-2 " \
+           "border-t-2 text-xs font-medium transition-colors"
+    state = active ? "border-green-600 text-green-600"
+                   : "border-transparent text-gray-500 hover:text-gray-700"
+
+    { class: "#{base} #{state}", aria: { current: ("page" if active) } }
   end
 
-  # 사이드바 네비게이션 링크의 CSS 클래스
-  def sidebar_link_class(path)
-    active = request.path == path || request.path.start_with?("#{path}/")
+  # 사이드바 네비게이션 링크의 속성
+  def sidebar_link_attrs(path, also_active_on: [])
+    active = nav_active?(path, also_active_on)
     base = "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full"
-    color = active ? "bg-green-50 text-green-700" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-    "#{base} #{color}"
+    state = active ? "bg-green-50 text-green-700" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+
+    { class: "#{base} #{state}", aria: { current: ("page" if active) } }
+  end
+
+  # 하위 경로도 활성으로 본다 — /zones/1 에서 「관 목록」이 켜져 있어야 한다
+  def nav_active?(path, also_active_on = [])
+    ([ path ] + also_active_on).any? do |p|
+      request.path == p || request.path.start_with?("#{p}/")
+    end
   end
 
   # shared/_action_menu 안 항목의 CSS 클래스 — 링크와 button_to 가 같은 모양이어야 한다

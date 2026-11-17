@@ -1,0 +1,11 @@
+<%# Excel 내보내기 링크 — 5화면이 같은 모양을 쓴다. 판단은 notes/xlsx-export.md %>
+<%# turbo: false 가 없으면 Turbo 가 가로채 내보내기가 두 번 돈다 (실측) %>
+<%# label 을 값으로도 넘기는 이유 — 잠긴 상태로 Turbo 캐시에 찍힌 DOM 이 되살아났을 때
+    컨트롤러가 되돌릴 기준이 필요하다. DOM 의 글자는 그때 이미 틀려 있다 %>
+<% label = "Excel" %>
+<%= link_to path, class: menu_item_class,
+      data: { turbo: false, controller: "download",
+              action: "click->download#start", download_label_value: label } do %>
+  <%= render "shared/excel_icon" %>
+  <span data-download-target="label"><%= label %></span>
+<% end %>

@@ -12,7 +12,7 @@
   <div class="grid grid-cols-2 gap-3 md:gap-4">
     <% @zones.each do |zone| %>
       <%= link_to zone_path(zone),
-          class: "bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm hover:shadow-md hover:border-gray-300 transition-all block min-h-[80px]" do %>
+          class: "bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm hover:shadow-md hover:border-gray-300 transition block min-h-[80px]" do %>
         <div class="flex items-center justify-between h-full">
           <div class="min-w-0 flex-1">
             <h2 class="text-sm md:text-base font-semibold text-gray-900 break-keep"><%= zone.name %></h2>
